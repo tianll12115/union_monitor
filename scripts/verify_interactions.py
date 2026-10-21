@@ -512,7 +512,7 @@ APP_CONTRACTS = [
     ('json_body_in_read', 'return response.json();'),
     ('json_full_read_timeout', 'await readWithTimeout(reading,label,()=>controller.abort())'),
     ('view_switch',
-     "for(const id of ['ubs-view','ubs-repo-view','triton-view','method-view'])"
+     "for(const id of ['ubs-view','ubs-repo-view','triton-view'])"
      "$(id).hidden=id!==(ubs?(repo?'ubs-repo-view':'ubs-view'):domain+'-view');"),
     ('cross_domain_render',
      "if(ubs)render();else if(domain==='triton')(tritonRecordsMode?"

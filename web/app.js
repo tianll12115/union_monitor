@@ -82,7 +82,7 @@ function renderWorkbench(){
 function markNavActive(project){document.querySelectorAll('.side-nav [data-nav]').forEach(a=>a.classList.toggle('active',a.dataset.nav===project));}
 function markNavActiveFromHash(){const route=Router.parseRoute(location.hash);if(route&&route.view==='projects'){markNavActive(route.project);return;}const raw=String(location.hash||'').replace(/^#/,'');markNavActive(raw.startsWith('triton')?'triton':'ubs');}
 function renderSideNav(){const nav=$('sideTasks');if(!nav)return;const communities=(window.Shell&&Shell.COMMUNITIES)||[{id:'ubs',label:'UBSCore',entry:'#projects/ubs/overview',icon:'i-layout-grid'},{id:'triton',label:'Triton-Ascend',entry:'#projects/triton/engineering',icon:'i-target'}];nav.innerHTML=communities.map(c=>`<a href="${esc(c.entry)}" class="nav-item" data-nav="${esc(c.id)}" title="${esc(c.label)}"><svg class="icon"><use href="#${esc(c.icon||'i-chevron-right')}"/></svg>${esc(c.label)}</a>`).join('');markNavActiveFromHash();}
-function applyWorkbenchRoute(route){leaveTriton('workbench');closeDetailContext();view='workbench';document.querySelectorAll('main > .export-notice').forEach(n=>n.remove());for(const id of ['ubs-view','ubs-repo-view','triton-view','method-view','project-task-view'])$(id).hidden=true;$('workbench-view').hidden=false;renderWorkbench();markNavActive(null);$('crumb').innerHTML=['监控中心','工作台'].map(esc).join(' <b>/</b> ');$('pageSubtitle').textContent='按项目核对已加载快照与关注批次（按项目/仓库/稳定批次身份去重）';document.title='工作台 · 监控中心';$('repositoryLink').hidden=true;$('dateBox').hidden=true;$('branchBadge').hidden=true;$('repositoryControls').hidden=true;$('filters').hidden=true;$('notice').hidden=true;$('loading').hidden=true;$('footerMeta').textContent='';$('repositoryStatus').textContent='';}
+function applyWorkbenchRoute(route){leaveTriton('workbench');closeDetailContext();view='workbench';document.querySelectorAll('main > .export-notice').forEach(n=>n.remove());for(const id of ['ubs-view','ubs-repo-view','triton-view','project-task-view'])$(id).hidden=true;$('workbench-view').hidden=false;renderWorkbench();markNavActive(null);$('crumb').innerHTML=['监控中心','工作台'].map(esc).join(' <b>/</b> ');$('pageSubtitle').textContent='按项目核对已加载快照与关注批次（按项目/仓库/稳定批次身份去重）';document.title='工作台 · 监控中心';$('repositoryLink').hidden=true;$('dateBox').hidden=true;$('branchBadge').hidden=true;$('repositoryControls').hidden=true;$('filters').hidden=true;$('notice').hidden=true;$('loading').hidden=true;$('footerMeta').textContent='';$('repositoryStatus').textContent='';}
 function unavailableProjectTask(route,reason){
  applyWorkbenchRoute(route);view='unsupported';$('workbench-view').hidden=true;$('project-task-view').hidden=false;
  $('project-task-view').innerHTML=`<h2>${esc(route.project)} · ${esc(route.task)}</h2><p role="status">${esc(reason)}</p><a class="button" href="#projects/ubs/overview">返回总览</a>`;
@@ -94,7 +94,7 @@ function applyProjectRoute(route){
  let retiredFilters=[];
  if(q.repository&&typeof q.repository!=='string'){unavailableProjectTask(route,'不支持重复或无效的仓库条件。');return;}
  if(!['ubs','triton'].includes(route.project)){unavailableProjectTask(route,'未找到此项目的已接入视图。');return;}
- if(route.task==='method'){applyRoute({domain:'method'});return;}
+ if(route.task==='method'){applyRoute({domain:'ubs'});return;}
  if(route.project==='triton'){
   if(q.repository&&q.repository!=='github:triton-lang/triton-ascend'&&q.repository!=='all'){unavailableProjectTask(route,'未找到此项目中的仓库。');return;}
   if(!['overview','engineering','trends','records'].includes(route.task)||q.entity==='prs'){unavailableProjectTask(route,'当前项目未提供此任务视图；已提供趋势与批次综合视图。');return;}
@@ -145,7 +145,7 @@ function applyRoute(route){
   const prevRepo=currentRepository;
   document.querySelectorAll('main > .export-notice').forEach(n=>n.remove());
  const r=route&&route.domain?route:{domain:'ubs'};
- const domain=r.domain==='triton'||r.domain==='method'?r.domain:'ubs';
+ const domain=r.domain==='triton'?'triton':'ubs';
  const ubs=domain==='ubs',repo=ubs&&r.repo,quality=repo&&r.sub==='quality',cross=ubs&&!repo;
  tritonRecordsMode=domain==='triton'&&!!r.records;
  leaveTriton(domain);if(tritonRecordsMode&&window.TritonView?.deactivate)window.TritonView.deactivate();$('workbench-view').hidden=true;$('project-task-view').hidden=true;
@@ -153,7 +153,7 @@ function applyRoute(route){
  if(repo)currentRepository=r.repo;
   snapshot=repositorySnapshots[currentRepository]||null;
   if((detailPR||$('detail').open)&&(domain!=='ubs'||!repo||currentRepository!==detailRepo))closeDetailContext();if(!Router.keepPRPage(prevRepo,view,currentRepository))page=1;
- for(const id of ['ubs-view','ubs-repo-view','triton-view','method-view'])$(id).hidden=id!==(ubs?(repo?'ubs-repo-view':'ubs-view'):domain+'-view');
+ for(const id of ['ubs-view','ubs-repo-view','triton-view'])$(id).hidden=id!==(ubs?(repo?'ubs-repo-view':'ubs-view'):domain+'-view');
  document.querySelectorAll('.side-nav [data-nav]').forEach(a=>a.classList.toggle('active',false));markNavActive(domain==='triton'?'triton':'ubs');
  if(repo){$('repoMain').hidden=quality;$('quality').hidden=!quality;}
  $('repositoryControls').hidden=!repo;$('filters').hidden=!ubs;

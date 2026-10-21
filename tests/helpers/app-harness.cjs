@@ -9,7 +9,7 @@ function createApp({ fetch, setTimeout, clearTimeout } = {}) {
   function element(id) {
     if (!elements.has(id)) {
       const node = {
-        id, hidden: ['workbench-view', 'project-task-view', 'triton-view', 'method-view', 'ubs-repo-view'].includes(id),
+        id, hidden: ['workbench-view', 'project-task-view', 'triton-view', 'ubs-repo-view'].includes(id),
         innerHTML: '', textContent: '', value: '', title: '', open: false, children: [],
         close() { this.open = false; }, showModal() { this.open = true; },
         querySelectorAll() { return []; }, querySelector() { return null; },

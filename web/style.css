@@ -192,6 +192,9 @@ input[type=search]:focus{border-color:var(--accent)}
 .kpi small{color:var(--text-3);font-size:12px;display:block;line-height:1.6}
 .kpi-dark .kpi-label,.kpi-dark .kpi-value{color:var(--accent-strong)}
 .kpi-dark small,.kpi-dark .kpi-value em{color:var(--text-2)}
+.kpi-primary{border-color:var(--accent-strong)}
+.kpi-aux{display:flex;gap:var(--sp-4);font-size:13px;color:var(--text-2);margin:-4px 0 10px;font-family:var(--font-num);font-variant-numeric:tabular-nums}
+.coverage b{font-weight:600;color:var(--ink)}
 
 /* ---------- 12. Panels ---------- */
 .panel,.section{border:1px solid var(--line);background:var(--surface);border-radius:var(--r-card);overflow:hidden}

@@ -28,10 +28,16 @@
   }
 
   /* A finite number participates in sorting (including a legitimate 0);
-     null/undefined/non-finite is "unknown" and sorts last. */
+     null/undefined/non-finite is "unknown" and sorts last. ISO/date strings are
+     normalised to epoch milliseconds first (UAR-003), so start_at columns never
+     fall into the unknown bucket merely because they carry a timestamp string. */
   function numericValue(value) {
     if (typeof value === 'number') return Number.isFinite(value) ? value : null;
     if (value == null || value === '') return null;
+    if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}([T ]|$)/.test(value)) {
+      const t = Date.parse(value);
+      return Number.isFinite(t) ? t : null;
+    }
     const n = Number(value);
     return Number.isFinite(n) ? n : null;
   }
@@ -82,7 +88,11 @@
     return out;
   }
 
-  /* UBS: one batch record per (PR, batch) pair. */
+  /* UBS: one batch record per (PR, batch) pair. The public queue field reads the
+     trigger's actual queue evidence (trigger.queue_ms = waiting+blocked+buildable);
+     the top-level batch never carries queue_ms, so falling back to it is a no-op
+     that previously rendered every row "—" (UAR-004). author/sha/number are kept on
+     the record so the public search honors its declared fields (UAR-005). */
   function ubsBatchRecords(snapshot) {
     const repo = snapshot && snapshot.meta ? snapshot.meta.repository : '';
     const out = [];
@@ -98,9 +108,11 @@
           pr_state: pr.state || 'unknown',
           pr_created_at: pr.created_ms,
           title: pr.title || '',
+          author: pr.author || '',
+          sha: b.sha || '',
           status: b.status || 'unknown',
           duration_ms: b.e2e_ms,
-          queue_ms: b.queue_ms,
+          queue_ms: (b.trigger && b.trigger.queue_ms != null) ? b.trigger.queue_ms : (b.queue_ms != null ? b.queue_ms : null),
           start_at: b.request_ms,
           end_at: b.end_ms,
           source_url: b.url || '',

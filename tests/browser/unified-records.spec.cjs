@@ -39,20 +39,21 @@ test('changing page length resets to page 1', async ({ page }) => {
   await expect(page.locator('#pageInfo')).toContainText('1 /');
 });
 
-test('records default to batches and the entity toggle switches back to PR', async ({ page }) => {
+test('records default to PR and the entity toggle switches to execution batch', async ({ page }) => {
   await readyRepo(page);
-  // Default entity is batch (UDR-018).
-  await expect(page.locator('#entity')).toHaveValue('batches');
-  await expect(page.locator('#recordTitle')).toHaveText('批次效率明细');
-  await expect(page.locator('#prRows tr[data-batch]').first()).toBeVisible();
-  // Toggle to PR: batch rows disappear, PR rows appear, count label flips.
-  await page.locator('#entity').selectOption('prs');
+  // Default entity is one PR per row (UAR-001).
+  await expect(page.locator('#entity')).toHaveValue('prs');
   await expect(page.locator('#recordTitle')).toHaveText('PR 效率明细');
-  await expect(page.locator('#prRows tr[data-batch]')).toHaveCount(0);
   await expect(page.locator('#prRows tr[data-pr]').first()).toBeVisible();
-  // Back to batches.
+  await expect(page.locator('#prRows tr[data-batch]')).toHaveCount(0);
+  // Toggle to the explicit expert batch view: batch rows appear, PR rows disappear.
   await page.locator('#entity').selectOption('batches');
+  await expect(page.locator('#recordTitle')).toHaveText('执行批次明细');
+  await expect(page.locator('#prRows tr[data-pr]')).toHaveCount(0);
   await expect(page.locator('#prRows tr[data-batch]').first()).toBeVisible();
+  // Back to PR.
+  await page.locator('#entity').selectOption('prs');
+  await expect(page.locator('#prRows tr[data-pr]').first()).toBeVisible();
 });
 
 // UDR-018-TC01: Triton also uses the common batch records task — the same

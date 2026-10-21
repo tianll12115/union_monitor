@@ -33,7 +33,7 @@ test('unsupported project task and foreign repository are explicit, without borr
 
 test('unknown project task and unsupported all-repository task never fall back to a different scope', () => {
   const app = createApp();
-  for (const hash of ['#projects/triton/metrics', '#projects/ubs/quality?repository=all', '#projects/ubs/overview?repository=ubs-engine&repository=ubs-comm']) {
+  for (const hash of ['#projects/triton/metrics', '#projects/ubs/overview?repository=ubs-engine&repository=ubs-comm']) {
     app.run(`navigate(${JSON.stringify(hash)})`);
     assert.equal(app.element('ubs-view').hidden, true);
     assert.equal(app.element('ubs-repo-view').hidden, true);
@@ -140,6 +140,18 @@ test('EC-012: the retired method task collapses to the UBS overview and its temp
   assert.equal(app.element('triton-view').hidden, true);
   const html = fs.readFileSync(path.join(__dirname, '../web/index.html'), 'utf8');
   assert.doesNotMatch(html, /id="method-view"/, 'method-view template removed from the shell');
+});
+
+test('EC-012: the retired quality/collection tasks collapse to overview or repo engineering', () => {
+  const app = createApp();
+  app.run("navigate('#projects/ubs/quality')");
+  assert.equal(app.element('ubs-view').hidden, false, 'quality without a repo opens the overview');
+  assert.equal(app.context.location.hash, '#projects/ubs/overview');
+  app.run("navigate('#projects/ubs/collection')");
+  assert.equal(app.element('ubs-view').hidden, false, 'collection collapses to the overview');
+  assert.equal(app.context.location.hash, '#projects/ubs/overview');
+  const html = fs.readFileSync(path.join(__dirname, '../web/index.html'), 'utf8');
+  assert.doesNotMatch(html, /id="quality"/, 'quality template removed from the shell');
 });
 
 test('EC-003: triton records collapse into the merged engineering page (one URL, charts + list)', () => {

@@ -163,20 +163,12 @@ test('selected-batch task export binds the selected batch tasks, never the whole
   await expect(dialog.locator('.export-notice')).toContainText('条数：2');
 });
 
-test('deduplicated-concern export collapses duplicate reasons by batch identity', async ({ page }) => {
+test('EC-012: the retired quality task collapses to the UBS overview', async ({ page }) => {
   await serveUbs(page, fixture());
   await page.goto('./#projects/ubs/quality');
-  await expect(page.locator('#qualityContent .quality-row')).toHaveCount(2);
-  const downloadEvent = page.waitForEvent('download');
-  await page.locator('#exportQuality').click();
-  const csv = await readDownload(await downloadEvent);
-  const lines = csv.replace(/^\uFEFF/, '').trim().split(/\r?\n/);
-  expect(lines[0]).toMatch(/^"仓库","PR","批次","原因"/);
-  expect(lines.length - 1).toBe(1);
-  expect(lines[1]).toContain('创建请求与 PR 关联未知');
-  expect(lines[1]).toContain('2 个批次非有效样本');
-  await expect(page.locator('.export-notice')).toContainText('实体：去重关注');
-  await expect(page.locator('.export-notice')).toContainText('条数：1');
+  await expect.poll(() => page.evaluate(() => location.hash)).toBe('#projects/ubs/overview');
+  await expect(page.locator('#ubs-view')).toBeVisible();
+  await expect(page.locator('#qualityContent')).toHaveCount(0);
 });
 
 // UDR-017-TC02: Triton records rows open the same #detail skeleton as UBS

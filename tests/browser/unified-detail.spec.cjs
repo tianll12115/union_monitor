@@ -225,14 +225,18 @@ async function serveTriton(page, payload) {
     route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(payload) }));
 }
 
-test('triton records rows open the unified detail and closing returns to the list', async ({ page }) => {
+test('triton list rows open the unified detail and closing returns to the merged list', async ({ page }) => {
   await serveTriton(page, tritonFixture());
   await page.goto('./#projects/triton/records');
   const dialog = page.locator('#detail');
-  await expect(page.locator('#triton-view tr[data-batch]').first()).toBeVisible();
+  // EC-003: the records URL collapses into the merged engineering page with a
+  // single records list (the attention list); success batches appear once the
+  // full list is expanded.
+  await expect(page.locator('#triton-view [data-role="attention"]')).toBeVisible();
+  await page.locator('#triton-view [data-role="showAll"]').click();
 
   // Known PR batch → identity, evidence and GitHub Actions evidence path.
-  await page.locator('#triton-view tr[data-batch="run-1"]').click();
+  await page.locator('#triton-view .row[data-batch-id="run-1"] .row-main').click();
   await expect(dialog).toBeVisible();
   await expect(dialog.locator('.detail-title')).toContainText('PR #100');
   await expect(dialog.locator('[data-role="evidence"]')).toContainText('Triton 门禁批次');
@@ -240,14 +244,14 @@ test('triton records rows open the unified detail and closing returns to the lis
   await expect(dialog.locator('.wf-name a[target="_blank"]').first()).toBeVisible();
   await page.locator('#closeDetail').click();
   await expect(dialog).toBeHidden();
-  await expect(page.locator('#triton-view tr[data-batch]').first()).toBeVisible();
+  await expect(page.locator('#triton-view .row[data-batch-id="run-1"]')).toBeVisible();
 
   // Unknown-PR batch → still locatable, exclusion reason surfaced.
-  await page.locator('#triton-view tr[data-batch="run-2"]').click();
+  await page.locator('#triton-view .row[data-batch-id="run-2"] .row-main').click();
   await expect(dialog).toBeVisible();
   await expect(dialog.locator('.detail-title')).toContainText('未知 PR 身份');
   await expect(dialog.locator('.batch-issues')).toContainText('E2E 排除');
   await page.locator('#closeDetail').click();
   await expect(dialog).toBeHidden();
-  await expect(page.locator('#triton-view tr[data-batch="run-2"]')).toBeVisible();
+  await expect(page.locator('#triton-view .row[data-batch-id="run-2"]')).toBeVisible();
 });

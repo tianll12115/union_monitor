@@ -318,7 +318,7 @@
       const W = npuChartSvg.clientWidth || 900, H = 370, m = { l: 50, r: 22, t: 18, b: 42 };
       npuChartSvg.setAttribute('viewBox', `0 0 ${W} ${H}`);
       const range = Math.max(viewEnd - viewStart, 1);
-      const stats = core.chartStats(rows.map(b => ({ ...b, duration_seconds: b.npu_queue_seconds })), 'npu');
+      const stats = core.chartStats(rows, 'npu');
       const max = Math.max(stats.max * 1.12, 60);
       const x = t => m.l + (+new Date(t) - viewStart) / range * (W - m.l - m.r);
       const y = v => H - m.b - v / max * (H - m.t - m.b);

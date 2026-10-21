@@ -8,9 +8,15 @@ const validDuration = value => typeof value === 'number' && Number.isFinite(valu
 // identity/qualification fields retain the established numerical rules.
 const e2eIdentityKnown = row => !(row && Object.prototype.hasOwnProperty.call(row, 'pr') && row.pr == null)
   && !(row && row.e2e_sample_eligible === false);
+/* EC-005: E2E and NPU sample qualification are independent. E2E requires a
+   known PR identity and a finite non-negative E2E duration; NPU requires the
+   NPU evidence itself (npu_queue_seconds) and must not be erased just because
+   the E2E duration is missing. */
 const sampleEligible = (row, metric = 'e2e') => !!row
-  && (row.status === 'success' || row.status === 'failure') && validDuration(row.duration_seconds)
-  && (metric === 'npu' ? !row.npu_data_missing : e2eIdentityKnown(row));
+  && (row.status === 'success' || row.status === 'failure')
+  && (metric === 'npu'
+    ? (!row.npu_data_missing && validDuration(row.npu_queue_seconds))
+    : (e2eIdentityKnown(row) && validDuration(row.duration_seconds)));
 
 (function (root, factory) {
   const api = factory();
@@ -64,11 +70,12 @@ const sampleEligible = (row, metric = 'e2e') => !!row
     return lower === upper ? sorted[lower] : sorted[lower] + (sorted[upper] - sorted[lower]) * (position - lower);
   }
 
-  /* REQ-017: chart/summary statistics count only valid durations. */
+  /* REQ-017: chart/summary statistics count only valid durations. EC-005: the
+     NPU chart reads the NPU value (npu_queue_seconds), never the E2E duration. */
   function chartStats(rows, metric = 'e2e') {
-    const observed = rows.map(row => row.duration_seconds).filter(validDuration);
-    const completed = rows.filter(row => sampleEligible(row, metric))
-      .map(row => row.duration_seconds);
+    const valueOf = row => metric === 'npu' ? row.npu_queue_seconds : row.duration_seconds;
+    const observed = rows.map(valueOf).filter(validDuration);
+    const completed = rows.filter(row => sampleEligible(row, metric)).map(valueOf);
     return {
       max: observed.length ? Math.max(...observed) : 300,
       p90: percentile(completed, 0.9),

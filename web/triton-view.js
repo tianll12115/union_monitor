@@ -170,6 +170,7 @@
   <div class="tools">
     <input type="search" data-role="search" placeholder="搜索 PR 编号或标题" aria-label="搜索关注列表">
     <button type="button" class="chip" data-role="showAll">查看全部批次</button>
+    <button type="button" class="chip" data-role="unknownTime">时间未知</button>
   </div>
   <div class="attention" data-role="attention"></div>
 </section>
@@ -200,6 +201,7 @@
     const attentionEl = el('[data-role="attention"]');
     const searchInput = el('[data-role="search"]');
     const showAllBtn = el('[data-role="showAll"]');
+    const unknownTimeBtn = el('[data-role="unknownTime"]');
     const exportBtn = el('[data-role="exportBatches"]');
     const kE2eP90 = el('[data-role="kE2eP90"]'), kE2eP50 = el('[data-role="kE2eP50"]'), kE2eN = el('[data-role="kE2eN"]');
     const kNpuP90 = el('[data-role="kNpuP90"]'), kNpuP50 = el('[data-role="kNpuP50"]'), kNpuN = el('[data-role="kNpuN"]');
@@ -207,7 +209,7 @@
     const selectedBranches = new Set(prevState ? prevState.branches : []);
     let filter = prevState && prevState.filter ? prevState.filter : 'all';
     let npuFilter = prevState && prevState.npuFilter ? prevState.npuFilter : 'all';
-    let showAll = prevState ? !!prevState.showAll : false, tipPinned = false, tipTimer = 0, navDrag = null, lastPinnedMark = null;
+    let showAll = prevState ? !!prevState.showAll : false, unknownTime = prevState ? !!prevState.unknownTime : false, tipPinned = false, tipTimer = 0, navDrag = null, lastPinnedMark = null;
     let viewStart, viewEnd;
     const recovered = prevState ? core.recoverWindow(prevState.start, prevState.end, domainStart, domainEnd) : null;
     if (recovered) {
@@ -221,6 +223,10 @@
     const pageSet = () => core.selectWindow(branchPool(), viewStart, viewEnd);
     const currentSummary = () => core.dashboardStats(pageSet());
     const searchPool = () => pageSet().filter(b => core.matchesQuery(b, searchInput.value));
+    /* EC-008-AC03: 起点未知但有来源身份（action_url 或 workflow）的批次不进入时间选区S，
+       但可在同页"时间未知(n)"入口找到；不计入选区分位数，详情与导出标注时间未知。 */
+    const unknownTimePool = () => D.batches.filter(b => !b.start_at && (b.action_url || (b.workflows && b.workflows.length)));
+    const exportPool = () => unknownTime ? unknownTimePool() : searchPool();
     /* REQ-035 AC02: 页脚统计与摘要条共用同一 pageSet（G=分支×时间窗），标注当前筛选范围；采集时间来自 Triton 快照。 */
     const footerText = () => {
       const s = currentSummary();
@@ -541,12 +547,26 @@
 
     function renderRows() {
       const summary = currentSummary();
+      const unknownPool = unknownTimePool();
+      unknownTimeBtn.textContent = `时间未知${unknownPool.length ? `(${unknownPool.length})` : ''}`;
+      unknownTimeBtn.classList.toggle('active', unknownTime);
       showAllBtn.textContent = showAll ? '返回关注列表' : '查看全部批次';
       /* REQ-028 AC03: the innerHTML swaps below destroy the focused row;
          remember it so focus can return to the same row's toggle when it
          survives, or move to the search box when the row is gone. */
       const activeRow = attentionEl.contains(document.activeElement) ? document.activeElement.closest('.row') : null;
       const activeRowId = activeRow ? activeRow.id : null;
+      /* EC-008-AC03: the unknown-start diagnostic set is reachable on the same page
+         without a data-quality page; it never feeds the selection quantiles and its
+         rows still open the unified detail (start evidence marked unknown there). */
+      if (unknownTime) {
+        const rows = unknownPool.slice().sort((a, b) => +new Date(b.end_at || D.window_end) - +new Date(a.end_at || D.window_end));
+        priorityNoteEl.textContent = `${rows.length} 个批次起点未知但有来源身份，不计入选区分位数；详情与导出标注时间未知。`;
+        attentionEl.innerHTML = `<div class="group-title">时间未知<span class="count">${rows.length}</span></div><div class="rows">${rows.length ? rows.map(b => rowHtml(b, 'unknown', ['起点未知'])).join('') : '<div class="empty">当前没有起点未知且带来源身份的批次</div>'}</div>`;
+        bindRowClicks();
+        restoreListFocus(activeRowId);
+        return;
+      }
       if (!summary.batches) {
         priorityNoteEl.textContent = '当前分支与时间范围内没有批次。';
         attentionEl.innerHTML = '<div class="empty">当前合入分支与时间范围内没有批次，请调整分支筛选或扩大时间范围。</div>';
@@ -569,6 +589,13 @@
       if (!showAll) for (const batch of pool) if ((batch.missing || []).length) addEntry(batch, '证据缺口');
       priorityNoteEl.textContent = core.attentionNote(summary.valid);
       attentionEl.innerHTML = `<div class="group-title">${showAll ? '全部批次' : '关注批次'}<span class="count">${entries.size}</span></div><div class="rows">${entries.size ? [...entries.values()].map(entry => rowHtml(entry.batch, showAll ? 'all' : 'priority', [...entry.reasons])).join('') : '<div class="empty">当前没有匹配批次</div>'}</div>`;
+      bindRowClicks();
+      restoreListFocus(activeRowId);
+    }
+
+    /* REQ-028 AC01/AC02: every listed row opens the unified detail; a link inside
+       a row navigates without also opening the detail. */
+    function bindRowClicks() {
       all('.row').forEach(row => {
         const main = row.querySelector('.row-main');
         main.onclick = e => {
@@ -578,7 +605,6 @@
           else setRowOpen(row, !row.classList.contains('open'));
         };
       });
-      restoreListFocus(activeRowId);
     }
 
     /* REQ-028 AC01: aria-expanded always mirrors the visible open state. */
@@ -619,13 +645,13 @@
       }
       notice.textContent = '正在保存 CSV…';
       try {
-        const rows = [csvFields, ...searchPool().map(b => csvFields.map(key =>
-          key === 'missing' ? (b.missing || []).join('; ') : key === 'approximate' ? (b.approximate ? 'True' : 'False') : b[key] ?? ''))];
+        const rows = [csvFields, ...exportPool().map(b => csvFields.map(key =>
+          key === 'missing' ? (b.missing || []).join('; ') : key === 'approximate' ? (b.approximate ? 'True' : 'False') : key === 'start_at' ? (b.start_at || '时间未知') : b[key] ?? ''))];
         const file = await root.Metrics.saveCsv(rows, 'triton-batches.csv');
         const qualification = { schema_version: 1, metric: 'triton_commit_attempt_e2e', collected_at: D.collected_at,
           window_start: D.window_start, window_end: D.window_end,
           analysis_scope: { start_at: new Date(viewStart).toISOString(), end_at: new Date(viewEnd).toISOString(), branches: [...selectedBranches], query: searchInput.value },
-          batches: searchPool().map(b => ({ id: b.id, pr: b.pr ?? null,
+          batches: exportPool().map(b => ({ id: b.id, pr: b.pr ?? null,
             workflow_attempts: (b.workflows || []).map(w => ({ run_id: w.id, attempt: w.attempt || 1 })),
             e2e_sample_eligible: core.sampleEligible(b), e2e_exclusion_reason: b.e2e_exclusion_reason || (b.pr == null ? 'unresolved_pr_batch_identity' : core.sampleEligible(b) ? null : 'non_sample_result') })) };
         const metaUrl = root.URL.createObjectURL(new root.Blob([JSON.stringify(qualification, null, 2)], {type: 'application/json'}));
@@ -719,7 +745,8 @@
     };
     el('[data-role="clearBranches"]').onclick = () => { selectedBranches.clear(); renderBranchOptions(); updateGlobal(); };
     searchInput.oninput = renderRows;
-    showAllBtn.onclick = () => { showAll = !showAll; renderRows(); };
+    showAllBtn.onclick = () => { showAll = !showAll; unknownTime = false; renderRows(); };
+    unknownTimeBtn.onclick = () => { unknownTime = !unknownTime; showAll = false; renderRows(); };
     exportBtn.onclick = exportBatches;
     const onResize = () => redrawAll();
     window.addEventListener('resize', onResize);
@@ -746,7 +773,7 @@
         document.removeEventListener('click', onDocClick);
       },
       state() {
-        return { branches: [...selectedBranches], search: searchInput.value, filter, npuFilter, showAll, start: viewStart, end: viewEnd };
+        return { branches: [...selectedBranches], search: searchInput.value, filter, npuFilter, showAll, unknownTime, start: viewStart, end: viewEnd };
       },
       footerText,
     };

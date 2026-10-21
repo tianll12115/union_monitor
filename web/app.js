@@ -85,7 +85,7 @@ function renderSideNav(){const nav=$('sideTasks');if(!nav)return;const communiti
 function applyWorkbenchRoute(route){leaveTriton('workbench');closeDetailContext();view='workbench';document.querySelectorAll('main > .export-notice').forEach(n=>n.remove());for(const id of ['ubs-view','ubs-repo-view','triton-view','method-view','project-task-view'])$(id).hidden=true;$('workbench-view').hidden=false;renderWorkbench();markNavActive(null);$('crumb').innerHTML=['监控中心','工作台'].map(esc).join(' <b>/</b> ');$('pageSubtitle').textContent='按项目核对已加载快照与关注批次（按项目/仓库/稳定批次身份去重）';document.title='工作台 · 监控中心';$('repositoryLink').hidden=true;$('dateBox').hidden=true;$('branchBadge').hidden=true;$('repositoryControls').hidden=true;$('filters').hidden=true;$('notice').hidden=true;$('loading').hidden=true;$('footerMeta').textContent='';$('repositoryStatus').textContent='';}
 function unavailableProjectTask(route,reason){
  applyWorkbenchRoute(route);view='unsupported';$('workbench-view').hidden=true;$('project-task-view').hidden=false;
- $('project-task-view').innerHTML=`<h2>${esc(route.project)} · ${esc(route.task)}</h2><p role="status">${esc(reason)}</p><a class="button" href="#workbench">返回工作台</a>`;
+ $('project-task-view').innerHTML=`<h2>${esc(route.project)} · ${esc(route.task)}</h2><p role="status">${esc(reason)}</p><a class="button" href="#projects/ubs/overview">返回总览</a>`;
  markNavActive(route.project||null);
  $('crumb').textContent='监控中心 / '+route.project+' / '+route.task;document.title=route.project+' · '+route.task+' · 未提供';$('pageSubtitle').textContent=reason;
 }

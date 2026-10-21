@@ -1,48 +1,56 @@
 const { test, expect } = require('@playwright/test');
 
-// UDR-015: one catalog-driven fixed-task navigation (not per-community menus).
-// The project selector and fixed tasks come from the catalog; switching projects
-// re-scopes task links and isolates per-project conditions; an unsupported task
-// explains the reason instead of faking a view or KPI.
+// EC-001/EC-009: two-community sidebar navigation (UBSCore overview, Triton
+// engineering). There is no project selector and no fixed seven-task bar; the
+// retired #workbench collapses to the UBS overview instead of opening a deck.
 
-async function readyWorkbench(page) {
-  await page.goto('./#workbench');
-  await expect(page.locator('#workbench-view')).toBeVisible();
-  await expect(page.locator('#sideProjectSelector option')).toHaveCount(2);
+async function readyOverview(page) {
+  await page.goto('./#projects/ubs/overview');
+  await expect(page.locator('#sideTasks')).toBeVisible();
 }
 
-test('fixed tasks come from the catalog, with no per-community top-level menus', async ({ page }) => {
-  await readyWorkbench(page);
-  const options = await page.locator('#sideProjectSelector option').allTextContents();
-  expect(options).toEqual(['openEuler UBS', 'Triton-Ascend']);
-  const navText = await page.locator('#sideTasks').innerText();
-  for (const label of ['项目概览', '趋势与任务', 'PR 与批次', '数据质量', '数据与采集', '指标说明']) {
-    expect(navText).toContain(label);
-  }
-  await expect(page.locator('.nav-group', { hasText: 'openEuler UBS' })).toHaveCount(0);
-  await expect(page.locator('.nav-group', { hasText: 'Triton-Ascend' })).toHaveCount(0);
+test('the sidebar shows exactly two community entries and no workbench or project selector', async ({ page }) => {
+  await readyOverview(page);
+  await expect(page.locator('#sideTasks a')).toHaveCount(2);
+  await expect(page.locator('#sideTasks')).toContainText('UBSCore');
+  await expect(page.locator('#sideTasks')).toContainText('Triton-Ascend');
+  await expect(page.locator('#sideProjectSelector')).toHaveCount(0);
+  await expect(page.locator('a[data-nav="workbench"]')).toHaveCount(0);
 });
 
-test('selecting a project re-scopes the fixed-task links and navigates', async ({ page }) => {
-  await readyWorkbench(page);
-  await page.locator('#sideProjectSelector').selectOption('triton');
-  await expect(page.locator('#triton-view')).toBeVisible();
-  await expect(page.locator('#sideTasks a[data-task="records"]'))
-    .toHaveAttribute('href', '#projects/triton/records');
-  await page.locator('#sideTasks a[data-task="trends"]').click();
-  await expect(page.locator('#triton-view')).toBeVisible();
-  await expect(page.locator('#sideTasks a[data-task="trends"]')).toHaveClass(/active/);
+test('the two community links carry their canonical entries and tooltips', async ({ page }) => {
+  await readyOverview(page);
+  await expect(page.locator('#sideTasks a[data-nav="ubs"]'))
+    .toHaveAttribute('href', '#projects/ubs/overview');
+  await expect(page.locator('#sideTasks a[data-nav="ubs"]'))
+    .toHaveAttribute('title', 'UBSCore');
+  await expect(page.locator('#sideTasks a[data-nav="triton"]'))
+    .toHaveAttribute('href', '#projects/triton/engineering');
+  await expect(page.locator('#sideTasks a[data-nav="triton"]'))
+    .toHaveAttribute('title', 'Triton-Ascend');
 });
 
-test('switching projects does not leak UBS conditions into Triton and restores them back', async ({ page }) => {
-  await page.goto('./#ubs/repo/ubs-engine');
-  await expect(page.locator('#prRows')).not.toBeEmpty();
-  await page.locator('#state').selectOption('merged');
-  await page.locator('#sideProjectSelector').selectOption('triton');
+test('clicking the Triton community opens the merged engineering view and marks it active', async ({ page }) => {
+  await readyOverview(page);
+  await page.locator('#sideTasks a[data-nav="triton"]').click();
   await expect(page.locator('#triton-view')).toBeVisible();
-  await expect(page.locator('#state')).toBeHidden();
-  await page.locator('#sideProjectSelector').selectOption('ubs');
-  await expect(page.locator('#state')).toHaveValue('merged');
+  await expect(page.locator('#ubs-view')).toBeHidden();
+  await expect(page.locator('#sideTasks a[data-nav="triton"]')).toHaveClass(/active/);
+});
+
+test('clicking UBSCore returns to the overview and marks it active', async ({ page }) => {
+  await page.goto('./#projects/triton/engineering');
+  await expect(page.locator('#triton-view')).toBeVisible();
+  await page.locator('#sideTasks a[data-nav="ubs"]').click();
+  await expect(page.locator('#ubs-view')).toBeVisible();
+  await expect(page.locator('#sideTasks a[data-nav="ubs"]')).toHaveClass(/active/);
+});
+
+test('the retired workbench collapses to the UBS overview', async ({ page }) => {
+  await page.goto('./#workbench');
+  await expect(page).toHaveURL(/#projects\/ubs\/overview/);
+  await expect(page.locator('#workbench-view')).toBeHidden();
+  await expect(page.locator('#ubs-view')).toBeVisible();
 });
 
 test('an unsupported task explains the reason instead of faking a view', async ({ page }) => {

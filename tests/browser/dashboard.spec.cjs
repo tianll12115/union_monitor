@@ -17,16 +17,16 @@ test('published pages initialise without script exceptions',async({page})=>{
   expect(errors).toEqual([]);
 });
 
-test('project links enter a project and legacy navigation clears the workbench',async({page})=>{
-  await ready(page);
-  await page.getByRole('link',{name:'工作台',exact:true}).click();
-  await expect(page.locator('#workbench-view')).toBeVisible();
-  await page.locator('a[href="#projects/triton/overview"]').click();
+test('community links enter a project and the retired workbench collapses to the overview',async({page})=>{
+  await ready(page,'#ubs');
+  await page.locator('a[data-nav="triton"]').click();
   await expect(page.locator('#triton-view')).toBeVisible();
-  await expect(page.locator('#workbench-view')).toBeHidden();
-  await page.getByRole('link',{name:'工作台',exact:true}).click();
-  await page.locator('#sideProjectSelector').selectOption('triton');
-  await expect(page.locator('#triton-view')).toBeVisible();
+  await expect(page.locator('#ubs-view')).toBeHidden();
+  await page.locator('a[data-nav="ubs"]').click();
+  await expect(page.locator('#ubs-view')).toBeVisible();
+  await page.goto('./#workbench');
+  await expect(page).toHaveURL(/#projects\/ubs\/overview/);
+  await expect(page.locator('#ubs-view')).toBeVisible();
   await expect(page.locator('#workbench-view')).toBeHidden();
 });
 
@@ -60,17 +60,17 @@ test('route changes close bound PR details and browser history restores the acti
   await page.locator('#exceptionRows .exception-row').first().click();
   await expect(page.locator('#detail')).toBeVisible();
   // Hash navigation while the native modal is open exercises owned-resource cleanup.
-  await page.evaluate(()=>{location.hash='#workbench';});
+  await page.evaluate(()=>{location.hash='#projects/triton/engineering';});
   await expect(page.locator('#detail')).toBeHidden();
-  await expect(page.locator('#workbench-view')).toBeVisible();
-  await page.locator('#sideProjectSelector').selectOption('triton');
   await expect(page.locator('#triton-view')).toBeVisible();
+  await page.locator('a[data-nav="ubs"]').click();
+  await expect(page.locator('#ubs-view')).toBeVisible();
   await page.goBack();
-  await expect(page.locator('#workbench-view')).toBeVisible();
-  await expect(page.locator('#triton-view')).toBeHidden();
-  await page.goForward();
   await expect(page.locator('#triton-view')).toBeVisible();
-  await expect(page.locator('#workbench-view')).toBeHidden();
+  await expect(page.locator('#ubs-view')).toBeHidden();
+  await page.goForward();
+  await expect(page.locator('#ubs-view')).toBeVisible();
+  await expect(page.locator('#triton-view')).toBeHidden();
 });
 
 test('failed snapshot reload keeps valid data and restores the control',async({page})=>{

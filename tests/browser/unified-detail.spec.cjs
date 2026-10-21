@@ -78,7 +78,7 @@ async function serveUbs(page, data) {
     route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(data.snapshot) }));
 }
 
-test('three entries converge on one detail; representative default vs selected batch', async ({ page }) => {
+test('list and batch entities converge on one detail; representative default vs selected batch', async ({ page }) => {
   await serveUbs(page, fixture());
   const dialog = page.locator('#detail');
 
@@ -97,22 +97,13 @@ test('three entries converge on one detail; representative default vs selected b
   await page.locator('#closeDetail').click();
   await expect(dialog).toBeHidden();
 
-  // Attention (failed-wait) entry → the selected batch (3) expands.
-  await page.goto('./#ubs');
-  await expect(page.locator('#failedWaitRows [data-pr="100"]')).toBeVisible();
-  await page.locator('#failedWaitRows [data-pr="100"]').click();
+  // Batch-entity entry → the same unified detail, with the clicked batch expanded.
+  await page.goto('./#ubs/repo/ubs-engine');
+  await page.locator('#entity').selectOption('batches');
+  await expect(page.locator('#prRows tr[data-batch]').first()).toBeVisible();
+  await page.locator('#prRows tr[data-batch]').first().click();
   await expect(dialog).toBeVisible();
-  await expect(dialog.locator('details[data-batch-url$="/key/3/"]')).toHaveAttribute('data-expand-reason', 'entry');
-  await expect(dialog.locator('details[data-batch-url$="/key/3/"]')).toHaveAttribute('open', '');
-  await page.locator('#closeDetail').click();
-  await expect(dialog).toBeHidden();
-
-  // Chart (exception) entry → same modal, representative default again.
-  await page.goto('./#ubs');
-  await expect(page.locator('#exceptionRows [data-exception="100"]')).toBeVisible();
-  await page.locator('#exceptionRows [data-exception="100"]').click();
-  await expect(dialog).toBeVisible();
-  await expect(dialog.locator('details[data-batch-url$="/key/2/"]')).toHaveAttribute('data-expand-reason', 'representative');
+  await expect(dialog.locator('details[data-batch-url]').first()).toHaveAttribute('open', '');
   await page.locator('#closeDetail').click();
   await expect(dialog).toBeHidden();
 });

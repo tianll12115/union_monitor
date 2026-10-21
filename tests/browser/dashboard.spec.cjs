@@ -56,8 +56,9 @@ test('CSV download contains the selected records, independent of collapse',async
 });
 
 test('route changes close bound PR details and browser history restores the active view',async({page})=>{
-  await ready(page,'#ubs');
-  await page.locator('#exceptionRows .exception-row').first().click();
+  await ready(page,'#ubs/repo/ubs-engine');
+  await expect(page.locator('#prRows tr[data-pr]').first()).toBeVisible();
+  await page.locator('#prRows tr[data-pr]').first().click();
   await expect(page.locator('#detail')).toBeVisible();
   // Hash navigation while the native modal is open exercises owned-resource cleanup.
   await page.evaluate(()=>{location.hash='#projects/triton/engineering';});

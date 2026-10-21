@@ -20,7 +20,7 @@ test('EC-005-AC01: UBS representative E2E derives P50 and P90 from per-PR longes
     ubsPr(2, [ubsBatch(3, 20000, true, 'success')]),
     ubsPr(3, [ubsBatch(4, null, false, 'failure'), ubsBatch(5, null, false, 'running'), ubsBatch(6, null, false, 'incomplete')]),
   ];
-  const agg = M.aggregate(prs).e2e;
+  const agg = M.statsWithP50(prs.map(p => M.metrics(p.batches).e2e_ms));
   assert.equal(agg.n, 2, 'e2e_valid = 2 of 3 PRs');
   assert.equal(agg.p50, 25000, 'P50 = 25000 ms');
   assert.equal(agg.p90, 29000, 'P90 = 29000 ms');

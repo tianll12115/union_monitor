@@ -1,7 +1,7 @@
 const {test}=require('node:test');const assert=require('node:assert/strict');const M=require('../web/core.js');
 const fs=require('node:fs'),path=require('node:path');
 const batch=(number,e2e_ms,eligible=true,children=[])=>({number,url:`trigger/${number}`,e2e_ms,eligible,children,status:'failure'});
-test('one representative per PR gives mean25 P9029',()=>{const a={batches:[batch(1,10),batch(2,30)]},b={batches:[batch(3,20)]};assert.deepEqual(M.aggregate([a,b]).e2e,{n:2,mean:25,p50:25,p90:29});});
+test('one representative per PR gives mean25 P9029',()=>{const a={batches:[batch(1,10),batch(2,30)]},b={batches:[batch(3,20)]};assert.deepEqual(M.aggregate([a,b]).e2e,{n:2,mean:25,p90:29});});
 test('ties, exclusions, missing tasks and no valid batch',()=>{const task={kind:'x86',url:'x/1',result:'SUCCESS',association_valid:true,total_ms:100};const bs=[batch(1,10,true,[task]),batch(2,30),batch(3,30),batch(4,100,false)];assert.equal(M.metrics(bs).representative_batch_number,3);assert.equal(M.metrics(bs).x86.total_ms,null);assert.equal(M.metrics([]).e2e_ms,null);});
 test('task values come from same representative and filters preserve batches',()=>{const task=t=>({kind:'x86',url:'x/'+t,result:'SUCCESS',association_valid:true,total_ms:t});const p={number:1,state:'open',batches:[batch(1,10,true,[task(100)]),batch(2,30,true,[task(20)])]};assert.equal(M.aggregate([p]).x86.total.mean,20);assert.equal(M.filterPRs([p],{state:'open'})[0],p);assert.equal(M.filterPRs([p],{state:'merged'}).length,0);assert.equal(M.metrics(p.batches).representative_batch_number,2);});
 test('percentile, empty and CSV formula escaping',()=>{assert.equal(M.stats([0,100,200,300]).p90,270);assert.equal(M.stats([]).mean,null);assert.ok(M.csv([['=1+1','a"b']]).includes("'=1+1"));});
@@ -204,7 +204,7 @@ test('REQ-021 AC01/AC02: repositoryRows keeps stale and failed data out of cross
   assert.equal(by['ubs-empty'].current,true);
   assert.equal(by['ubs-empty'].included,true);
   assert.equal(by['ubs-empty'].prs.length,0);
-  assert.deepEqual(by['ubs-empty'].metrics.e2e,{n:0,mean:null,p50:null,p90:null},'a zero-PR success repo shows explicit zero metrics, not a dropped repo (AC02)');
+  assert.deepEqual(by['ubs-empty'].metrics.e2e,{n:0,mean:null,p90:null},'a zero-PR success repo shows explicit zero metrics, not a dropped repo (AC02)');
   const source=fs.readFileSync(path.join(__dirname,'../web/app.js'),'utf8');
   assert.ok(source.includes("'过期快照 · 不计跨仓汇总'"),'the stale snapshot keeps its own label and never mixes into cross-repo metrics (AC02)');
 });

@@ -142,6 +142,14 @@ test('EC-012: the retired method task collapses to the UBS overview and its temp
   assert.doesNotMatch(html, /id="method-view"/, 'method-view template removed from the shell');
 });
 
+test('EC-003: triton records collapse into the merged engineering page (one URL, charts + list)', () => {
+  const app = createApp();
+  app.run("navigate('#projects/triton/records')");
+  assert.equal(app.context.location.hash, '#projects/triton/engineering', 'records URL canonicalizes to engineering');
+  assert.equal(app.element('triton-view').hidden, false);
+  assert.equal(app.element('ubs-view').hidden, true);
+});
+
 test('a repository reread failure keeps its previous validated snapshot available for detail', async () => {
   const app = createApp({ fetch: async url => ({ ok: true, json: async () => {
     if (url.includes('repos/')) throw Error('repository body failed');

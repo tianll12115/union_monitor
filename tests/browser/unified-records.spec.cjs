@@ -56,22 +56,22 @@ test('records default to PR and the entity toggle switches to execution batch', 
   await expect(page.locator('#prRows tr[data-pr]').first()).toBeVisible();
 });
 
-// UDR-018-TC01: Triton also uses the common batch records task — the same
-// records model (Records.tritonBatchRecords) drives a Triton batch list with
-// the same stable sort-before-pagination control, so both projects share one
-// records task instead of a bespoke Triton table.
-test('triton records task renders the common batch records model', async ({ page }) => {
+// EC-003-AC01: Triton batch records merge into the engineering page — the same
+// canonical URL carries the two diagnostic charts and the single records list,
+// so reaching the records never requires switching tasks again. The page-length
+// 15/30/50 control (UDR-018) remains covered by the UBS side above.
+test('triton records collapse into the merged charts + list view', async ({ page }) => {
   await page.goto('./#projects/triton/records');
   await expect(page.locator('#reload')).toBeEnabled();
   await expect(page.locator('#triton-view')).toBeVisible();
-  await expect(page.locator('#triton-view h2')).toContainText('批次记录');
-  await expect(page.locator('#crumb')).toContainText('批次记录');
-  await expect(page.locator('#triton-view tr[data-batch]').first()).toBeVisible();
-  const n = Number(await page.locator('#triton-view .count').innerText());
+  await expect.poll(() => page.evaluate(() => location.hash)).toBe('#projects/triton/engineering');
+  // Two diagnostic charts and exactly one records list share the page.
+  await expect(page.locator('#triton-view [data-role="chart"]')).toBeVisible();
+  await expect(page.locator('#triton-view [data-role="npuChart"]')).toBeVisible();
+  await expect(page.locator('#triton-view [data-role="attention"]')).toBeVisible();
+  await page.locator('#triton-view [data-role="showAll"]').click();
+  await expect(page.locator('#triton-view [data-role="attention"] .group-title')).toContainText('全部批次');
+  const n = Number(await page.locator('#triton-view [data-role="attention"] .count').innerText());
   expect(n).toBeGreaterThan(0);
-  for (const size of [15, 30, 50]) {
-    await page.locator('#triton-view [data-role="pageSize"]').selectOption(String(size));
-    await expect(page.locator('#triton-view [data-role="rowInfo"]')).toContainText(`1–${Math.min(size, n)}`);
-    await expect(page.locator('#triton-view [data-role="rowInfo"]')).toContainText(`/ ${n} 条`);
-  }
+  await expect(page.locator('#triton-view [data-role="attention"] .row').first()).toBeVisible();
 });

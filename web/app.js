@@ -98,9 +98,11 @@ function applyProjectRoute(route){
  if(route.project==='triton'){
   if(q.repository&&q.repository!=='github:triton-lang/triton-ascend'&&q.repository!=='all'){unavailableProjectTask(route,'未找到此项目中的仓库。');return;}
   if(!['overview','engineering','trends','records'].includes(route.task)||q.entity==='prs'){unavailableProjectTask(route,'当前项目未提供此任务视图；已提供趋势与批次综合视图。');return;}
-  const records=route.task==='records';
-  if(records){tritonRecSort='duration';tritonRecPs=15;tritonRecPage=1;if(['duration','start','queue'].includes(q.sort))tritonRecSort=q.sort;if(['15','30','50'].includes(String(q.ps)))tritonRecPs=Number(q.ps);if(q.page&&/^\d+$/.test(q.page))tritonRecPage=Math.max(1,Number(q.page));}
-  applyRoute({domain:'triton',records:records});
+  /* EC-003: batch records merge into the engineering page — one S drives the
+     summary, two diagnostic charts and the single records list; the legacy
+     #projects/triton/records address collapses to the canonical engineering URL. */
+  if(route.task==='records'){history.replaceState(null,'',Router.formatRoute({view:'projects',project:'triton',task:'engineering',query:q.repository?{repository:q.repository}:{}}));}
+  applyRoute({domain:'triton'});
  }else{
   if(!['overview','engineering','trends','records','quality'].includes(route.task)){unavailableProjectTask(route,'当前兼容页面未提供此任务视图。');return;}
   if(q.repository==='all'&&route.task!=='overview'){unavailableProjectTask(route,'当前兼容页面未提供全仓库的此任务视图，请选择单仓。');return;}

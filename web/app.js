@@ -161,6 +161,7 @@ function applyRoute(route){
  $('repositorySelect').value=currentRepository;
  $('crumb').innerHTML=(domain==='triton'?['监控中心','Triton-Ascend',tritonRecordsMode?'批次记录':'门禁效率趋势']:domain==='method'?['监控中心','参考','统计口径']:cross?['监控中心','openEuler UBS','九仓效率总览']:['监控中心','openEuler UBS',currentRepository,...(quality?['数据质量']:[])]).map(esc).join(' <b>/</b> ');
  $('pageSubtitle').textContent=domain==='triton'?(tritonRecordsMode?'Triton-Ascend 批次记录 · 按稳定批次身份去重，未知 PR 保留独立来源':'Triton-Ascend 门禁效率 · 最近 72 小时，从提交到最后一项自动检查结束'):domain==='method'?'统计口径与计算规则':cross?'九仓 PR 工程效率 · 每个 PR 的最长有效 E2E 批次作为代表值':currentRepository+' 门禁效率 · 从提交请求到最后一个子任务结束';
+ $('pageTitle').textContent=domain==='triton'?'Triton-Ascend 工程效能':domain==='method'?'统计口径':cross?'UBSCore 总览':currentRepository+' · 工程效能';
   document.title=domain==='triton'?(tritonRecordsMode?'Triton-Ascend · 批次记录':'Triton-Ascend · 门禁效率趋势'):domain==='method'?'统计口径 · 监控中心':(cross?'九仓 PR 工程效率':currentRepository)+' · PR 工程效率';
   /* REQ-034: 代码仓链接跟随域——Triton 指向 triton-ascend GitHub；口径页隐藏；跨仓总览为 openEuler 组织目录参考链接；单仓指向当前 GitCode 仓库。 */
   const repoLink=$('repositoryLink'),repoLinkText=$('repositoryLinkText');

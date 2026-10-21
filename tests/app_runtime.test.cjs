@@ -121,6 +121,18 @@ test('EC-009: the retired workbench route collapses to the UBS overview', () => 
   assert.equal(app.element('ubs-view').hidden, false);
 });
 
+test('EC-001/EC-002: the page heading names the community or repository, not a promo hero', () => {
+  const app = createApp();
+  app.run("navigate('#ubs')");
+  assert.match(app.element('pageTitle').textContent, /UBSCore 总览/);
+  app.run("navigate('#ubs/repo/ubs-engine')");
+  assert.match(app.element('pageTitle').textContent, /ubs-engine/);
+  app.run("navigate('#triton')");
+  assert.match(app.element('pageTitle').textContent, /Triton-Ascend 工程效能/);
+  const html = fs.readFileSync(path.join(__dirname, '../web/index.html'), 'utf8');
+  assert.doesNotMatch(html, /让每一次提交，清晰可见/, 'promotional hero removed');
+});
+
 test('a repository reread failure keeps its previous validated snapshot available for detail', async () => {
   const app = createApp({ fetch: async url => ({ ok: true, json: async () => {
     if (url.includes('repos/')) throw Error('repository body failed');

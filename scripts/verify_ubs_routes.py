@@ -330,8 +330,8 @@ APP_CONTRACTS = [
     ('apply_route_snapshot_isolated',
      "snapshot=repositorySnapshots[currentRepository]||null;"),
     ('view_containers',
-     "for(const id of ['ubs-view','ubs-repo-view','triton-view',"
-     "'method-view'])$(id).hidden=id!==(ubs?(repo?'ubs-repo-view':"
+     "for(const id of ['ubs-view','ubs-repo-view','triton-view'])"
+     "$(id).hidden=id!==(ubs?(repo?'ubs-repo-view':"
      "'ubs-view'):domain+'-view');"),
     ('nav_highlight',
      "markNavActive(domain==='triton'?'triton':'ubs')"),

@@ -133,6 +133,15 @@ test('EC-001/EC-002: the page heading names the community or repository, not a p
   assert.doesNotMatch(html, /让每一次提交，清晰可见/, 'promotional hero removed');
 });
 
+test('EC-012: the retired method task collapses to the UBS overview and its template is gone', () => {
+  const app = createApp();
+  app.run("navigate('#projects/ubs/method')");
+  assert.equal(app.element('ubs-view').hidden, false, 'method task opens the UBS overview');
+  assert.equal(app.element('triton-view').hidden, true);
+  const html = fs.readFileSync(path.join(__dirname, '../web/index.html'), 'utf8');
+  assert.doesNotMatch(html, /id="method-view"/, 'method-view template removed from the shell');
+});
+
 test('a repository reread failure keeps its previous validated snapshot available for detail', async () => {
   const app = createApp({ fetch: async url => ({ ok: true, json: async () => {
     if (url.includes('repos/')) throw Error('repository body failed');

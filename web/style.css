@@ -404,7 +404,8 @@ td.num,th.num{text-align:right}
 .failed-wait{display:block;font-size:13px;line-height:1.6;margin-top:6px;color:var(--text-2)}
 
 /* ---------- 22. Triton watchlist rows ---------- */
-.tools{padding:13px 20px;display:flex;gap:9px;border-bottom:1px solid var(--line)}
+.tools{padding:13px 20px;display:flex;flex-wrap:wrap;gap:9px;border-bottom:1px solid var(--line)}
+.tools input[type="search"]{flex:1 1 auto;min-width:120px}
 .group-title{display:flex;align-items:center;gap:10px;margin:20px 0 9px;font-size:13px;font-weight:700}
 .rows{border-top:1px solid var(--line);max-width:100%;overflow-x:auto}
 .row{border-bottom:1px solid var(--line)}
@@ -588,6 +589,8 @@ footer{display:flex;color:var(--text-3);font-family:var(--font-num);font-size:12
   .kpi{min-height:0}
   .kpi-value,.kpi strong{font-size:24px}
   .topbar>div .branch{display:none}
+  .topbar>div{flex-wrap:wrap}
+  .branch-filter summary{min-width:0;max-width:100%}
   footer{flex-wrap:wrap}
   .attention{padding:var(--sp-5)}
   .attention-cards{grid-template-columns:1fr}

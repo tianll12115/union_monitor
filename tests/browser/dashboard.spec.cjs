@@ -3,7 +3,7 @@ const {test,expect}=require('@playwright/test');
 async function ready(page,hash='#ubs'){
   await page.goto('./'+hash);
   await expect(page.locator('#reload')).toBeEnabled();
-  if(hash==='#triton')await expect(page.locator('#triton-view [data-role="kBatch"]')).toHaveText(/\d+/);
+  if(hash==='#triton')await expect(page.locator('#triton-view [data-role="kE2eN"]')).toHaveText(/n=\d+/);
   if(hash==='#ubs')await expect(page.locator('#repositoryRows')).toContainText('ubs-engine');
 }
 

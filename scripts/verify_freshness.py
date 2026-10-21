@@ -196,7 +196,7 @@ TRITON_VIEW_CONTRACTS = [
     ('export_recover',
      '      } finally {\n        exportBtn.disabled = false;\n      }'),
     ('footer_collected_at', '采集于 ${fmtDate(D.collected_at)}'),
-    ('window_span_note', '内有提交批次'),
+    ('window_span_note', 'rangeCountEl.textContent = spanText(viewEnd - viewStart);'),
     ('selected_range',
      'selectedRangeEl.textContent = `${fmtDate(viewStart)} — '
      '${fmtDate(viewEnd)}`;'),

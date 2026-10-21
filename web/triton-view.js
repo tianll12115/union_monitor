@@ -106,10 +106,8 @@
 <div class="notice" data-role="freshness" role="status" hidden></div>
 <div class="notice" data-role="windowNotice" role="status" hidden></div>
 <div class="kpi-grid">
-  <article class="kpi"><div class="kpi-label">涉及 PR</div><div class="kpi-value" data-role="kPr">—</div><small data-role="kPrNote">—</small></article>
-  <article class="kpi"><div class="kpi-label">门禁批次</div><div class="kpi-value" data-role="kBatch">—</div><small data-role="kGap">—</small></article>
-  <article class="kpi"><div class="kpi-label">中位 E2E</div><div class="kpi-value" data-role="kMedian">—</div><small data-role="kValid">—</small></article>
-  <article class="kpi"><div class="kpi-label">P90 E2E</div><div class="kpi-value" data-role="kP90">—</div><small>页级范围 P90 · 兼作“耗时偏长”阈值；不代表 SLA</small></article>
+  <article class="kpi kpi-primary" data-metric="triton_batch_e2e"><div class="kpi-label">门禁 E2E</div><div class="kpi-value"><span data-role="kE2eP90">—</span><em>P90</em></div><div class="kpi-aux"><span data-role="kE2eP50">P50 —</span><span data-role="kE2eN">n=—</span></div><small>按批次起点选区 · 成功/失败批次的有效 E2E · 兼作“耗时偏长”阈值</small></article>
+  <article class="kpi kpi-primary" data-metric="triton_npu_max_queue"><div class="kpi-label">NPU 最长排队</div><div class="kpi-value"><span data-role="kNpuP90">—</span><em>P90</em></div><div class="kpi-aux"><span data-role="kNpuP50">P50 —</span><span data-role="kNpuN">n=—</span></div><small>包含 NPU Job 的批次 · 取最长 NPU 排队</small></article>
 </div>
 <section class="global-filter">
   <strong>全局筛选</strong>
@@ -203,9 +201,8 @@
     const searchInput = el('[data-role="search"]');
     const showAllBtn = el('[data-role="showAll"]');
     const exportBtn = el('[data-role="exportBatches"]');
-    const kPr = el('[data-role="kPr"]'), kBatch = el('[data-role="kBatch"]'), kGap = el('[data-role="kGap"]');
-    const kMedian = el('[data-role="kMedian"]'), kP90 = el('[data-role="kP90"]'), kValid = el('[data-role="kValid"]');
-    const kPrNote = el('[data-role="kPrNote"]');
+    const kE2eP90 = el('[data-role="kE2eP90"]'), kE2eP50 = el('[data-role="kE2eP50"]'), kE2eN = el('[data-role="kE2eN"]');
+    const kNpuP90 = el('[data-role="kNpuP90"]'), kNpuP50 = el('[data-role="kNpuP50"]'), kNpuN = el('[data-role="kNpuN"]');
 
     const selectedBranches = new Set(prevState ? prevState.branches : []);
     let filter = prevState && prevState.filter ? prevState.filter : 'all';
@@ -408,13 +405,13 @@
 
     function updateSummary() {
       const s = currentSummary(), pool = pageSet();
-      kPr.textContent = s.prs;
-      kBatch.textContent = s.batches;
-      kGap.textContent = `${s.incomplete} 个批次存在证据缺口`;
-      kMedian.textContent = dur(s.median);
-      kP90.textContent = dur(s.p90);
-      kValid.textContent = `基于 ${s.valid} 个已完成批次${s.valid > 0 && s.valid < 10 ? ' · 样本不足' : ''}`;
-      kPrNote.textContent = `${spanText(viewEnd - viewStart)}内有提交批次`;
+      const e2e = core.chartStats(pool, 'e2e'), npu = core.chartStats(pool, 'npu');
+      kE2eP90.textContent = dur(e2e.p90);
+      kE2eP50.textContent = 'P50 ' + dur(e2e.p50);
+      kE2eN.textContent = 'n=' + e2e.count + (e2e.count > 0 && e2e.count < 10 ? ' · 样本不足' : '');
+      kNpuP90.textContent = dur(npu.p90);
+      kNpuP50.textContent = 'P50 ' + dur(npu.p50);
+      kNpuN.textContent = 'n=' + npu.count + (npu.count > 0 && npu.count < 10 ? ' · 样本不足' : '');
       boundaryEl.textContent = `${s.approximate} 个批次使用近似起点，${s.incomplete} 个批次存在明细或关联缺口。`;
       const counts = { success: 0, failure: 0, running: 0, cancelled: 0 };
       pool.forEach(b => { if (counts[b.status] != null) counts[b.status] += 1; });

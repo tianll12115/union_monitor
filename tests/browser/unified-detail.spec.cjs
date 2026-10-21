@@ -174,7 +174,7 @@ test('selected-batch task export binds the selected batch tasks, never the whole
 
 test('deduplicated-concern export collapses duplicate reasons by batch identity', async ({ page }) => {
   await serveUbs(page, fixture());
-  await page.goto('./#ubs/repo/ubs-engine/quality');
+  await page.goto('./#projects/ubs/quality');
   await expect(page.locator('#qualityContent .quality-row')).toHaveCount(2);
   const downloadEvent = page.waitForEvent('download');
   await page.locator('#exportQuality').click();

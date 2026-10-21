@@ -1,0 +1,100 @@
+# Read-only reproduction. Run from D:\ubs_core_monitor in PowerShell 7 with Node available.
+# Reads public HTTPS JSON and local pure modules. Writes no files.
+# The raw SHA-256 is calculated before PowerShell pipes decoded JSON into Node.
+# A later public snapshot can change the timestamp, fingerprint and counts.
+$ErrorActionPreference = 'Stop'
+$r = Invoke-WebRequest -Uri 'https://tianli-backkom.github.io/union_monitor/data/repos/ubs-engine.json' -UseBasicParsing -TimeoutSec 45
+$env:UBS_AUDIT_HTTP_STATUS = [string]$r.StatusCode
+$env:UBS_AUDIT_RESPONSE_BYTES = [string]$r.RawContentStream.Length
+$env:UBS_AUDIT_RAW_SHA256 = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($r.RawContentStream.ToArray())).ToLower()
+$env:UBS_AUDIT_FETCHED_AT = [TimeZoneInfo]::ConvertTimeBySystemTimeZoneId([DateTimeOffset]::UtcNow, 'China Standard Time').ToString('o')
+$auditScript = @'
+const fs = require('fs');
+const M = require('./web/core.js');
+const R = require('./web/records.js');
+const Q = require('./web/query-state.js');
+const sourceText = fs.readFileSync(0, 'utf8').replace(/^\uFEFF/, '');
+const s = JSON.parse(sourceText), prs = s.prs || [];
+const batches = prs.flatMap(p => p.batches || []), rows = R.ubsBatchRecords(s);
+const p = prs.find(p => p.number === 1627);
+const representative = bs => bs.filter(b => b.eligible && Number.isFinite(b.e2e_ms) && b.e2e_ms >= 0).sort((a,b) => b.e2e_ms-a.e2e_ms || Number(b.number)-Number(a.number) || (a.url < b.url ? 1 : a.url > b.url ? -1 : 0))[0] || null;
+const rep = representative(p.batches), sorted = R.sortRecords(rows, 'duration', 'desc');
+const counts = bs => Object.fromEntries([...new Set(bs.map(b => b.status))].sort().map(k => [k, bs.filter(b => b.status === k).length]));
+const evidence = {
+  schema_version: 1,
+  purpose: 'Read-only UBS audit: collected public snapshot and local pure-model recomputation; no product changes, no source-platform completeness claim.',
+  source: {
+    url: 'https://tianli-backkom.github.io/union_monitor/data/repos/ubs-engine.json',
+    user_route: 'https://tianli-backkom.github.io/union_monitor/#projects/ubs/records?repository=gitcode%3Aopeneuler%2Fubs-engine&branch=master&from=1789955185009&to=1792547185009',
+    http_status: Number(process.env.UBS_AUDIT_HTTP_STATUS),
+    response_bytes: Number(process.env.UBS_AUDIT_RESPONSE_BYTES),
+    raw_response_sha256: process.env.UBS_AUDIT_RAW_SHA256,
+    fetched_at_shanghai: process.env.UBS_AUDIT_FETCHED_AT,
+    collected_at_original: s.meta.collected_at,
+    generated_at_original: s.meta.generated_at,
+    start_ms: s.meta.start_ms, end_ms: s.meta.end_ms,
+    branch: s.meta.branch, repository: s.meta.repository,
+    collection_errors: s.meta.errors,
+    matches_user_scope: s.meta.start_ms === 1789955185009 && s.meta.end_ms === 1792547185009 && s.meta.branch === 'master'
+  },
+  code: {git_head: '9ea020f6b3a8ade69696836466a44891366367b9', browser_verified_here: false, note: 'Models are loaded from this local checkout. Browser evidence belongs to the parent audit.'},
+  totals: {
+    pr_objects: prs.length, unique_pr_numbers: new Set(prs.map(p => p.number)).size,
+    execution_objects: batches.length, unique_execution_urls: new Set(batches.map(b => b.url)).size,
+    duplicate_execution_url_count: batches.length - new Set(batches.map(b => b.url)).size,
+    prs_with_executions: prs.filter(p => p.batches.length).length,
+    prs_without_executions: prs.filter(p => !p.batches.length).map(p => p.number),
+    prs_with_valid_representative: prs.filter(p => representative(p.batches)).length,
+    prs_without_valid_representative: prs.filter(p => !representative(p.batches)).map(p => p.number),
+    prs_with_multiple_executions: prs.filter(p => p.batches.length > 1).length,
+    additional_rows_if_execution_grain: batches.length - prs.length,
+    per_pr: prs.map(p => ({pr: p.number, executions: p.batches.length, representative: M.metrics(p.batches).representative_batch_number})).sort((a,b) => a.pr-b.pr)
+  },
+  pr_1627: {
+    title: p.title, author: p.author, state: p.state,
+    created_ms: p.created_ms, merged_ms: p.merged_ms,
+    event_counts: M.triggerCounts(p), submission_count: p.submission_count,
+    execution_count: p.batches.length, unique_execution_urls: new Set(p.batches.map(b => b.url)).size,
+    child_task_count: p.batches.flatMap(b => b.children || []).length,
+    status_counts: counts(p.batches), eligible_count: p.batches.filter(b => b.eligible).length,
+    detail_group_execution_count: M.detailGroups(p).reduce((n,g) => n+g.batches.length, 0),
+    representative: {number: rep.number, url: rep.url, e2e_ms: rep.e2e_ms, e2e_minutes: rep.e2e_ms/60000, status: rep.status, eligible: rep.eligible, independent_oracle_matches_frontend: M.metrics(p.batches).representative_batch_url === rep.url, independent_oracle_matches_stored: p.metrics.representative_batch_url === rep.url, task_values: M.metrics(p.batches)},
+    executions: p.batches.map(b => ({number: b.number, url: b.url, status: b.status, eligible: b.eligible, e2e_ms: b.e2e_ms, request_ms: b.request_ms, end_ms: b.end_ms, event_id: b.event_id, event_type: b.event_type, sha: b.sha, child_tasks: b.children.length, trigger_queue_ms: b.trigger.queue_ms, top_level_queue_ms: b.queue_ms === undefined ? null : b.queue_ms})),
+    default_batch_list_ranks: sorted.map((r,i) => ({...r, rank:i+1})).filter(r => r.pr === 1627).map(r => ({number:r.number, rank:r.rank, page_at_15:Math.ceil(r.rank/15), e2e_ms:r.duration_ms})),
+    pr_list_rank: M.sortPRs(prs).findIndex(p => p.number === 1627)+1
+  },
+  queue_mapping: {
+    known_top_level_batch_queue_ms: batches.filter(b => Number.isFinite(b.queue_ms)).length,
+    known_trigger_queue_ms: batches.filter(b => Number.isFinite((b.trigger || {}).queue_ms)).length,
+    known_normalized_record_queue_ms: rows.filter(r => Number.isFinite(r.queue_ms)).length,
+    conclusion: 'records.js reads b.queue_ms; this snapshot stores known queue values at b.trigger.queue_ms. The correct public queue definition still needs to be stated explicitly.'
+  },
+  search_reproduction: ['1627','hw-sgl','0524f587','7604'].map(q => ({query:q, pr_mode_numbers:M.searchPRs(prs,q).map(p => p.number), batch_mode_matches:Q.selectList(rows,q,[r => r.pr,r => r.title,r => r.batch_id]).map(r => ({pr:r.pr,execution:r.number}))})),
+  export_projection: {
+    pr_summary_rows_all: prs.length,
+    pr_summary_rows_query_1627: M.searchPRs(prs,'1627').length,
+    pr_1627_all_execution_legacy_csv_body_rows: p.batches.reduce((n,b) => n+Math.max(1,b.children.length),0),
+    pr_1627_export_metadata_count: p.batches.length,
+    pr_1627_selected_representative_tasks: 1+rep.children.length,
+    note: 'Computed from app.js export loops; this subagent performed no browser downloads.'
+  },
+  source_refs: {
+    default_grain: ['web/app.js:4','web/app.js:23','web/app.js:26','web/app.js:108','tests/browser/unified-records.spec.cjs:42'],
+    batch_flatten: ['web/records.js:85','web/records.js:89','web/app.js:29','web/app.js:31'],
+    representative: ['web/core.js:6','web/core.js:7','metrics.py:97','metrics.py:99','tests/test_representative.py:7','tests/test_representative.py:11'],
+    detail: ['web/core.js:4','web/detail.js:32','web/app.js:196','web/app.js:197','tests/browser/unified-detail.spec.cjs:81'],
+    search: ['web/app.js:29','web/app.js:32','web/core.js:13','web/core.js:14'],
+    queue: ['web/records.js:103','collect.py:210','metrics.py:28'],
+    exports: ['web/app.js:208','web/app.js:209','web/app.js:210','web/app.js:211','tests/browser/unified-export.spec.cjs:15'],
+    url_scope: ['web/app.js:118','web/app.js:123','tests/browser/url-context.spec.cjs:55'],
+    historic_requirements: ['docs/requirements/2026-10-12-unified-dashboard-audit-requirements.md:153','docs/requirements/2026-10-12-unified-dashboard-audit-requirements.md:317','docs/requirements/2026-10-12-unified-dashboard-audit-requirements.md:335','docs/requirements/2026-10-12-unified-dashboard-audit-requirements.md:353','docs/requirements/2026-10-12-unified-dashboard-audit-requirements.md:371']
+  },
+  verification: {
+    command: 'node --test tests/records.test.cjs tests/detail.test.cjs tests/search_sl.test.cjs tests/export_meta.test.cjs',
+    result: {tests:27, pass:27, fail:0},
+    limits: 'Existing tests verify the old default and pure models, not acceptance of the requested new PR-default behavior or browser end-to-end behavior.'
+  }
+};
+console.log(JSON.stringify(evidence, null, 2));
+'@
+$r.Content | node -e $auditScript

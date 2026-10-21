@@ -4,14 +4,14 @@ const core = require('../web/triton-core.js');
 
 test('unknown workflow observations do not lower commit E2E summaries or chart denominators', () => {
   const rows = [
-    {id:'known',pr:7,status:'success',duration_seconds:600,missing:[]},
-    {id:'unknown',pr:null,status:'failure',duration_seconds:10,missing:['未可靠关联 PR']},
+    {id:'known',pr:7,status:'success',duration_seconds:600,npu_queue_seconds:5,missing:[]},
+    {id:'unknown',pr:null,status:'failure',duration_seconds:10,npu_queue_seconds:3,missing:['未可靠关联 PR']},
   ];
   assert.equal(core.dashboardStats(rows).valid, 1);
   assert.equal(core.dashboardStats(rows).p90, 600);
   assert.equal(core.chartStats(rows).count, 1);
   assert.equal(core.chartStats(rows).p90, 600);
-  assert.equal(core.chartStats(rows, 'npu').count, 2, 'NPU evidence has an independent sample predicate');
+  assert.equal(core.chartStats(rows, 'npu').count, 2, 'NPU evidence has an independent sample predicate (an unknown PR keeps its NPU evidence)');
 });
 
 test('explicit E2E exclusions govern small-sample attention without deleting failure records', () => {

@@ -9,12 +9,11 @@ const Shell = require('../web/shell.js');
 
 const catalog = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'catalog.json'), 'utf8'));
 
-test('P-002: fixed task navigation has the seven stable entries', () => {
-  assert.deepEqual(Shell.FIXED_TASKS.map(t => t.id), [
-    'workbench', 'overview', 'trends', 'records', 'quality', 'collection', 'metrics',
-  ]);
-  assert.equal(Shell.taskLabel('records'), 'PR 与批次');
-  assert.equal(Shell.taskLabel('missing'), null);
+test('EC-001: the sidebar has exactly two community entries, no fixed task bar', () => {
+  assert.deepEqual(Shell.COMMUNITIES.map(c => c.id), ['ubs', 'triton']);
+  assert.deepEqual(Shell.COMMUNITIES.map(c => c.entry), ['#projects/ubs/overview', '#projects/triton/engineering']);
+  assert.equal(Shell.COMMUNITIES[0].label, 'UBSCore');
+  assert.equal(Shell.COMMUNITIES[1].label, 'Triton-Ascend');
 });
 
 test('P-002: repositoryChoices keeps the full source:owner/repo identity', () => {

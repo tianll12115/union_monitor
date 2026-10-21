@@ -1,0 +1,495 @@
+{
+  "audit_date": "2026-10-21",
+  "code_sha": "9ea020f6b3a8ade69696836466a44891366367b9",
+  "command": "node audit/2026-10-21/evidence/cross-page-reproduction.cjs",
+  "read_only_runtime": true,
+  "method": "Existing app-harness VM executes unchanged app functions; controlled DOM boundaries, pure models and generated HTML inspected. CP-03 models native select behavior explicitly.",
+  "limitations": [
+    "No browser was controlled by this agent.",
+    "Native dialog events and keyboard reachability need real Chromium confirmation; source and generated HTML facts are separately labeled.",
+    "This script reproduces defects; its successful exit is not business acceptance of desired behavior."
+  ],
+  "requirement_mapping": {
+    "CP-01": [
+      "UDR-020"
+    ],
+    "CP-02": [
+      "UDR-016",
+      "UDR-020"
+    ],
+    "CP-03": [
+      "UDR-018",
+      "UDR-020"
+    ],
+    "CP-04": [
+      "UDR-017",
+      "UDR-020"
+    ],
+    "CP-05": [
+      "UDR-012",
+      "UDR-020"
+    ],
+    "CP-06": [
+      "UDR-016",
+      "UDR-018"
+    ],
+    "CP-07": [
+      "UDR-006",
+      "UDR-019"
+    ],
+    "CP-08": [
+      "UDR-019",
+      "UDR-020",
+      "UDR-035"
+    ],
+    "CP-09": [
+      "UDR-009",
+      "UDR-011",
+      "UDR-032"
+    ],
+    "CP-10": [
+      "UDR-014"
+    ],
+    "CP-11": [
+      "UDR-013",
+      "UDR-032"
+    ],
+    "CP-12": [
+      "UDR-010",
+      "UDR-020"
+    ],
+    "CP-13": [
+      "UDR-015"
+    ]
+  },
+  "existing_regressions_observed_as_implemented": [
+    "S/L models separate ordinary search from analysis selection.",
+    "Common Records.sortRecords sorts finite zero correctly, unknown last, stable identity ties before paginate.",
+    "UBS PR detail and Triton records share the dialog element; UBS no-representative fallback is explicit.",
+    "Read timeout and generation gates cover independent project reads; same-repository prior UBS snapshot is retained.",
+    "Fixed task links and project selector exist; they are not a complete acceptance of all task goals."
+  ],
+  "baseline_test_run": {
+    "command": "node --test tests/query_state.test.cjs tests/router_project.test.cjs tests/records.test.cjs tests/export_meta.test.cjs tests/accessibility.test.cjs tests/detail.test.cjs",
+    "observed": {
+      "tests": 42,
+      "pass": 42,
+      "fail": 0
+    },
+    "caveat": "Run separately during audit. These passing helper/source tests do not cover the reproduced app wiring defects."
+  },
+  "input_sha256": {
+    "web/app.js": "8fa66f9fb4372f6a12718e0647fe4496d604f4b0e135ef38e8ed57ea991b8035",
+    "web/core.js": "9d16682560963cde92fdb4a4f3684d74093bc66ec61b7211da254a991d77de43",
+    "web/records.js": "fe50fcf997d0976cab14640f3788faa3ba9f75aaa18206e3bfae2eadd4fc8589",
+    "web/workbench.js": "aa4f5b6f023d61f4a4588b21c0bb837e8c2725af99f7ad153ea79a99d6824750",
+    "web/workbench-view.js": "54be7e9c7ececfaea08afa2748f60f3b4a8666b2b288d8ff8102b62c762de356",
+    "web/index.html": "8fe894ba8c0d7c09f1565819d6ac48dabb61d3f478971d97339513f54ea6a98e",
+    "web/router.js": "64235ddd28a7a39de3a2ffff40e4f6eec620bdc2486b1fd1d54bfdaaa4e0d13d",
+    "tests/helpers/app-harness.cjs": "3d70530cdd666fb154ef4f9ce7064d443d5414a06b88d2d504c90a4001bee43c",
+    "docs/requirements/2026-10-12-unified-dashboard-audit-requirements.md": "9915853560ce33101e4dd4c3552c5e9050255415224cf602fea5a1b6c3bdd86e"
+  },
+  "observations_count": 13,
+  "findings": [
+    {
+      "id": "CP-01",
+      "title": "省略 URL 条件没有恢复默认状态",
+      "priority": "P1",
+      "classification": "VM reproduced",
+      "source": [
+        "web/app.js:107",
+        "web/app.js:116",
+        "web/app.js:23"
+      ],
+      "observed": {
+        "before": {
+          "q": "needle",
+          "state": "merged",
+          "trigger": "push",
+          "quality": "incomplete",
+          "ps": 50,
+          "page": 3
+        },
+        "bare_url_after": {
+          "q": "needle",
+          "state": "merged",
+          "trigger": "push",
+          "quality": "incomplete",
+          "ps": 50,
+          "page": 3
+        }
+      },
+      "trigger": "同一文档先进入带搜索/高级筛选/分页的 UBS records，再后退或导航至不带这些参数的 records URL。",
+      "requirement": "URL 恢复必须先建立完整默认状态，再应用已验证参数；同一 URL 的结果不依赖此前访问顺序。",
+      "acceptance": [
+        "带 q/state/tf/qf/ps/page 的页面→无参数页面后，控件和列表严格恢复默认。",
+        "前进、后退及新标签页加载同一 URL，实体身份集合、排序、页码和条件相等。"
+      ],
+      "existing_test_blind_spots": [
+        "tests/browser/url-context.spec.cjs 只检查有参数的新标签页恢复，未检查省略参数的历史返回。"
+      ]
+    },
+    {
+      "id": "CP-02",
+      "title": "清除高级条件没有同步分享地址",
+      "priority": "P2",
+      "classification": "VM reproduced",
+      "source": [
+        "web/app.js:25"
+      ],
+      "observed": {
+        "state_after_clear": "",
+        "url_after_clear": "#projects/ubs/records?state=merged",
+        "sync_calls": 0
+      },
+      "trigger": "启用高级筛选后点击常驻条件条中的“清除高级条件”，然后复制地址或刷新。",
+      "requirement": "所有改变分析集合的清除动作必须同步 URL 与历史，不能让已清除条件仍存在于分享地址。",
+      "acceptance": [
+        "点击清除后 URL 不含 state/tf/qf，刷新保持清除结果。",
+        "后退恰好恢复清除前条件，前进恢复清除后条件。"
+      ],
+      "existing_test_blind_spots": [
+        "tests/browser/advanced-sample-filter.spec.cjs 检查条件条/分母，未保护清除后的 URL 与刷新。"
+      ]
+    },
+    {
+      "id": "CP-03",
+      "title": "同页切换实体时 URL 排序被旧选项吞掉",
+      "priority": "P2",
+      "classification": "VM reproduced with native select semantics; browser confirmation recommended",
+      "source": [
+        "web/app.js:30",
+        "web/app.js:108",
+        "web/app.js:110"
+      ],
+      "observed": {
+        "initial_entity": "batches",
+        "requested_entity": "prs",
+        "requested_sort": "batches",
+        "actual_sort": "e2e"
+      },
+      "trigger": "当前表格已渲染批次排序选项，再在同一文档导航/后退至 entity=prs&sort=batches。冷启动的初始 PR 选项不一定触发。",
+      "requirement": "先重建目标实体的排序选项，再恢复该实体的排序值；实体切换与排序作为同一上下文还原。",
+      "acceptance": [
+        "批次→PR URL 请求 batches/created 都精确恢复；PR→批次请求 duration/start/queue 都精确恢复。",
+        "前进后退跨实体往返后，排序值及完整身份顺序一致。"
+      ],
+      "existing_test_blind_spots": [
+        "tests/browser/url-context.spec.cjs 使用全新标签页恢复，未覆盖已有另一实体 options 的同页还原。"
+      ]
+    },
+    {
+      "id": "CP-04",
+      "title": "批次点击丢失批次身份且分享只保留 PR",
+      "priority": "P1",
+      "classification": "VM reproduced",
+      "source": [
+        "web/app.js:31",
+        "web/app.js:22",
+        "web/app.js:197"
+      ],
+      "observed": {
+        "clicked_batch_id": "batch-1",
+        "openDetail_arguments": [
+          100
+        ],
+        "url_state_contains_batch": false
+      },
+      "trigger": "同一 PR 有多个批次时，从默认批次表点击非代表批次；复制详情 URL 后重新打开。",
+      "requirement": "列表、质量、关注和图表下钻都传递完整稳定批次身份；详情默认展开所点批次，URL 可恢复同一批次。",
+      "acceptance": [
+        "PR100 的1/2/3批次中代表为2，点击1只将1标为选中入口，任务导出属于1。",
+        "刷新或分享同一 URL 后仍展开1；消失批次明确提示而非替换为代表批次。"
+      ],
+      "existing_test_blind_spots": [
+        "tests/browser/unified-detail.spec.cjs 的列表入口强制切到 PR 实体，只对 failed-wait 测试直接批次入口；未点击公共批次行。"
+      ]
+    },
+    {
+      "id": "CP-05",
+      "title": "详情与返回/Escape 的 URL 状态不双向同步",
+      "priority": "P1",
+      "classification": "VM reproduced",
+      "source": [
+        "web/app.js:124",
+        "web/app.js:140",
+        "web/app.js:242"
+      ],
+      "observed": {
+        "url_without_pr_keeps_dialog_open": true,
+        "after_native_close_url": "#projects/ubs/records?pr=100",
+        "after_native_close_internal_pr": null
+      },
+      "trigger": "打开同仓 PR 详情后浏览器后退至无 pr 参数的 URL；或按 Escape 关闭后刷新。",
+      "requirement": "URL 中无详情身份时关闭详情；所有关闭入口（按钮、Escape、外部点击、返回）统一更新详情身份并恢复入口焦点。",
+      "acceptance": [
+        "打开→Back 时详情关闭且保持源列表；Forward 重开同一实体。",
+        "Escape 后 URL 不含详情身份，刷新不重开；其他关闭入口行为一致。"
+      ],
+      "existing_test_blind_spots": [
+        "tests/browser/url-context.spec.cjs 只点击 closeDetail 按钮，未验证浏览器 Back/Forward 或原生 dialog close。"
+      ]
+    },
+    {
+      "id": "CP-06",
+      "title": "默认批次搜索不支持界面声明的作者/SHA",
+      "priority": "P2",
+      "classification": "VM reproduced",
+      "source": [
+        "web/index.html:57",
+        "web/app.js:29",
+        "web/records.js:109",
+        "web/core.js:14"
+      ],
+      "observed": {
+        "author": {
+          "pr": 1,
+          "batches": 0
+        },
+        "sha": {
+          "pr": 1,
+          "batches": 0
+        }
+      },
+      "trigger": "使用输入框提示中的作者或 SHA 搜索；同一词在 PR 实体有结果，切默认批次实体变空。",
+      "requirement": "公共搜索字段与文案一致；批次记录保留检索用作者、SHA 等字段，切换实体不丢失可解释的定位能力。",
+      "acceptance": [
+        "固定 PR 的作者/SHA 在两实体都命中对应 PR/批次，未知字段不误命中。",
+        "搜索仅改变 L，不改变 S 的 KPI/趋势/有效分母。"
+      ],
+      "existing_test_blind_spots": [
+        "tests/search_sl.test.cjs 主要测试 PR 搜索与 S/L 隔离；records normalization 单测未验证作者/SHA检索接线。"
+      ]
+    },
+    {
+      "id": "CP-07",
+      "title": "公共导出元信息声明分钟但数值仍是毫秒",
+      "priority": "P1",
+      "classification": "VM reproduced",
+      "source": [
+        "web/app.js:195",
+        "web/app.js:208",
+        "web/app.js:209",
+        "web/app.js:211"
+      ],
+      "observed": {
+        "column": "E2E ms",
+        "value": 60000,
+        "metadata_unit": "分钟",
+        "duration_unit": "分钟",
+        "list_condition": null
+      },
+      "trigger": "从 PR列表、跨仓汇总或详情导出，按照导出成功提示中的“单位：分钟”解释 CSV 耗时。",
+      "requirement": "公共版本化导出的列名、数值和元信息单位必须一致；原毫秒 CSV 作为明确标注的兼容入口保留。",
+      "acceptance": [
+        "60000ms 样本的公共分钟导出为1且列名/metadata一致，或兼容导出仍60000但清楚声明ms。",
+        "零、未知、亚秒与极端值换算正确；不以四舍五入文本验证源值。"
+      ],
+      "existing_test_blind_spots": [
+        "tests/browser/unified-export.spec.cjs 检查行数/metadata文字，没有按列单位核对导出数值。"
+      ]
+    },
+    {
+      "id": "CP-08",
+      "title": "导出缺少可持久追溯条件/版本且旧数据可能贴新版本",
+      "priority": "P1",
+      "classification": "VM reproduced",
+      "source": [
+        "web/core.js:20",
+        "web/core.js:22",
+        "web/core.js:30",
+        "web/app.js:208",
+        "web/app.js:232"
+      ],
+      "observed": {
+        "downloads": [
+          "records.csv"
+        ],
+        "file_contains_snapshot_id": false,
+        "returned_metadata_snapshot_id": "snapshot-a",
+        "metadata_for_retained_old_data": {
+          "snapshot_id": "new-release-snapshot",
+          "collected_at": "old-snapshot-time"
+        }
+      },
+      "trigger": "保存 CSV 后离开页面再核查；或重载中某仓读取失败保留旧快照，但 release.json 已返回新版本时导出。",
+      "requirement": "下载物携带持久版本/范围/列表条件证据（sidecar或容器，兼容CSV不加注释头）；元信息绑定实际导出数据快照及release，不从当前全局release拼接。",
+      "acceptance": [
+        "离线只凭下载物可恢复release/snapshot/profile/实际时间、S范围、L条件及实体条数。",
+        "模拟新release+旧仓回退，导出身份/时间均属于旧实际快照；不能声明新快照。"
+      ],
+      "existing_test_blind_spots": [
+        "export_meta 单测只断言返回对象；unified-export 浏览器只断言页面成功文字。未检验sidecar或回退数据与版本绑定。"
+      ]
+    },
+    {
+      "id": "CP-09",
+      "title": "目录成功但运行报告缺失会虚构失败，关注计数未接入",
+      "priority": "P1",
+      "classification": "VM reproduced",
+      "source": [
+        "web/app.js:60",
+        "web/app.js:62",
+        "web/app.js:65",
+        "web/workbench.js:51",
+        "web/workbench.js:57",
+        "web/workbench-view.js:44"
+      ],
+      "observed": {
+        "missing_report": {
+          "task": "失败",
+          "data": "不可用",
+          "count": null
+        },
+        "fresh_status_without_passed_concerns": {
+          "count": null
+        },
+        "concern_table_gets_separate_rows": true
+      },
+      "trigger": "目录成功、release 404/缺项目条目但项目数据可读；或工作台关注表已有记录而项目卡片关注仍“—”。",
+      "requirement": "缺报告标记未提供/未知，不推导采集失败或数据不可用；已加载数据状态独立显示。卡片关注与实际同版本去重表共用集合，未完成读取为未知。",
+      "acceptance": [
+        "catalog可用+release缺失+快照可读，卡片不出现虚构本轮失败，能进入数据且列明缺报告。",
+        "完整关注集合已加载时卡片计数等于该项目表格唯一身份数；部分/失败读取不得显示无关注。"
+      ],
+      "existing_test_blind_spots": [
+        "app_runtime 诚实工作台测试的harness未注入Workbench/WorkbenchView，只运行旧fallback。collection-status浏览器缺release用例仅要求不可用，没有禁止虚构失败。"
+      ]
+    },
+    {
+      "id": "CP-10",
+      "title": "公共 Triton 记录缺少键盘详情入口，UBS趋势读数仅悬浮",
+      "priority": "P2",
+      "classification": "Generated HTML/source verified; actual keyboard and assistive technology behavior require browser confirmation",
+      "source": [
+        "web/app.js:48",
+        "web/app.js:38",
+        "tests/accessibility.test.cjs:37"
+      ],
+      "observed": {
+        "triton_row_has_focusable_detail_control": false,
+        "triton_only_anchor_is_external_source": true,
+        "anchor_is_skipped_by_row_handler": true,
+        "ubs_trend_has_keyboard_listener": false
+      },
+      "trigger": "仅用Tab/Enter访问Triton公共记录并尝试打开统一详情；或用键盘读取UBS趋势某日均值/P90/n。",
+      "requirement": "记录详情使用可聚焦命名控件并支持Enter/Space；图表逐点读数提供键盘入口或等价可访问表格。",
+      "acceptance": [
+        "无需鼠标即可从每一条记录进入详情、访问来源、关闭并回到入口焦点。",
+        "UBS趋势每个日期的均值/P90/n对键盘与辅助技术可取得，且与图表源序列一致。"
+      ],
+      "existing_test_blind_spots": [
+        "accessibility.test.cjs 只匹配源码片段，键盘行为集中在Triton旧趋势控件，没有真实键盘走公共记录/UBS趋势。"
+      ]
+    },
+    {
+      "id": "CP-11",
+      "title": "Triton公共记录保留旧数据时吞掉重读失败提示",
+      "priority": "P1",
+      "classification": "VM reproduced",
+      "source": [
+        "web/app.js:43",
+        "web/app.js:48",
+        "web/app.js:227"
+      ],
+      "observed": {
+        "old_record_still_rendered": true,
+        "error_text_visible": false,
+        "old_data_warning_visible": false
+      },
+      "trigger": "先成功读取Triton，在公共记录页重新加载，后续HTTP/JSON/超时失败但旧payload仍保留。",
+      "requirement": "所有任务视图使用统一读取状态；保留旧数据时必须说明失败原因、旧采集时间和数据未更新。",
+      "acceptance": [
+        "网络/HTTP/解析/超时均保留旧记录且显示失败及重试入口；成功重试后清掉旧错误。",
+        "在overview/trends/records切换时错误状态一致，其他项目不受影响。"
+      ],
+      "existing_test_blind_spots": [
+        "app_runtime 的失败保留主要测试UBS，Triton旧视图有专用提示但公共records新增分支未覆盖。"
+      ]
+    },
+    {
+      "id": "CP-12",
+      "title": "已知 URL 参数的非法值/重复值被静默忽略",
+      "priority": "P2",
+      "classification": "VM reproduced",
+      "source": [
+        "web/router.js:36",
+        "web/app.js:88",
+        "web/app.js:108",
+        "web/app.js:127"
+      ],
+      "observed": {
+        "requested_basis": "batch_started_at",
+        "requested_state": [
+          "open",
+          "closed"
+        ],
+        "state_after": "merged",
+        "requested_page_size": 7,
+        "page_size_after": 15,
+        "notice_hidden": true,
+        "notice_text": ""
+      },
+      "trigger": "分享链接包含不支持的basis、重复state、非法ps/page等已知键。",
+      "requirement": "逐键校验类型、基数、枚举及范围；非法条件必须显式解释，不能静默沿用上次值或换口径。",
+      "acceptance": [
+        "对每个已支持键覆盖重复值、空值、非法枚举、非法数字，显示可判定错误或明确修正说明。",
+        "basis不兼容时拒绝或明确告知，不按不同时间依据悄悄显示。"
+      ],
+      "existing_test_blind_spots": [
+        "router_project测试只验证parseQuery可聚合重复键；app仅拒绝重复repository，未测所有已知键在页面的语义校验。"
+      ]
+    },
+    {
+      "id": "CP-13",
+      "title": "固定任务入口未形成各自页面，能力与导航不一致",
+      "priority": "P2",
+      "classification": "Routing facts VM reproduced; task content completeness is a product acceptance gap",
+      "source": [
+        "web/app.js:78",
+        "web/app.js:93",
+        "web/app.js:98",
+        "web/app.js:121",
+        "web/app.js:142"
+      ],
+      "observed": {
+        "ubs_routes_to_same_view": {
+          "overview": {
+            "domain": "ubs",
+            "repo": "ubs-engine"
+          },
+          "trends": {
+            "domain": "ubs",
+            "repo": "ubs-engine"
+          },
+          "records": {
+            "domain": "ubs",
+            "repo": "ubs-engine"
+          }
+        },
+        "all_fixed_tasks_rendered": [
+          "overview",
+          "trends",
+          "records",
+          "quality",
+          "collection",
+          "method"
+        ],
+        "triton_supported_tasks": [
+          "overview",
+          "trends",
+          "records"
+        ]
+      },
+      "trigger": "在UBS单仓依次点项目概览、趋势与任务、PR与批次，或在Triton点击数据质量/数据与采集。",
+      "requirement": "固定任务有可辨认的内容和活动状态，能力未提供时导航事先说明；项目切换保存并恢复各自有效范围/列表状态。",
+      "acceptance": [
+        "每个任务URL、活动导航、面包屑与主体内容一致；同项目各任务可从用户目标区分。",
+        "未提供任务入口标明能力状态；跨项目往返能恢复该项目上下文且不会继承别项目无效条件。"
+      ],
+      "existing_test_blind_spots": [
+        "navigation与shell测试主要断言选择器/链接/互斥显示，未验证不同任务的完整目标内容和逐项目状态恢复。"
+      ]
+    }
+  ]
+}

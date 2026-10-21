@@ -20,9 +20,10 @@ test('P-002: shell modules load in dependency order before app.js', () => {
   assert.ok(idx('app.js') > idx('workbench-view.js'), 'app owns the published snapshot read and mounts the workbench');
 });
 
-test('P-001: index.html carries a workbench view container and nav entry', () => {
+test('EC-001: the workbench nav entry is removed and the brand points at the UBS overview', () => {
   assert.match(html, /<section id="workbench-view"/);
-  assert.match(html, /<a href="#workbench"[^>]*data-nav="workbench"/);
+  assert.doesNotMatch(html, /data-nav="workbench"/);
+  assert.match(html, /href="#projects\/ubs\/overview"/);
 });
 
 test('P-011: a project route opens its project view instead of the workbench', () => {
@@ -33,14 +34,13 @@ test('P-011: a project route opens its project view instead of the workbench', (
   assert.equal(runtime.element('triton-view').hidden, false);
 });
 
-test('P-002: shell declares the fixed seven-task navigation', () => {
-  assert.match(shell, /id: 'workbench'.*?'工作台'/s);
-  assert.match(shell, /'项目概览'/, 'overview');
-  assert.match(shell, /'趋势与任务'/, 'trends');
-  assert.match(shell, /'PR 与批次'/, 'records');
-  assert.match(shell, /'数据质量'/, 'quality');
-  assert.match(shell, /'数据与采集'/, 'collection');
-  assert.match(shell, /'指标说明'/, 'metrics');
+test('EC-001: shell declares exactly two community entries and no fixed task bar', () => {
+  assert.match(shell, /COMMUNITIES\s*=\s*\[/);
+  assert.match(shell, /id: 'ubs'[^}]*entry: '#projects\/ubs\/overview'/);
+  assert.match(shell, /id: 'triton'[^}]*entry: '#projects\/triton\/engineering'/);
+  assert.match(shell, /label: 'UBSCore'/);
+  assert.match(shell, /label: 'Triton-Ascend'/);
+  assert.doesNotMatch(shell, /FIXED_TASKS/);
 });
 
 test('P-009: units.js loads before triton-view and Triton durations unify to minutes', () => {

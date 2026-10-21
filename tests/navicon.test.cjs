@@ -33,19 +33,17 @@ test('REQ-032 AC01: group headers stay visible in the icon rail for context',()=
   assert.match(groupRule[0],/text-align:center/);
 });
 
-test('REQ-032 AC01/AC03: workbench entry keeps a real text label and the fixed tasks are catalog-driven',()=>{
-  const anchor=html.match(/<a href="#workbench"[^>]*data-nav="workbench"[^>]*>/);
-  assert.ok(anchor,'workbench nav item exists');
-  assert.ok(anchor[0].includes('工作台'),'workbench keeps visible label');
-  assert.match(html,/id="sideProjectSelector"/,'catalog-driven project selector');
-  assert.match(html,/id="sideTasks"/,'fixed task container');
-  assert.match(app,/Shell\.FIXED_TASKS/,'fixed tasks render from the shell model');
-  assert.match(app,/data-task="\$\{task\}"/,'task links carry a task identity');
-  assert.match(app,/title="\$\{esc\(t\.label\)\}"/,'each task link exposes its label as title');
+test('EC-001: the sidebar has exactly two community entries and no fixed task bar',()=>{
+  assert.doesNotMatch(html,/data-nav="workbench"/,'workbench nav entry is removed');
+  assert.doesNotMatch(html,/id="sideProjectSelector"/,'the duplicate project selector is removed');
+  assert.match(html,/id="sideTasks"/,'community container exists');
+  assert.match(app,/Shell\.COMMUNITIES/,'community entries render from the shell model');
+  assert.match(app,/data-nav="\$\{esc\(c\.id\)\}"/,'community links carry a community identity');
+  assert.match(app,/title="\$\{esc\(c\.label\)\}"/,'each community link exposes its label as title');
 });
 
-test('REQ-032 AC02: hover/focus/touch can get the name — workbench title mirrors the label, brand included',()=>{
-  assert.match(html.match(/<a href="#workbench"[^>]*>/)[0],/title="工作台"/,'workbench carries a tooltip');
+test('REQ-032 AC02: the brand links to the UBS overview and carries a tooltip',()=>{
+  assert.match(html.match(/<a class="brand"[^>]*>/)[0],/href="#projects\/ubs\/overview"/,'brand links to UBS overview');
   assert.match(html.match(/<a class="brand"[^>]*>/)[0],/title="监控中心/);
 });
 

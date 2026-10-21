@@ -1,29 +1,15 @@
-/* Dashboard shell view model (P-001, P-002, P-005).
+/* Dashboard shell view model (EC-001, EC-009).
 
-   The shell presents one catalog-driven project selector and one fixed task
-   navigation (not a top-level menu duplicated per project). The fixed tasks
-   are stable; their secondary content is declared per project via the catalog
-   view profile. Repositories expose the full ``source:owner/repo`` identity;
-   a single-repository project auto-selects its only repository.
-
-   Concern rows are de-duplicated by stable batch identity (one row per batch,
-   many reason labels) so the "需要关注" count never sums overlapping reasons.
-   Depends on ``root.QueryState`` (query-state.js) loaded first. */
+   The shell presents exactly two community entries — UBSCore and Triton-Ascend.
+   The legacy fixed task bar and per-project selector are retired: communities
+   are the only primary navigation, and each community has one canonical entry.
+   Repositories expose the full ``source:owner/repo`` identity; a single-repository
+   project auto-selects its only repository. */
 (function (root) {
-  const FIXED_TASKS = [
-    { id: 'workbench', label: '工作台' },
-    { id: 'overview', label: '项目概览' },
-    { id: 'trends', label: '趋势与任务' },
-    { id: 'records', label: 'PR 与批次' },
-    { id: 'quality', label: '数据质量' },
-    { id: 'collection', label: '数据与采集' },
-    { id: 'metrics', label: '指标说明' },
+  const COMMUNITIES = [
+    { id: 'ubs', label: 'UBSCore', entry: '#projects/ubs/overview', icon: 'i-layout-grid' },
+    { id: 'triton', label: 'Triton-Ascend', entry: '#projects/triton/engineering', icon: 'i-target' },
   ];
-
-  function taskLabel(taskId) {
-    const task = FIXED_TASKS.find(function (t) { return t.id === taskId; });
-    return task ? task.label : null;
-  }
 
   function enabledProjects(catalog) {
     return (catalog && Array.isArray(catalog.projects) ? catalog.projects : [])
@@ -55,10 +41,6 @@
   function defaultRepositoryId(catalog, projectId) {
     const def = repositoryChoices(catalog, projectId).find(function (c) { return c.is_default; });
     return def ? def.repository_id : null;
-  }
-
-  function tasksForProject(catalog, projectId) {
-    return FIXED_TASKS.map(function (t) { return { id: t.id, label: t.label }; });
   }
 
   function concernRows(concerns) {
@@ -136,13 +118,11 @@
   }
 
   const api = {
-    FIXED_TASKS,
-    taskLabel,
+    COMMUNITIES,
     enabledProjects,
     projectById,
     repositoryChoices,
     defaultRepositoryId,
-    tasksForProject,
     concernRows,
     buildWorkbenchConcerns,
   };

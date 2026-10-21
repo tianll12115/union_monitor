@@ -75,3 +75,18 @@ test('triton records collapse into the merged charts + list view', async ({ page
   expect(n).toBeGreaterThan(0);
   await expect(page.locator('#triton-view [data-role="attention"] .row').first()).toBeVisible();
 });
+
+// EC-008-AC03: the merged view exposes a same-page "时间未知" entry for records
+// with an unknown start time but known source identity.
+test('triton merged view exposes the 时间未知 entry inline', async ({ page }) => {
+  await page.goto('./#projects/triton/engineering');
+  await expect(page.locator('#triton-view')).toBeVisible();
+  const entry = page.locator('#triton-view [data-role="unknownTime"]');
+  await expect(entry).toBeVisible();
+  await expect(entry).toContainText('时间未知');
+  await entry.click();
+  await expect(page.locator('#triton-view [data-role="attention"] .group-title')).toContainText('时间未知');
+  await expect(page.locator('#triton-view [data-role="attention"]')).toContainText('当前没有起点未知且带来源身份的批次');
+  await entry.click();
+  await expect(page.locator('#triton-view [data-role="attention"] .group-title')).toContainText('关注批次');
+});

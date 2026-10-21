@@ -111,3 +111,24 @@ test('EC-004: Triton shows two metric cards (E2E + NPU queue) with P90/P50/n, no
   assert.match(src,/data-metric="triton_batch_e2e"/);
   assert.match(src,/data-metric="triton_npu_max_queue"/);
 });
+
+test('EC-008-AC03: 起点未知但有来源身份的批次可从“时间未知(n)”入口找到且导出标时间未知', async () => {
+  const data = sample();
+  data.batches.push({ id: 'unknown-start', pr: 900, title: '起点未知批次', base_branch: 'main', sha: '99999999', kind: 'initial', status: 'success', duration_seconds: 600,
+    start_at: null, end_at: '2026-10-10T01:00:00Z', missing: [], workflows: [{ id: 999, attempt: 1, jobs: [] }],
+    action_url: 'https://github.com/triton-lang/triton-ascend/actions/runs/999', npu_jobs: [], start_source: 'workflow_created', approximate: false });
+  const h = viewHarness(); h.view.render(data, h.container);
+  assert.match(h.node('[data-role="unknownTime"]').textContent, /时间未知\(1\)/);
+  assert.doesNotMatch(h.node('[data-role="attention"]').innerHTML, /unknown-start/);
+  h.node('[data-role="unknownTime"]').onclick();
+  const markup = h.node('[data-role="attention"]').innerHTML;
+  assert.match(markup, /unknown-start/);
+  assert.match(markup, /起点未知/);
+  assert.match(h.node('[data-role="priorityNote"]').textContent, /不计入选区分位数/);
+  await h.node('[data-role="exportBatches"]').onclick();
+  const rows = h.downloads[0].rows;
+  const startIdx = rows[0].indexOf('start_at');
+  const row = rows.find(r => String(r[0]) === '900');
+  assert.ok(row, 'unknown-start batch exported');
+  assert.equal(row[startIdx], '时间未知');
+});

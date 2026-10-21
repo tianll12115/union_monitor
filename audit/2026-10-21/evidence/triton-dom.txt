@@ -1,0 +1,1721 @@
+- complementary:
+  - link "M":
+    - /url: "#workbench"
+    - text: M
+  - navigation "主导航":
+    - link "工作台":
+      - /url: "#workbench"
+      - text: 工作台
+    - generic: 项目
+    - combobox "选择项目":
+      - option "openEuler UBS"
+      - option "Triton-Ascend" [selected]
+    - generic: 任务
+    - link "项目概览":
+      - /url: "#projects/triton/overview"
+      - text: 项目概览
+    - link "趋势与任务":
+      - /url: "#projects/triton/trends"
+      - text: 趋势与任务
+    - link "PR 与批次":
+      - /url: "#projects/triton/records"
+      - text: PR 与批次
+    - link "数据质量":
+      - /url: "#projects/triton/quality"
+      - text: 数据质量
+    - link "数据与采集":
+      - /url: "#projects/triton/collection"
+      - text: 数据与采集
+    - link "指标说明":
+      - /url: "#projects/triton/method"
+      - text: 指标说明
+- banner:
+  - generic: 监控中心 / Triton-Ascend / 门禁效率趋势
+  - generic: 快照采集 UBS 2026-10-21 09:51:53 · TRITON 2026-10-21 17:17:34
+  - text: 全部目标分支
+  - button "重新加载快照":
+    - text: 重新加载快照
+- main:
+  - generic: Engineering Monitor
+  - heading "让每一次提交，清晰可见." [level=1]
+  - paragraph: Triton-Ascend 门禁效率 · 最近 72 小时，从提交到最后一项自动检查结束
+  - generic: 门禁采集窗口 · 上海时间
+  - strong: 2026-10-18 → 2026-10-21
+  - generic: 采集于 2026-10-21 17:17:34
+  - status: 数据更新已延迟：当前展示最后一次成功采集结果，请检查 GitHub Actions。
+  - article:
+    - generic: 涉及 PR
+    - generic: "76"
+    - generic: 3.0 天内有提交批次
+  - article:
+    - generic: 门禁批次
+    - generic: "196"
+    - generic: 0 个批次存在证据缺口
+  - article:
+    - generic: 中位 E2E
+    - generic: 19.88 min
+    - generic: 基于 166 个已完成批次
+  - article:
+    - generic: P90 E2E
+    - generic: 100.76 min
+    - generic: 页级范围 P90 · 兼作“耗时偏长”阈值；不代表 SLA
+  - strong: 全局筛选
+  - generic "合入分支：全部 ▾"
+  - button "清除"
+  - generic: 成功 75
+  - generic: 失败 91
+  - generic: 执行中 4
+  - generic: 取消 26
+  - generic: 筛选会同步更新全部指标、图表和列表
+  - heading "PR E2E 执行时长" [level=2]
+  - paragraph: 每个点代表一次提交或一次手动重跑触发的 E2E；时间范围由下方导航器统一控制。
+  - button "全部"
+  - button "耗时偏长"
+  - button "失败"
+  - button "执行中"
+  - img "PR E2E 执行时长":
+    - generic: 1876.63 min
+    - generic: 1407.48 min
+    - generic: 938.32 min
+    - generic: 469.16 min
+    - generic: 0.00 min
+    - generic: 10/18 17:03
+    - generic: 10/19 11:03
+    - generic: 10/20 05:03
+    - generic: 10/20 23:03
+    - generic: 10/21 17:03
+    - 'button "E2E 详情：PR #2545 第 1/12 次 E2E 80d7c74"'
+    - 'button "E2E 详情：PR #2070 第 2/2 次 E2E c7e1dc0"'
+    - 'button "E2E 详情：PR #2471 第 1/13 次 E2E a689c7f"'
+    - 'button "E2E 详情：PR #2417 第 2/9 次 E2E 262480c"'
+    - 'button "E2E 详情：PR #2417 第 3/9 次 E2E 262480c"'
+    - 'button "E2E 详情：PR #2417 第 4/9 次 E2E 262480c"'
+    - 'button "E2E 详情：PR #2417 第 5/9 次 E2E 262480c"'
+    - 'button "E2E 详情：PR #2489 第 1/9 次 E2E fba8e22"'
+    - 'button "E2E 详情：PR #2516 第 1/1 次 E2E 0616ba1"'
+    - 'button "E2E 详情：PR #2471 第 2/13 次 E2E 218e0ab"'
+    - 'button "E2E 详情：PR #2618 第 2/2 次 E2E f19de1f"'
+    - 'button "E2E 详情：PR #2417 第 7/9 次 E2E 1d1cc93"'
+    - 'button "E2E 详情：PR #2417 第 8/9 次 E2E 1d1cc93"'
+    - 'button "E2E 详情：PR #2619 第 1/1 次 E2E 7aef73d"'
+    - 'button "E2E 详情：PR #2085 第 1/1 次 E2E 26f3e09"'
+    - 'button "E2E 详情：PR #2621 第 1/3 次 E2E 24cdd02"'
+    - 'button "E2E 详情：PR #2609 第 1/4 次 E2E f786b0c"'
+    - 'button "E2E 详情：PR #2605 第 2/2 次 E2E d1ed126"'
+    - 'button "E2E 详情：PR #2622 第 1/1 次 E2E 436cc23"'
+    - 'button "E2E 详情：PR #2617 第 2/3 次 E2E 9c6cb63"'
+    - 'button "E2E 详情：PR #2623 第 1/3 次 E2E 8ba7436"'
+    - 'button "E2E 详情：PR #2624 第 2/2 次 E2E ae0f1cb"'
+    - 'button "E2E 详情：PR #2623 第 3/3 次 E2E 292e1f2"'
+    - 'button "E2E 详情：PR #2396 第 1/1 次 E2E 44f6cff"'
+    - 'button "E2E 详情：PR #2625 第 1/1 次 E2E 1434770"'
+    - 'button "E2E 详情：PR #2626 第 1/1 次 E2E e88ffe9"'
+    - 'button "E2E 详情：PR #2616 第 4/4 次 E2E 7c0e5a6"'
+    - 'button "E2E 详情：PR #2627 第 1/4 次 E2E 81d1335"'
+    - 'button "E2E 详情：PR #2632 第 3/3 次 E2E f4f0b24"'
+    - 'button "E2E 详情：PR #2471 第 6/13 次 E2E 106a5dc"'
+    - 'button "E2E 详情：PR #2633 第 2/2 次 E2E a79cfac"'
+    - 'button "E2E 详情：PR #2535 第 1/1 次 E2E 89e4451"'
+    - 'button "E2E 详情：PR #2545 第 4/12 次 E2E 68ddc8b"'
+    - 'button "E2E 详情：PR #2634 第 2/4 次 E2E 1f3a755"'
+    - 'button "E2E 详情：PR #2638 第 1/1 次 E2E 4111883"'
+    - 'button "E2E 详情：PR #2500 第 1/1 次 E2E f112268"'
+    - 'button "E2E 详情：PR #2302 第 1/8 次 E2E f3edfb6"'
+    - 'button "E2E 详情：PR #2413 第 2/2 次 E2E 038d399"'
+    - 'button "E2E 详情：PR #2640 第 1/1 次 E2E 628d463"'
+    - 'button "E2E 详情：PR #2642 第 1/11 次 E2E 57774ac"'
+    - 'button "E2E 详情：PR #2471 第 10/13 次 E2E b1146c9"'
+    - 'button "E2E 详情：PR #2505 第 1/2 次 E2E 297808c"'
+    - 'button "E2E 详情：PR #2505 第 2/2 次 E2E 67bfbec"'
+    - 'button "E2E 详情：PR #2614 第 2/2 次 E2E 83c3f88"'
+    - 'button "E2E 详情：PR #2641 第 2/2 次 E2E 83950d2"'
+    - 'button "E2E 详情：PR #1944 第 2/2 次 E2E 0d113ad"'
+    - 'button "E2E 详情：PR #2479 第 1/2 次 E2E 7ef822a"'
+    - 'button "E2E 详情：PR #2479 第 2/2 次 E2E 13b59ac"'
+    - 'button "E2E 详情：PR #2478 第 1/1 次 E2E 39e5732"'
+    - 'button "E2E 详情：PR #2651 第 1/1 次 E2E 5603d7d"'
+    - 'button "E2E 详情：PR #2600 第 2/2 次 E2E b1d7e25"'
+    - 'button "E2E 详情：PR #2471 第 11/13 次 E2E 901ebd2"'
+    - 'button "E2E 详情：PR #2653 第 1/1 次 E2E 0681515"'
+    - 'button "E2E 详情：PR #2655 第 1/1 次 E2E 1e4013d"'
+    - 'button "E2E 详情：PR #2656 第 1/1 次 E2E e563769"'
+    - 'button "E2E 详情：PR #2471 第 12/13 次 E2E 0d0433d"'
+    - 'button "E2E 详情：PR #2658 第 2/3 次 E2E d9a18e5"'
+    - 'button "E2E 详情：PR #2658 第 3/3 次 E2E ee15126"'
+    - 'button "E2E 详情：PR #2545 第 12/12 次 E2E 5d6548d"'
+    - 'button "E2E 详情：PR #2634 第 3/4 次 E2E 0768f34"'
+    - 'button "E2E 详情：PR #2663 第 1/1 次 E2E f9046f8"'
+    - 'button "E2E 详情：PR #2454 第 1/1 次 E2E e0ed4bc"'
+    - 'button "E2E 详情：PR #2302 第 6/8 次 E2E f922ba2"'
+    - 'button "E2E 详情：PR #2661 第 3/3 次 E2E 45dd8b5"'
+    - 'button "E2E 详情：PR #2302 第 8/8 次 E2E af4c72f"'
+    - 'button "E2E 详情：PR #2665 第 1/3 次 E2E dbc19d1"'
+    - 'button "E2E 详情：PR #2557 第 6/10 次 E2E 94e6235"'
+    - 'button "E2E 详情：PR #2665 第 2/3 次 E2E 011ec6f"'
+    - 'button "E2E 详情：PR #1919 第 1/2 次 E2E 5ba97a6"'
+    - 'button "E2E 详情：PR #2471 第 13/13 次 E2E 5b1179b"'
+    - 'button "E2E 详情：PR #2668 第 1/1 次 E2E a4dcd06"'
+    - 'button "E2E 详情：PR #2634 第 4/4 次 E2E e9ce9dd"'
+    - 'button "E2E 详情：PR #2670 第 1/1 次 E2E b9ad706"'
+    - 'button "E2E 详情：PR #2665 第 3/3 次 E2E d83c603"'
+    - 'button "E2E 详情：PR #2675 第 1/1 次 E2E f4e1a82"'
+    - 'button "E2E 详情：PR #2615 第 1/2 次 E2E 0cc5757"'
+    - 'button "E2E 详情：PR #2615 第 2/2 次 E2E 276d87c"'
+    - 'button "E2E 详情：PR #2070 第 1/2 次 E2E 1e234b6"'
+    - 'button "E2E 详情：PR #2417 第 1/9 次 E2E 262480c"'
+    - 'button "E2E 详情：PR #2594 第 1/2 次 E2E 74dfcc1"'
+    - 'button "E2E 详情：PR #2417 第 6/9 次 E2E 1d1cc93"'
+    - 'button "E2E 详情：PR #2616 第 1/4 次 E2E 1037b9b"'
+    - 'button "E2E 详情：PR #2605 第 1/2 次 E2E d1ed126"'
+    - 'button "E2E 详情：PR #2617 第 1/3 次 E2E 9c6cb63"'
+    - 'button "E2E 详情：PR #2616 第 2/4 次 E2E b6c1403"'
+    - 'button "E2E 详情：PR #2618 第 1/2 次 E2E f19de1f"'
+    - 'button "E2E 详情：PR #2616 第 3/4 次 E2E c83fcdf"'
+    - 'button "E2E 详情：PR #2620 第 1/1 次 E2E 0794045"'
+    - 'button "E2E 详情：PR #2617 第 3/3 次 E2E 503df6b"'
+    - 'button "E2E 详情：PR #2624 第 1/2 次 E2E c580c16"'
+    - 'button "E2E 详情：PR #2623 第 2/3 次 E2E 43a9634"'
+    - 'button "E2E 详情：PR #2171 第 1/1 次 E2E f89ddea"'
+    - 'button "E2E 详情：PR #2628 第 1/1 次 E2E e635e1d"'
+    - 'button "E2E 详情：PR #2629 第 1/1 次 E2E b20969a"'
+    - 'button "E2E 详情：PR #2631 第 1/2 次 E2E 62cf87f"'
+    - 'button "E2E 详情：PR #2489 第 2/9 次 E2E cd7dd43"'
+    - 'button "E2E 详情：PR #2631 第 2/2 次 E2E 209e441"'
+    - 'button "E2E 详情：PR #2632 第 1/3 次 E2E 209e441"'
+    - 'button "E2E 详情：PR #2489 第 3/9 次 E2E a025460"'
+    - 'button "E2E 详情：PR #2632 第 2/3 次 E2E 280efcc"'
+    - 'button "E2E 详情：PR #2471 第 3/13 次 E2E 2b25a90"'
+    - 'button "E2E 详情：PR #2471 第 4/13 次 E2E ffead4d"'
+    - 'button "E2E 详情：PR #2471 第 5/13 次 E2E d0eb938"'
+    - 'button "E2E 详情：PR #2545 第 2/12 次 E2E 68ddc8b"'
+    - 'button "E2E 详情：PR #2489 第 4/9 次 E2E a20e1a4"'
+    - 'button "E2E 详情：PR #2633 第 1/2 次 E2E d626f30"'
+    - 'button "E2E 详情：PR #2489 第 5/9 次 E2E 76e8a3d"'
+    - 'button "E2E 详情：PR #2545 第 3/12 次 E2E 68ddc8b"'
+    - 'button "E2E 详情：PR #2634 第 1/4 次 E2E ea18c50"'
+    - 'button "E2E 详情：PR #2545 第 5/12 次 E2E 68ddc8b"'
+    - 'button "E2E 详情：PR #2489 第 6/9 次 E2E 64baed1"'
+    - 'button "E2E 详情：PR #2489 第 7/9 次 E2E c4ec5f5"'
+    - 'button "E2E 详情：PR #2489 第 8/9 次 E2E aefbbe3"'
+    - 'button "E2E 详情：PR #2545 第 6/12 次 E2E 68ddc8b"'
+    - 'button "E2E 详情：PR #2545 第 7/12 次 E2E 68ddc8b"'
+    - 'button "E2E 详情：PR #2545 第 8/12 次 E2E d2890fc"'
+    - 'button "E2E 详情：PR #2609 第 2/4 次 E2E bb82d6c"'
+    - 'button "E2E 详情：PR #2609 第 3/4 次 E2E 1934311"'
+    - 'button "E2E 详情：PR #2476 第 1/8 次 E2E 51905b6"'
+    - 'button "E2E 详情：PR #2609 第 4/4 次 E2E c0371a1"'
+    - 'button "E2E 详情：PR #2636 第 1/2 次 E2E be0de08"'
+    - 'button "E2E 详情：PR #2545 第 9/12 次 E2E c02097c"'
+    - 'button "E2E 详情：PR #2476 第 2/8 次 E2E 51905b6"'
+    - 'button "E2E 详情：PR #2413 第 1/2 次 E2E cb4e7f7"'
+    - 'button "E2E 详情：PR #2471 第 7/13 次 E2E af0491e"'
+    - 'button "E2E 详情：PR #2548 第 1/3 次 E2E 09dc625"'
+    - 'button "E2E 详情：PR #2641 第 1/2 次 E2E afe7cb5"'
+    - 'button "E2E 详情：PR #2548 第 2/3 次 E2E d2749d2"'
+    - 'button "E2E 详情：PR #2471 第 8/13 次 E2E 9f3bd74"'
+    - 'button "E2E 详情：PR #2548 第 3/3 次 E2E 3a1f17c"'
+    - 'button "E2E 详情：PR #2471 第 9/13 次 E2E f4a2ac6"'
+    - 'button "E2E 详情：PR #2642 第 2/11 次 E2E 136b849"'
+    - 'button "E2E 详情：PR #2642 第 3/11 次 E2E 38a017b"'
+    - 'button "E2E 详情：PR #2614 第 1/2 次 E2E 1357704"'
+    - 'button "E2E 详情：PR #2642 第 4/11 次 E2E 6b92259"'
+    - 'button "E2E 详情：PR #2642 第 5/11 次 E2E fdb32f7"'
+    - 'button "E2E 详情：PR #2636 第 2/2 次 E2E 3aef2b0"'
+    - 'button "E2E 详情：PR #2643 第 1/1 次 E2E 157c64c"'
+    - 'button "E2E 详情：PR #2545 第 10/12 次 E2E 643f7a4"'
+    - 'button "E2E 详情：PR #2545 第 11/12 次 E2E 8f5a900"'
+    - 'button "E2E 详情：PR #2476 第 3/8 次 E2E cf05a1f"'
+    - 'button "E2E 详情：PR #1944 第 1/2 次 E2E 0d113ad"'
+    - 'button "E2E 详情：PR #2647 第 1/1 次 E2E 568ae90"'
+    - 'button "E2E 详情：PR #2621 第 2/3 次 E2E 6c0926c"'
+    - 'button "E2E 详情：PR #2621 第 3/3 次 E2E 606c6c8"'
+    - 'button "E2E 详情：PR #2476 第 4/8 次 E2E f52eeb1"'
+    - 'button "E2E 详情：PR #2476 第 5/8 次 E2E 8a72af6"'
+    - 'button "E2E 详情：PR #2476 第 6/8 次 E2E 8eda31d"'
+    - 'button "E2E 详情：PR #2650 第 1/1 次 E2E 2263a49"'
+    - 'button "E2E 详情：PR #2652 第 1/1 次 E2E 28fa4ec"'
+    - 'button "E2E 详情：PR #2252 第 1/1 次 E2E e8d7e4a"'
+    - 'button "E2E 详情：PR #2253 第 1/1 次 E2E bd49459"'
+    - 'button "E2E 详情：PR #2475 第 1/1 次 E2E 4d1b301"'
+    - 'button "E2E 详情：PR #2600 第 1/2 次 E2E c6b5316"'
+    - 'button "E2E 详情：PR #2627 第 2/4 次 E2E 9c38ed6"'
+    - 'button "E2E 详情：PR #2417 第 9/9 次 E2E ba02426"'
+    - 'button "E2E 详情：PR #2654 第 1/1 次 E2E 54d48da"'
+    - 'button "E2E 详情：PR #2658 第 1/3 次 E2E 4abee00"'
+    - 'button "E2E 详情：PR #2661 第 1/3 次 E2E 13d15f3"'
+    - 'button "E2E 详情：PR #2627 第 3/4 次 E2E ac8483b"'
+    - 'button "E2E 详情：PR #2004 第 1/2 次 E2E e1a2a04"'
+    - 'button "E2E 详情：PR #2302 第 2/8 次 E2E 41e0d38"'
+    - 'button "E2E 详情：PR #2302 第 3/8 次 E2E 1390e0f"'
+    - 'button "E2E 详情：PR #2302 第 4/8 次 E2E 1718e9c"'
+    - 'button "E2E 详情：PR #2302 第 5/8 次 E2E 70ed40c"'
+    - 'button "E2E 详情：PR #2594 第 2/2 次 E2E a480b4c"'
+    - 'button "E2E 详情：PR #2004 第 2/2 次 E2E ddfdae1"'
+    - 'button "E2E 详情：PR #2476 第 7/8 次 E2E 8eda31d"'
+    - 'button "E2E 详情：PR #2661 第 2/3 次 E2E 45dd8b5"'
+    - 'button "E2E 详情：PR #2557 第 1/10 次 E2E 68014c5"'
+    - 'button "E2E 详情：PR #2557 第 2/10 次 E2E 57b94ce"'
+    - 'button "E2E 详情：PR #2557 第 3/10 次 E2E d4b855e"'
+    - 'button "E2E 详情：PR #2302 第 7/8 次 E2E 7576252"'
+    - 'button "E2E 详情：PR #2557 第 4/10 次 E2E 916ef8c"'
+    - 'button "E2E 详情：PR #2443 第 1/1 次 E2E 4fe8154"'
+    - 'button "E2E 详情：PR #2557 第 5/10 次 E2E 94e6235"'
+    - 'button "E2E 详情：PR #2489 第 9/9 次 E2E 59589e1"'
+    - 'button "E2E 详情：PR #2476 第 8/8 次 E2E b751c4c"'
+    - 'button "E2E 详情：PR #2561 第 1/1 次 E2E 10b7277"'
+    - 'button "E2E 详情：PR #2147 第 1/1 次 E2E 011444b"'
+    - 'button "E2E 详情：PR #2667 第 1/1 次 E2E 1799029"'
+    - 'button "E2E 详情：PR #2557 第 7/10 次 E2E 26f29d6"'
+    - 'button "E2E 详情：PR #2642 第 6/11 次 E2E d6df087"'
+    - 'button "E2E 详情：PR #2557 第 8/10 次 E2E c0322cc"'
+    - 'button "E2E 详情：PR #2557 第 9/10 次 E2E b5c40b3"'
+    - 'button "E2E 详情：PR #2642 第 7/11 次 E2E 3a4d643"'
+    - 'button "E2E 详情：PR #1919 第 2/2 次 E2E 7610e7f"'
+    - 'button "E2E 详情：PR #2642 第 8/11 次 E2E ad2b865"'
+    - 'button "E2E 详情：PR #2557 第 10/10 次 E2E bf7b5fc"'
+    - 'button "E2E 详情：PR #2642 第 9/11 次 E2E f7e1c28"'
+    - 'button "E2E 详情：PR #2642 第 10/11 次 E2E fb9f671"'
+    - 'button "E2E 详情：PR #2627 第 4/4 次 E2E c6359d8"'
+    - 'button "E2E 详情：PR #2674 第 1/3 次 E2E d8d03f9"'
+    - 'button "E2E 详情：PR #2674 第 2/3 次 E2E 90e3e5e"'
+    - 'button "E2E 详情：PR #2674 第 3/3 次 E2E d6fef8f"'
+    - 'button "E2E 详情：PR #2642 第 11/11 次 E2E fb9f671"'
+  - generic: 选区范围
+  - strong: 3.0 天
+  - generic: 有效样本
+  - strong: 166 次
+  - generic: 平均（图内）
+  - strong: 50.67 min
+  - generic: P50（图内）
+  - strong: 19.88 min
+  - generic: P90（图内）
+  - strong: 100.76 min
+  - generic: 耗时偏长阈值（页级 P90）
+  - strong: 100.76 min
+  - generic: 成功
+  - generic: 失败
+  - generic: 取消
+  - generic: 执行中
+  - strong: 拖动或键盘选择时间范围 · 两张趋势图联动
+  - generic: 10/18 17:03 — 10/21 17:03
+  - group "选择趋势图时间范围":
+    - slider "时间范围整体窗口"
+    - slider "时间范围起点"
+    - slider "时间范围终点"
+    - generic: 10/18 17:03
+    - generic: 10/21 17:03
+  - generic: 快速选择
+  - button "6 小时"
+  - button "12 小时"
+  - button "24 小时"
+  - button "48 小时"
+  - button "72 小时"
+  - generic: 3.0 天
+  - heading "NPU Job 排队时长" [level=2]
+  - paragraph: 每个点代表一次包含 NPU Job 的 E2E，纵轴取其子 NPU Job 中最长排队时长。
+  - button "全部"
+  - button "失败"
+  - button "执行中"
+  - img "NPU Job 排队时长":
+    - generic: 79.86 min
+    - generic: 59.89 min
+    - generic: 39.93 min
+    - generic: 19.96 min
+    - generic: 0.00 min
+    - generic: 10/18 17:03
+    - generic: 10/19 11:03
+    - generic: 10/20 05:03
+    - generic: 10/20 23:03
+    - generic: 10/21 17:03
+    - 'button "NPU 排队详情：PR #2070 第 2/2 次 E2E c7e1dc0"'
+    - 'button "NPU 排队详情：PR #2471 第 1/13 次 E2E a689c7f"'
+    - 'button "NPU 排队详情：PR #2489 第 1/9 次 E2E fba8e22"'
+    - 'button "NPU 排队详情：PR #2471 第 2/13 次 E2E 218e0ab"'
+    - 'button "NPU 排队详情：PR #2619 第 1/1 次 E2E 7aef73d"'
+    - 'button "NPU 排队详情：PR #2621 第 1/3 次 E2E 24cdd02"'
+    - 'button "NPU 排队详情：PR #2622 第 1/1 次 E2E 436cc23"'
+    - 'button "NPU 排队详情：PR #2623 第 1/3 次 E2E 8ba7436"'
+    - 'button "NPU 排队详情：PR #2624 第 2/2 次 E2E ae0f1cb"'
+    - 'button "NPU 排队详情：PR #2623 第 3/3 次 E2E 292e1f2"'
+    - 'button "NPU 排队详情：PR #2625 第 1/1 次 E2E 1434770"'
+    - 'button "NPU 排队详情：PR #2626 第 1/1 次 E2E e88ffe9"'
+    - 'button "NPU 排队详情：PR #2616 第 4/4 次 E2E 7c0e5a6"'
+    - 'button "NPU 排队详情：PR #2627 第 1/4 次 E2E 81d1335"'
+    - 'button "NPU 排队详情：PR #2632 第 3/3 次 E2E f4f0b24"'
+    - 'button "NPU 排队详情：PR #2471 第 6/13 次 E2E 106a5dc"'
+    - 'button "NPU 排队详情：PR #2633 第 2/2 次 E2E a79cfac"'
+    - 'button "NPU 排队详情：PR #2634 第 2/4 次 E2E 1f3a755"'
+    - 'button "NPU 排队详情：PR #2638 第 1/1 次 E2E 4111883"'
+    - 'button "NPU 排队详情：PR #2500 第 1/1 次 E2E f112268"'
+    - 'button "NPU 排队详情：PR #2302 第 1/8 次 E2E f3edfb6"'
+    - 'button "NPU 排队详情：PR #2413 第 2/2 次 E2E 038d399"'
+    - 'button "NPU 排队详情：PR #2640 第 1/1 次 E2E 628d463"'
+    - 'button "NPU 排队详情：PR #2471 第 10/13 次 E2E b1146c9"'
+    - 'button "NPU 排队详情：PR #2505 第 2/2 次 E2E 67bfbec"'
+    - 'button "NPU 排队详情：PR #2614 第 2/2 次 E2E 83c3f88"'
+    - 'button "NPU 排队详情：PR #2641 第 2/2 次 E2E 83950d2"'
+    - 'button "NPU 排队详情：PR #2479 第 2/2 次 E2E 13b59ac"'
+    - 'button "NPU 排队详情：PR #2651 第 1/1 次 E2E 5603d7d"'
+    - 'button "NPU 排队详情：PR #2600 第 2/2 次 E2E b1d7e25"'
+    - 'button "NPU 排队详情：PR #2471 第 11/13 次 E2E 901ebd2"'
+    - 'button "NPU 排队详情：PR #2653 第 1/1 次 E2E 0681515"'
+    - 'button "NPU 排队详情：PR #2655 第 1/1 次 E2E 1e4013d"'
+    - 'button "NPU 排队详情：PR #2656 第 1/1 次 E2E e563769"'
+    - 'button "NPU 排队详情：PR #2471 第 12/13 次 E2E 0d0433d"'
+    - 'button "NPU 排队详情：PR #2658 第 2/3 次 E2E d9a18e5"'
+    - 'button "NPU 排队详情：PR #2658 第 3/3 次 E2E ee15126"'
+    - 'button "NPU 排队详情：PR #2545 第 12/12 次 E2E 5d6548d"'
+    - 'button "NPU 排队详情：PR #2634 第 3/4 次 E2E 0768f34"'
+    - 'button "NPU 排队详情：PR #2663 第 1/1 次 E2E f9046f8"'
+    - 'button "NPU 排队详情：PR #2454 第 1/1 次 E2E e0ed4bc"'
+    - 'button "NPU 排队详情：PR #2302 第 6/8 次 E2E f922ba2"'
+    - 'button "NPU 排队详情：PR #2302 第 8/8 次 E2E af4c72f"'
+    - 'button "NPU 排队详情：PR #2665 第 1/3 次 E2E dbc19d1"'
+    - 'button "NPU 排队详情：PR #2665 第 2/3 次 E2E 011ec6f"'
+    - 'button "NPU 排队详情：PR #2471 第 13/13 次 E2E 5b1179b"'
+    - 'button "NPU 排队详情：PR #2668 第 1/1 次 E2E a4dcd06"'
+    - 'button "NPU 排队详情：PR #2634 第 4/4 次 E2E e9ce9dd"'
+    - 'button "NPU 排队详情：PR #2665 第 3/3 次 E2E d83c603"'
+    - 'button "NPU 排队详情：PR #2675 第 1/1 次 E2E f4e1a82"'
+    - 'button "NPU 排队详情：PR #2615 第 1/2 次 E2E 0cc5757"'
+    - 'button "NPU 排队详情：PR #2615 第 2/2 次 E2E 276d87c"'
+    - 'button "NPU 排队详情：PR #2070 第 1/2 次 E2E 1e234b6"'
+    - 'button "NPU 排队详情：PR #2417 第 1/9 次 E2E 262480c"'
+    - 'button "NPU 排队详情：PR #2594 第 1/2 次 E2E 74dfcc1"'
+    - 'button "NPU 排队详情：PR #2417 第 6/9 次 E2E 1d1cc93"'
+    - 'button "NPU 排队详情：PR #2616 第 1/4 次 E2E 1037b9b"'
+    - 'button "NPU 排队详情：PR #2605 第 1/2 次 E2E d1ed126"'
+    - 'button "NPU 排队详情：PR #2617 第 1/3 次 E2E 9c6cb63"'
+    - 'button "NPU 排队详情：PR #2616 第 2/4 次 E2E b6c1403"'
+    - 'button "NPU 排队详情：PR #2618 第 1/2 次 E2E f19de1f"'
+    - 'button "NPU 排队详情：PR #2616 第 3/4 次 E2E c83fcdf"'
+    - 'button "NPU 排队详情：PR #2620 第 1/1 次 E2E 0794045"'
+    - 'button "NPU 排队详情：PR #2617 第 3/3 次 E2E 503df6b"'
+    - 'button "NPU 排队详情：PR #2624 第 1/2 次 E2E c580c16"'
+    - 'button "NPU 排队详情：PR #2623 第 2/3 次 E2E 43a9634"'
+    - 'button "NPU 排队详情：PR #2171 第 1/1 次 E2E f89ddea"'
+    - 'button "NPU 排队详情：PR #2628 第 1/1 次 E2E e635e1d"'
+    - 'button "NPU 排队详情：PR #2629 第 1/1 次 E2E b20969a"'
+    - 'button "NPU 排队详情：PR #2631 第 1/2 次 E2E 62cf87f"'
+    - 'button "NPU 排队详情：PR #2489 第 2/9 次 E2E cd7dd43"'
+    - 'button "NPU 排队详情：PR #2631 第 2/2 次 E2E 209e441"'
+    - 'button "NPU 排队详情：PR #2632 第 1/3 次 E2E 209e441"'
+    - 'button "NPU 排队详情：PR #2489 第 3/9 次 E2E a025460"'
+    - 'button "NPU 排队详情：PR #2632 第 2/3 次 E2E 280efcc"'
+    - 'button "NPU 排队详情：PR #2471 第 3/13 次 E2E 2b25a90"'
+    - 'button "NPU 排队详情：PR #2471 第 4/13 次 E2E ffead4d"'
+    - 'button "NPU 排队详情：PR #2545 第 2/12 次 E2E 68ddc8b"'
+    - 'button "NPU 排队详情：PR #2489 第 4/9 次 E2E a20e1a4"'
+    - 'button "NPU 排队详情：PR #2633 第 1/2 次 E2E d626f30"'
+    - 'button "NPU 排队详情：PR #2489 第 5/9 次 E2E 76e8a3d"'
+    - 'button "NPU 排队详情：PR #2634 第 1/4 次 E2E ea18c50"'
+    - 'button "NPU 排队详情：PR #2489 第 6/9 次 E2E 64baed1"'
+    - 'button "NPU 排队详情：PR #2489 第 7/9 次 E2E c4ec5f5"'
+    - 'button "NPU 排队详情：PR #2489 第 8/9 次 E2E aefbbe3"'
+    - 'button "NPU 排队详情：PR #2545 第 8/12 次 E2E d2890fc"'
+    - 'button "NPU 排队详情：PR #2609 第 2/4 次 E2E bb82d6c"'
+    - 'button "NPU 排队详情：PR #2609 第 3/4 次 E2E 1934311"'
+    - 'button "NPU 排队详情：PR #2609 第 4/4 次 E2E c0371a1"'
+    - 'button "NPU 排队详情：PR #2636 第 1/2 次 E2E be0de08"'
+    - 'button "NPU 排队详情：PR #2545 第 9/12 次 E2E c02097c"'
+    - 'button "NPU 排队详情：PR #2413 第 1/2 次 E2E cb4e7f7"'
+    - 'button "NPU 排队详情：PR #2471 第 7/13 次 E2E af0491e"'
+    - 'button "NPU 排队详情：PR #2548 第 1/3 次 E2E 09dc625"'
+    - 'button "NPU 排队详情：PR #2641 第 1/2 次 E2E afe7cb5"'
+    - 'button "NPU 排队详情：PR #2548 第 2/3 次 E2E d2749d2"'
+    - 'button "NPU 排队详情：PR #2471 第 8/13 次 E2E 9f3bd74"'
+    - 'button "NPU 排队详情：PR #2548 第 3/3 次 E2E 3a1f17c"'
+    - 'button "NPU 排队详情：PR #2642 第 2/11 次 E2E 136b849"'
+    - 'button "NPU 排队详情：PR #2642 第 3/11 次 E2E 38a017b"'
+    - 'button "NPU 排队详情：PR #2614 第 1/2 次 E2E 1357704"'
+    - 'button "NPU 排队详情：PR #2642 第 5/11 次 E2E fdb32f7"'
+    - 'button "NPU 排队详情：PR #2636 第 2/2 次 E2E 3aef2b0"'
+    - 'button "NPU 排队详情：PR #2643 第 1/1 次 E2E 157c64c"'
+    - 'button "NPU 排队详情：PR #2545 第 10/12 次 E2E 643f7a4"'
+    - 'button "NPU 排队详情：PR #2545 第 11/12 次 E2E 8f5a900"'
+    - 'button "NPU 排队详情：PR #2476 第 3/8 次 E2E cf05a1f"'
+    - 'button "NPU 排队详情：PR #1944 第 1/2 次 E2E 0d113ad"'
+    - 'button "NPU 排队详情：PR #2647 第 1/1 次 E2E 568ae90"'
+    - 'button "NPU 排队详情：PR #2621 第 2/3 次 E2E 6c0926c"'
+    - 'button "NPU 排队详情：PR #2621 第 3/3 次 E2E 606c6c8"'
+    - 'button "NPU 排队详情：PR #2476 第 4/8 次 E2E f52eeb1"'
+    - 'button "NPU 排队详情：PR #2476 第 5/8 次 E2E 8a72af6"'
+    - 'button "NPU 排队详情：PR #2476 第 6/8 次 E2E 8eda31d"'
+    - 'button "NPU 排队详情：PR #2650 第 1/1 次 E2E 2263a49"'
+    - 'button "NPU 排队详情：PR #2652 第 1/1 次 E2E 28fa4ec"'
+    - 'button "NPU 排队详情：PR #2475 第 1/1 次 E2E 4d1b301"'
+    - 'button "NPU 排队详情：PR #2600 第 1/2 次 E2E c6b5316"'
+    - 'button "NPU 排队详情：PR #2627 第 2/4 次 E2E 9c38ed6"'
+    - 'button "NPU 排队详情：PR #2417 第 9/9 次 E2E ba02426"'
+    - 'button "NPU 排队详情：PR #2654 第 1/1 次 E2E 54d48da"'
+    - 'button "NPU 排队详情：PR #2658 第 1/3 次 E2E 4abee00"'
+    - 'button "NPU 排队详情：PR #2661 第 1/3 次 E2E 13d15f3"'
+    - 'button "NPU 排队详情：PR #2627 第 3/4 次 E2E ac8483b"'
+    - 'button "NPU 排队详情：PR #2004 第 1/2 次 E2E e1a2a04"'
+    - 'button "NPU 排队详情：PR #2302 第 2/8 次 E2E 41e0d38"'
+    - 'button "NPU 排队详情：PR #2302 第 3/8 次 E2E 1390e0f"'
+    - 'button "NPU 排队详情：PR #2302 第 4/8 次 E2E 1718e9c"'
+    - 'button "NPU 排队详情：PR #2302 第 5/8 次 E2E 70ed40c"'
+    - 'button "NPU 排队详情：PR #2594 第 2/2 次 E2E a480b4c"'
+    - 'button "NPU 排队详情：PR #2004 第 2/2 次 E2E ddfdae1"'
+    - 'button "NPU 排队详情：PR #2661 第 2/3 次 E2E 45dd8b5"'
+    - 'button "NPU 排队详情：PR #2557 第 1/10 次 E2E 68014c5"'
+    - 'button "NPU 排队详情：PR #2557 第 2/10 次 E2E 57b94ce"'
+    - 'button "NPU 排队详情：PR #2557 第 3/10 次 E2E d4b855e"'
+    - 'button "NPU 排队详情：PR #2302 第 7/8 次 E2E 7576252"'
+    - 'button "NPU 排队详情：PR #2557 第 4/10 次 E2E 916ef8c"'
+    - 'button "NPU 排队详情：PR #2443 第 1/1 次 E2E 4fe8154"'
+    - 'button "NPU 排队详情：PR #2557 第 5/10 次 E2E 94e6235"'
+    - 'button "NPU 排队详情：PR #2489 第 9/9 次 E2E 59589e1"'
+    - 'button "NPU 排队详情：PR #2476 第 8/8 次 E2E b751c4c"'
+    - 'button "NPU 排队详情：PR #2561 第 1/1 次 E2E 10b7277"'
+    - 'button "NPU 排队详情：PR #2147 第 1/1 次 E2E 011444b"'
+    - 'button "NPU 排队详情：PR #2667 第 1/1 次 E2E 1799029"'
+    - 'button "NPU 排队详情：PR #2557 第 7/10 次 E2E 26f29d6"'
+    - 'button "NPU 排队详情：PR #2642 第 6/11 次 E2E d6df087"'
+    - 'button "NPU 排队详情：PR #2557 第 8/10 次 E2E c0322cc"'
+    - 'button "NPU 排队详情：PR #2557 第 9/10 次 E2E b5c40b3"'
+    - 'button "NPU 排队详情：PR #2642 第 7/11 次 E2E 3a4d643"'
+    - 'button "NPU 排队详情：PR #1919 第 2/2 次 E2E 7610e7f"'
+    - 'button "NPU 排队详情：PR #2642 第 8/11 次 E2E ad2b865"'
+    - 'button "NPU 排队详情：PR #2557 第 10/10 次 E2E bf7b5fc"'
+    - 'button "NPU 排队详情：PR #2642 第 9/11 次 E2E f7e1c28"'
+    - 'button "NPU 排队详情：PR #2642 第 10/11 次 E2E fb9f671"'
+    - 'button "NPU 排队详情：PR #2627 第 4/4 次 E2E c6359d8"'
+    - 'button "NPU 排队详情：PR #2674 第 1/3 次 E2E d8d03f9"'
+    - 'button "NPU 排队详情：PR #2674 第 3/3 次 E2E d6fef8f"'
+  - status: 10 个批次的 NPU 明细缺失或时间戳异常，未计入统计；缺失不代表没有排队。
+  - generic: 选区范围
+  - strong: 3.0 天
+  - generic: 有效样本
+  - strong: 132 次
+  - generic: 平均排队
+  - strong: 3.30 min
+  - generic: P50
+  - strong: 0.60 min
+  - generic: P90
+  - strong: 5.48 min
+  - generic: 成功
+  - generic: 失败
+  - generic: 取消
+  - generic: 执行中
+  - heading "需要关注的 PR" [level=2]
+  - paragraph: 优先显示超过 P90（按页级范围 166 个有效完成样本计算）、执行中和失败的批次；理由计数可重叠，列表按稳定批次去重、每批次一行多标签。
+  - button "导出批次 CSV":
+    - text: 导出批次 CSV
+  - searchbox "搜索关注列表"
+  - button "查看全部批次"
+  - text: 关注批次
+  - generic: "98"
+  - article:
+    - 'button "E2E 详情：PR #2085 第 1/1 次 E2E 26f3e09"':
+    - 'link "PR #2085"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2085
+    - generic: 26f3e09
+    - text: "[CustomOp](feat) Emit and validate rank-specific flatten declarations"
+    - generic: 耗时偏长
+    - generic: xchencehn · pr/issue258-flatten-declarations → main
+    - generic: 成功
+    - generic: 10/19 14:05
+    - generic: 1675.57 min*
+    - generic: 最后结束：Auto labeling
+  - article:
+    - 'button "E2E 详情：PR #2489 第 8/9 次 E2E aefbbe3"':
+    - 'link "PR #2489"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2489
+    - generic: aefbbe3
+    - text: "[costmodel](feat) Calibrate SIMD/SIMT indirect memory costs"
+    - generic: 耗时偏长
+    - text: ·
+    - generic: 失败
+    - generic: maxh2018 · feat/indirect-memory-calibration-upstream-20261009 → feature/simd-simt-compile-mode
+    - generic: 失败
+    - generic: 10/20 01:57
+    - generic: 798.87 min*
+    - generic: 最后结束：Ascend950 CI
+  - article:
+    - 'button "E2E 详情：PR #2617 第 1/3 次 E2E 9c6cb63"':
+    - 'link "PR #2617"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2617
+    - generic: 9c6cb63
+    - text: "[compiler](fix) --enable-optimized-metaop"
+    - generic: 耗时偏长
+    - text: ·
+    - generic: 失败
+    - generic: LH-123L · main-dev → main-dev
+    - generic: 失败
+    - generic: 10/19 10:55
+    - generic: 390.75 min*
+    - generic: 最后结束：Integration Tests
+  - article:
+    - 'button "E2E 详情：PR #2628 第 1/1 次 E2E e635e1d"':
+    - 'link "PR #2628"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2628
+    - generic: e635e1d
+    - text: "[proton](feat) enable Ascend NPU scope tracing"
+    - generic: 耗时偏长
+    - text: ·
+    - generic: 失败
+    - generic: LantSky · codex/proton-ascend-main-dev → main-dev
+    - generic: 失败
+    - generic: 10/19 19:48
+    - generic: 261.38 min*
+    - generic: 最后结束：Wheels
+  - article:
+    - 'button "E2E 详情：PR #2652 第 1/1 次 E2E 28fa4ec"':
+    - 'link "PR #2652"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2652
+    - generic: 28fa4ec
+    - text: "[chore](feat) Sync main from branch main-dev"
+    - generic: 耗时偏长
+    - text: ·
+    - generic: 失败
+    - generic: kingsirvince · 1020_sync → main
+    - generic: 失败
+    - generic: 10/20 17:16
+    - generic: 168.48 min*
+    - generic: 最后结束：Wheels
+  - article:
+    - 'button "E2E 详情：PR #2561 第 1/1 次 E2E 10b7277"':
+    - 'link "PR #2561"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2561
+    - generic: 10b7277
+    - text: "[ssbuffer](feat) Plan vector block handle for/if"
+    - generic: 耗时偏长
+    - text: ·
+    - generic: 失败
+    - generic: Hsyy04 · nsa-blockid → main-dev
+    - generic: 失败
+    - generic: 10/21 14:04
+    - generic: 138.82 min*
+    - generic: 最后结束：Integration Tests
+  - article:
+    - 'button "E2E 详情：PR #2545 第 11/12 次 E2E 8f5a900"':
+    - 'link "PR #2545"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2545
+    - generic: 8f5a900
+    - text: "[Rebase](feat) Rebase feature/simd-simt-compile-mode to main"
+    - generic: 耗时偏长
+    - text: ·
+    - generic: 失败
+    - generic: chj-2025 · feature/simd-simt-compile-mode-sync-main-v2 → feature/simd-simt-compile-mode
+    - generic: 失败
+    - generic: 10/20 14:27
+    - generic: 137.17 min*
+    - generic: 最后结束：Auto labeling
+  - article:
+    - 'button "E2E 详情：PR #2147 第 1/1 次 E2E 011444b"':
+    - 'link "PR #2147"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2147
+    - generic: 011444b
+    - text: "[ssbuffer](feat) addapter for/if"
+    - generic: 耗时偏长
+    - text: ·
+    - generic: 失败
+    - generic: Hsyy04 · nsa → main-dev
+    - generic: 失败
+    - generic: 10/21 14:08
+    - generic: 136.23 min*
+    - generic: 最后结束：Integration Tests
+  - article:
+    - 'button "E2E 详情：PR #2475 第 1/1 次 E2E 4d1b301"':
+    - 'link "PR #2475"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2475
+    - generic: 4d1b301
+    - text: Bump actions/download-artifact from 4 to 8
+    - generic: 耗时偏长
+    - text: ·
+    - generic: 失败
+    - generic: dependabot[bot] · dependabot/github_actions/actions/download-artifact-7 → main
+    - generic: 失败
+    - generic: 10/20 18:49
+    - generic: 129.45 min*
+    - generic: 最后结束：Wheels
+  - article:
+    - 'button "E2E 详情：PR #2594 第 1/2 次 E2E 74dfcc1"':
+    - 'link "PR #2594"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2594
+    - generic: 74dfcc1
+    - text: "[costmodel](feat) Calibrate partial structured SIMD/SIMT memory costs (depends on #2489)"
+    - generic: 耗时偏长
+    - text: ·
+    - generic: 失败
+    - generic: maxh2018 · feat/partial-structure-memory-upstream-20261015 → feature/simd-simt-compile-mode
+    - generic: 失败
+    - generic: 10/19 10:08
+    - generic: 128.98 min*
+    - generic: 最后结束：Ascend950 CI
+  - article:
+    - 'button "E2E 详情：PR #2476 第 8/8 次 E2E b751c4c"':
+    - 'link "PR #2476"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2476
+    - generic: b751c4c
+    - text: "[TritonToLinalg](fix) boundary size Error for make_block_ptr"
+    - generic: 耗时偏长
+    - text: ·
+    - generic: 失败
+    - generic: liwei-link · feature/simd-simt-compile-mode → feature/simd-simt-compile-mode
+    - generic: 失败
+    - generic: 10/21 11:49
+    - generic: 122.07 min*
+    - generic: 最后结束：Ascend950 CI
+  - article:
+    - 'button "E2E 详情：PR #2619 第 1/1 次 E2E 7aef73d"':
+    - 'link "PR #2619"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2619
+    - generic: 7aef73d
+    - text: "[TritonToLinalg](fix) stop legacy traversal at integer scalars"
+    - generic: 耗时偏长
+    - generic: elstainniles · fix/blockdata-scalar-boundary → main-dev
+    - generic: 成功
+    - generic: 10/19 12:05
+    - generic: 117.40 min*
+    - generic: 最后结束：Auto labeling
+  - article:
+    - 'button "E2E 详情：PR #2667 第 1/1 次 E2E 1799029"':
+    - 'link "PR #2667"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2667
+    - generic: "1799029"
+    - text: "[WIP][ssbuffer][feat] Use selects for outer-scope double buffering"
+    - generic: 耗时偏长
+    - text: ·
+    - generic: 失败
+    - generic: 1801ZDL · feat/outer-double-buffer-select → main-dev
+    - generic: 失败
+    - generic: 10/21 14:30
+    - generic: 114.15 min*
+    - generic: 最后结束：Integration Tests
+  - article:
+    - 'button "E2E 详情：PR #1919 第 2/2 次 E2E 7610e7f"':
+    - 'link "PR #1919"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/1919
+    - generic: 7610e7f
+    - text: "[utils](fix) improve std compile version to c++20 to support torch2.14"
+    - generic: 耗时偏长
+    - text: ·
+    - generic: 失败
+    - generic: liufengsheng-beep · std20 → main-dev
+    - generic: 失败
+    - generic: 10/21 15:02
+    - generic: 105.05 min*
+    - generic: 最后结束：Integration Tests
+  - article:
+    - 'button "E2E 详情：PR #2642 第 10/11 次 E2E fb9f671"':
+    - 'link "PR #2642"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2642
+    - generic: fb9f671
+    - text: "[opclassifier](fix) classify nested SCF yield per-operand"
+    - generic: 耗时偏长
+    - text: ·
+    - generic: 失败
+    - generic: 245516766 · fix-lrf-bug → main-dev
+    - generic: 失败
+    - generic: 10/21 15:08
+    - generic: 104.07 min*
+    - generic: 最后结束：Integration Tests
+  - article:
+    - 'button "E2E 详情：PR #2417 第 6/9 次 E2E 1d1cc93"':
+    - 'link "PR #2417"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2417
+    - generic: 1d1cc93
+    - text: "[compiler](feat) replace bytecode bridge with BishengIR text"
+    - generic: 耗时偏长
+    - text: ·
+    - generic: 失败
+    - generic: elstainniles · feat/bisheng-text-compat → main-dev
+    - generic: 失败
+    - generic: 10/19 10:42
+    - generic: 103.62 min*
+    - generic: 最后结束：LLVM Build
+  - article:
+    - 'button "E2E 详情：PR #2454 第 1/1 次 E2E e0ed4bc"':
+    - 'link "PR #2454"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2454
+    - generic: e0ed4bc
+    - text: "[safe](fix) Harden the LLVM build and keep FileCheck in the wheel"
+    - generic: 耗时偏长
+    - generic: li-lizhe · harden-llvm-build-keep-filecheck → main
+    - generic: 成功
+    - generic: 10/21 06:51
+    - generic: 102.15 min*
+    - generic: 最后结束：LLVM Build
+  - article:
+    - 'button "E2E 详情：PR #2557 第 10/10 次 E2E bf7b5fc"':
+    - 'link "PR #2557"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2557
+    - generic: bf7b5fc
+    - text: "[test](feat) add NPU community cases under pytest_ut/community"
+    - generic: 执行中
+    - generic: irrorz · community_cases → main
+    - generic: 执行中
+    - generic: 10/21 15:05
+    - generic: 已观测 117.72 min*E2E 排除：执行中观测
+    - generic: 仍在等待 / 执行：Integration Tests
+  - article:
+    - 'button "E2E 详情：PR #2627 第 4/4 次 E2E c6359d8"':
+    - 'link "PR #2627"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2627
+    - generic: c6359d8
+    - text: "[ssbuffer](feat) Better support for custom op"
+    - generic: 执行中
+    - generic: olivervnc · ssbuf-customOp → main-dev
+    - generic: 执行中
+    - generic: 10/21 16:15
+    - generic: 已观测 48.27 min*E2E 排除：执行中观测
+    - generic: 仍在等待 / 执行：DynamicCVPipeline PreCheck Tests
+  - article:
+    - 'button "E2E 详情：PR #2674 第 3/3 次 E2E d6fef8f"':
+    - 'link "PR #2674"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2674
+    - generic: d6fef8f
+    - text: "[ssbuffer](fix) hoist and unify redirected output …"
+    - generic: 执行中
+    - generic: olivervnc · splitif-hoist → main-dev
+    - generic: 执行中
+    - generic: 10/21 16:55
+    - generic: 已观测 7.95 min*E2E 排除：执行中观测
+    - generic: 仍在等待 / 执行：Integration Tests
+  - article:
+    - 'button "E2E 详情：PR #2642 第 11/11 次 E2E fb9f671"':
+    - 'link "PR #2642"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2642
+    - generic: fb9f671 · 重跑
+    - text: "[opclassifier](fix) classify nested SCF yield per-operand"
+    - generic: 执行中
+    - generic: 245516766 · fix-lrf-bug → main-dev
+    - generic: 执行中
+    - generic: 10/21 16:57
+    - generic: 已观测 6.02 min*E2E 排除：执行中观测
+    - generic: 仍在等待 / 执行：Integration Tests
+  - article:
+    - 'button "E2E 详情：PR #2615 第 1/2 次 E2E 0cc5757"':
+    - 'link "PR #2615"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2615
+    - generic: 0cc5757
+    - text: "[TritonToLinalg](fix) keep the index operand of reduce-with-index ops"
+    - generic: 失败
+    - generic: li-lizhe · fix/2530-useindexinput → main
+    - generic: 失败
+    - generic: 10/18 23:34
+    - generic: 17.53 min*
+    - generic: 最后结束：Integration Tests
+  - article:
+    - 'button "E2E 详情：PR #2615 第 2/2 次 E2E 276d87c"':
+    - 'link "PR #2615"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2615
+    - generic: 276d87c
+    - text: "[TritonToLinalg](fix) keep the index operand of reduce-with-index ops"
+    - generic: 失败
+    - generic: li-lizhe · fix/2530-useindexinput → main
+    - generic: 失败
+    - generic: 10/19 06:22
+    - generic: 15.87 min*
+    - generic: 最后结束：Integration Tests
+  - article:
+    - 'button "E2E 详情：PR #2070 第 1/2 次 E2E 1e234b6"':
+    - 'link "PR #2070"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2070
+    - generic: 1e234b6
+    - text: "[Proton](feat) support proton and proton-viewer on ascend"
+    - generic: 失败
+    - generic: CHNJZ · proton_3.6.0 → main-dev
+    - generic: 失败
+    - generic: 10/19 09:23
+    - generic: 8.62 min*
+    - generic: 最后结束：Integration Tests
+  - article:
+    - 'button "E2E 详情：PR #2417 第 1/9 次 E2E 262480c"':
+    - 'link "PR #2417"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2417
+    - generic: 262480c · 重跑
+    - text: "[compiler](feat) replace bytecode bridge with BishengIR text"
+    - generic: 失败
+    - generic: elstainniles · feat/bisheng-text-compat → main-dev
+    - generic: 失败
+    - generic: 10/19 09:46
+    - generic: 16.10 min*
+    - generic: 最后结束：Integration Tests
+  - article:
+    - 'button "E2E 详情：PR #2616 第 1/4 次 E2E 1037b9b"':
+    - 'link "PR #2616"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2616
+    - generic: 1037b9b
+    - text: "[sync](chore) sync triton-ascend 1017 main:afbc537"
+    - generic: 失败
+    - generic: hongziqi · dev/main-upgrade-3.7-sync-afbc537-1017 → dev/main-upgrade-3.7
+    - generic: 失败
+    - generic: 10/19 10:48
+    - generic: 10.43 min*
+    - generic: 最后结束：Documentation
+  - article:
+    - 'button "E2E 详情：PR #2605 第 1/2 次 E2E d1ed126"':
+    - 'link "PR #2605"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2605
+    - generic: d1ed126
+    - text: "[Launcher](feat) replace generated launchers with a shared runtime"
+    - generic: 失败
+    - generic: KanuaK · refactor/driver-launcher → main-dev
+    - generic: 失败
+    - generic: 10/19 10:53
+    - generic: 28.08 min*
+    - generic: 最后结束：Integration Tests
+  - article:
+    - 'button "E2E 详情：PR #2616 第 2/4 次 E2E b6c1403"':
+    - 'link "PR #2616"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2616
+    - generic: b6c1403
+    - text: "[sync](chore) sync triton-ascend 1017 main:afbc537"
+    - generic: 失败
+    - generic: hongziqi · dev/main-upgrade-3.7-sync-afbc537-1017 → dev/main-upgrade-3.7
+    - generic: 失败
+    - generic: 10/19 10:56
+    - generic: 26.00 min*
+    - generic: 最后结束：Integration Tests
+  - article:
+    - 'button "E2E 详情：PR #2618 第 1/2 次 E2E f19de1f"':
+    - 'link "PR #2618"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2618
+    - generic: f19de1f
+    - text: "[patch](fix) autotune issue fixed"
+    - generic: 失败
+    - generic: LH-123L · main-code → main
+    - generic: 失败
+    - generic: 10/19 11:06
+    - generic: 17.13 min*
+    - generic: 最后结束：Integration Tests
+  - article:
+    - 'button "E2E 详情：PR #2616 第 3/4 次 E2E c83fcdf"':
+    - 'link "PR #2616"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2616
+    - generic: c83fcdf
+    - text: "[sync](chore) sync triton-ascend 1017 main:afbc537"
+    - generic: 失败
+    - generic: hongziqi · dev/main-upgrade-3.7-sync-afbc537-1017 → dev/main-upgrade-3.7
+    - generic: 失败
+    - generic: 10/19 11:27
+    - generic: 20.85 min*
+    - generic: 最后结束：DynamicCVPipeline PreCheck Tests
+  - article:
+    - 'button "E2E 详情：PR #2620 第 1/1 次 E2E 0794045"':
+    - 'link "PR #2620"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2620
+    - generic: "0794045"
+    - text: "[ssbuffer](fix) revert (#2481)"
+    - generic: 失败
+    - generic: Hsyy04 · revert → main-dev
+    - generic: 失败
+    - generic: 10/19 14:09
+    - generic: 57.08 min*
+    - generic: 最后结束：Auto labeling
+  - article:
+    - 'button "E2E 详情：PR #2624 第 1/2 次 E2E c580c16"':
+    - 'link "PR #2624"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2624
+    - generic: c580c16
+    - text: "[ssbuffer](fix) revert 2322"
+    - generic: 失败
+    - generic: licf497 · revert-2322-exp_merge_0920 → main-dev
+    - generic: 失败
+    - generic: 10/19 17:14
+    - generic: 11.18 min*
+    - generic: 最后结束：Integration Tests
+  - article:
+    - 'button "E2E 详情：PR #2171 第 1/1 次 E2E f89ddea"':
+    - 'link "PR #2171"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2171
+    - generic: f89ddea
+    - text: "[proton](feat) enable Ascend NPU scope tracing"
+    - generic: 失败
+    - generic: LantSky · feature/proton-ascend-pr1 → main
+    - generic: 失败
+    - generic: 10/19 18:26
+    - generic: 14.80 min*
+    - generic: 最后结束：Integration Tests
+  - article:
+    - 'button "E2E 详情：PR #2629 第 1/1 次 E2E b20969a"':
+    - 'link "PR #2629"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2629
+    - generic: b20969a
+    - text: "[costmodel](feat) integrate fitted first- and tail-axis reduction costs"
+    - generic: 失败
+    - generic: Huangdinosaur · feature/reduce-integration-latest → feature/simd-simt-compile-mode
+    - generic: 失败
+    - generic: 10/19 20:00
+    - generic: 89.10 min*
+    - generic: 最后结束：Ascend950 CI
+  - article:
+    - 'button "E2E 详情：PR #2489 第 2/9 次 E2E cd7dd43"':
+    - 'link "PR #2489"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2489
+    - generic: cd7dd43
+    - text: "[costmodel](feat) Calibrate SIMD/SIMT indirect memory costs"
+    - generic: 失败
+    - generic: maxh2018 · feat/indirect-memory-calibration-upstream-20261009 → feature/simd-simt-compile-mode
+    - generic: 失败
+    - generic: 10/19 20:55
+    - generic: 13.87 min*
+    - generic: 最后结束：Integration Tests
+  - article:
+    - 'button "E2E 详情：PR #2489 第 3/9 次 E2E a025460"':
+    - 'link "PR #2489"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2489
+    - generic: a025460
+    - text: "[costmodel](feat) Calibrate SIMD/SIMT indirect memory costs"
+    - generic: 失败
+    - generic: maxh2018 · feat/indirect-memory-calibration-upstream-20261009 → feature/simd-simt-compile-mode
+    - generic: 失败
+    - generic: 10/19 21:08
+    - generic: 35.78 min*
+    - generic: 最后结束：Integration Tests
+  - article:
+    - 'button "E2E 详情：PR #2545 第 2/12 次 E2E 68ddc8b"':
+    - 'link "PR #2545"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2545
+    - generic: 68ddc8b
+    - text: "[Rebase](feat) Rebase feature/simd-simt-compile-mode to main"
+    - generic: 失败
+    - generic: chj-2025 · feature/simd-simt-compile-mode-sync-main-v2 → feature/simd-simt-compile-mode
+    - generic: 失败
+    - generic: 10/19 22:10
+    - generic: 97.35 min*
+    - generic: 最后结束：Integration Tests
+  - article:
+    - 'button "E2E 详情：PR #2489 第 4/9 次 E2E a20e1a4"':
+    - 'link "PR #2489"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2489
+    - generic: a20e1a4
+    - text: "[costmodel](feat) Calibrate SIMD/SIMT indirect memory costs"
+    - generic: 失败
+    - generic: maxh2018 · feat/indirect-memory-calibration-upstream-20261009 → feature/simd-simt-compile-mode
+    - generic: 失败
+    - generic: 10/19 22:23
+    - generic: 12.07 min*
+    - generic: 最后结束：Ascend950 CI
+  - article:
+    - 'button "E2E 详情：PR #2489 第 5/9 次 E2E 76e8a3d"':
+    - 'link "PR #2489"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2489
+    - generic: 76e8a3d
+    - text: "[costmodel](feat) Calibrate SIMD/SIMT indirect memory costs"
+    - generic: 失败
+    - generic: maxh2018 · feat/indirect-memory-calibration-upstream-20261009 → feature/simd-simt-compile-mode
+    - generic: 失败
+    - generic: 10/19 22:35
+    - generic: 47.12 min*
+    - generic: 最后结束：Integration Tests
+  - article:
+    - 'button "E2E 详情：PR #2545 第 3/12 次 E2E 68ddc8b"':
+    - 'link "PR #2545"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2545
+    - generic: 68ddc8b · 重跑
+    - text: "[Rebase](feat) Rebase feature/simd-simt-compile-mode to main"
+    - generic: 失败
+    - generic: chj-2025 · feature/simd-simt-compile-mode-sync-main-v2 → feature/simd-simt-compile-mode
+    - generic: 失败
+    - generic: 10/19 22:52
+    - generic: 2.72 min*
+    - generic: 最后结束：Ascend950 CI
+  - article:
+    - 'button "E2E 详情：PR #2634 第 1/4 次 E2E ea18c50"':
+    - 'link "PR #2634"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2634
+    - generic: ea18c50
+    - text: "[compiler](feat) detect Ascend910_9691 (A6) as register-based target …"
+    - generic: 失败
+    - generic: Return1456 · main-dev → main-dev
+    - generic: 失败
+    - generic: 10/19 23:13
+    - generic: 53.55 min*
+    - generic: 最后结束：Integration Tests
+  - article:
+    - 'button "E2E 详情：PR #2545 第 5/12 次 E2E 68ddc8b"':
+    - 'link "PR #2545"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2545
+    - generic: 68ddc8b · 重跑
+    - text: "[Rebase](feat) Rebase feature/simd-simt-compile-mode to main"
+    - generic: 失败
+    - generic: chj-2025 · feature/simd-simt-compile-mode-sync-main-v2 → feature/simd-simt-compile-mode
+    - generic: 失败
+    - generic: 10/19 23:46
+    - generic: 2.80 min*
+    - generic: 最后结束：Ascend950 CI
+  - article:
+    - 'button "E2E 详情：PR #2489 第 6/9 次 E2E 64baed1"':
+    - 'link "PR #2489"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2489
+    - generic: 64baed1
+    - text: "[costmodel](feat) Calibrate SIMD/SIMT indirect memory costs"
+    - generic: 失败
+    - generic: maxh2018 · feat/indirect-memory-calibration-upstream-20261009 → feature/simd-simt-compile-mode
+    - generic: 失败
+    - generic: 10/20 01:25
+    - generic: 12.07 min*
+    - generic: 最后结束：Integration Tests
+  - article:
+    - 'button "E2E 详情：PR #2489 第 7/9 次 E2E c4ec5f5"':
+    - 'link "PR #2489"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2489
+    - generic: c4ec5f5
+    - text: "[costmodel](feat) Calibrate SIMD/SIMT indirect memory costs"
+    - generic: 失败
+    - generic: maxh2018 · feat/indirect-memory-calibration-upstream-20261009 → feature/simd-simt-compile-mode
+    - generic: 失败
+    - generic: 10/20 01:36
+    - generic: 23.73 min*
+    - generic: 最后结束：Ascend950 CI
+  - article:
+    - 'button "E2E 详情：PR #2545 第 6/12 次 E2E 68ddc8b"':
+    - 'link "PR #2545"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2545
+    - generic: 68ddc8b · 重跑
+    - text: "[Rebase](feat) Rebase feature/simd-simt-compile-mode to main"
+    - generic: 失败
+    - generic: chj-2025 · feature/simd-simt-compile-mode-sync-main-v2 → feature/simd-simt-compile-mode
+    - generic: 失败
+    - generic: 10/20 08:16
+    - generic: 2.78 min*
+    - generic: 最后结束：Ascend950 CI
+  - article:
+    - 'button "E2E 详情：PR #2545 第 8/12 次 E2E d2890fc"':
+    - 'link "PR #2545"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2545
+    - generic: d2890fc
+    - text: "[Rebase](feat) Rebase feature/simd-simt-compile-mode to main"
+    - generic: 失败
+    - generic: chj-2025 · feature/simd-simt-compile-mode-sync-main-v2 → feature/simd-simt-compile-mode
+    - generic: 失败
+    - generic: 10/20 08:31
+    - generic: 57.83 min*
+    - generic: 最后结束：Integration Tests
+  - article:
+    - 'button "E2E 详情：PR #2609 第 2/4 次 E2E bb82d6c"':
+    - 'link "PR #2609"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2609
+    - generic: bb82d6c
+    - text: "[costmodel](feat) model Cube and TinyCube dot costs in Stage formula"
+    - generic: 失败
+    - generic: shane-kshongmo · hxl/cube-roofline-calibration → feature/simd-simt-compile-mode
+    - generic: 失败
+    - generic: 10/20 09:32
+    - generic: 4.62 min*
+    - generic: 最后结束：Ascend950 CI
+  - article:
+    - 'button "E2E 详情：PR #2609 第 3/4 次 E2E 1934311"':
+    - 'link "PR #2609"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2609
+    - generic: "1934311"
+    - text: "[costmodel](feat) model Cube and TinyCube dot costs in Stage formula"
+    - generic: 失败
+    - generic: shane-kshongmo · hxl/cube-roofline-calibration → feature/simd-simt-compile-mode
+    - generic: 失败
+    - generic: 10/20 09:36
+    - generic: 6.33 min*
+    - generic: 最后结束：Integration Tests
+  - article:
+    - 'button "E2E 详情：PR #2476 第 1/8 次 E2E 51905b6"':
+    - 'link "PR #2476"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2476
+    - generic: 51905b6 · 重跑
+    - text: "[TritonToLinalg](fix) boundary size Error for make_block_ptr"
+    - generic: 失败
+    - generic: liwei-link · feature/simd-simt-compile-mode → feature/simd-simt-compile-mode
+    - generic: 失败
+    - generic: 10/20 09:38
+    - generic: 4.55 min*
+    - generic: 最后结束：Ascend950 CI
+  - article:
+    - 'button "E2E 详情：PR #2609 第 4/4 次 E2E c0371a1"':
+    - 'link "PR #2609"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2609
+    - generic: c0371a1
+    - text: "[costmodel](feat) model Cube and TinyCube dot costs in Stage formula"
+    - generic: 失败
+    - generic: shane-kshongmo · hxl/cube-roofline-calibration → feature/simd-simt-compile-mode
+    - generic: 失败
+    - generic: 10/20 09:41
+    - generic: 50.57 min*
+    - generic: 最后结束：Auto labeling
+  - article:
+    - 'button "E2E 详情：PR #2636 第 1/2 次 E2E be0de08"':
+    - 'link "PR #2636"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2636
+    - generic: be0de08
+    - text: "[WIP] ssbuffer(fix) pr2322"
+    - generic: 失败
+    - generic: zhuxinguang33 · pr2322 → main-dev
+    - generic: 失败
+    - generic: 10/20 09:45
+    - generic: 38.75 min*
+    - generic: 最后结束：DynamicCVPipeline PreCheck Tests
+  - article:
+    - 'button "E2E 详情：PR #2545 第 9/12 次 E2E c02097c"':
+    - 'link "PR #2545"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2545
+    - generic: c02097c
+    - text: "[Rebase](feat) Rebase feature/simd-simt-compile-mode to main"
+    - generic: 失败
+    - generic: chj-2025 · feature/simd-simt-compile-mode-sync-main-v2 → feature/simd-simt-compile-mode
+    - generic: 失败
+    - generic: 10/20 10:07
+    - generic: 60.32 min*
+    - generic: 最后结束：Integration Tests
+  - article:
+    - 'button "E2E 详情：PR #2476 第 2/8 次 E2E 51905b6"':
+    - 'link "PR #2476"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2476
+    - generic: 51905b6 · 重跑
+    - text: "[TritonToLinalg](fix) boundary size Error for make_block_ptr"
+    - generic: 失败
+    - generic: liwei-link · feature/simd-simt-compile-mode → feature/simd-simt-compile-mode
+    - generic: 失败
+    - generic: 10/20 10:08
+    - generic: 2.90 min*
+    - generic: 最后结束：Ascend950 CI
+  - article:
+    - 'button "E2E 详情：PR #2548 第 1/3 次 E2E 09dc625"':
+    - 'link "PR #2548"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2548
+    - generic: 09dc625
+    - text: "[CustomOp](feat) support CUBE_ONLY CustomOp"
+    - generic: 失败
+    - generic: danielcm585 · feat-custom-op-cube → main
+    - generic: 失败
+    - generic: 10/20 11:07
+    - generic: 15.13 min*
+    - generic: 最后结束：DynamicCVPipeline PreCheck Tests
+  - article:
+    - 'button "E2E 详情：PR #2641 第 1/2 次 E2E afe7cb5"':
+    - 'link "PR #2641"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2641
+    - generic: afe7cb5
+    - text: "[ssbuffer](feat) add pattern recognition in MergeComputeBlockPass"
+    - generic: 失败
+    - generic: licf497 · merge_block_1020 → main-dev
+    - generic: 失败
+    - generic: 10/20 11:13
+    - generic: 38.48 min*
+    - generic: 最后结束：DynamicCVPipeline PreCheck Tests
+  - article:
+    - 'button "E2E 详情：PR #2548 第 3/3 次 E2E 3a1f17c"':
+    - 'link "PR #2548"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2548
+    - generic: 3a1f17c
+    - text: "[CustomOp](feat) support CUBE_ONLY CustomOp"
+    - generic: 失败
+    - generic: danielcm585 · feat-custom-op-cube → main
+    - generic: 失败
+    - generic: 10/20 11:26
+    - generic: 20.68 min*
+    - generic: 最后结束：DynamicCVPipeline PreCheck Tests
+  - article:
+    - 'button "E2E 详情：PR #2642 第 2/11 次 E2E 136b849"':
+    - 'link "PR #2642"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2642
+    - generic: 136b849
+    - text: "[opclassifier](fix) classify nested SCF yield per-operand"
+    - generic: 失败
+    - generic: 245516766 · fix-lrf-bug → main-dev
+    - generic: 失败
+    - generic: 10/20 11:36
+    - generic: 5.12 min*
+    - generic: 最后结束：DynamicCVPipeline PreCheck Tests
+  - article:
+    - 'button "E2E 详情：PR #2642 第 3/11 次 E2E 38a017b"':
+    - 'link "PR #2642"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2642
+    - generic: 38a017b
+    - text: "[opclassifier](fix) classify nested SCF yield per-operand"
+    - generic: 失败
+    - generic: 245516766 · fix-lrf-bug → main-dev
+    - generic: 失败
+    - generic: 10/20 11:40
+    - generic: 7.78 min*
+    - generic: 最后结束：DynamicCVPipeline PreCheck Tests
+  - article:
+    - 'button "E2E 详情：PR #2614 第 1/2 次 E2E 1357704"':
+    - 'link "PR #2614"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2614
+    - generic: "1357704"
+    - text: "[build](fix) modify numpy version"
+    - generic: 失败
+    - generic: LH-123L · main-dev-build → main-dev
+    - generic: 失败
+    - generic: 10/20 11:43
+    - generic: 5.90 min*
+    - generic: 最后结束：Integration Tests
+  - article:
+    - 'button "E2E 详情：PR #2636 第 2/2 次 E2E 3aef2b0"':
+    - 'link "PR #2636"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2636
+    - generic: 3aef2b0
+    - text: "[WIP] ssbuffer(fix) pr2322"
+    - generic: 失败
+    - generic: zhuxinguang33 · pr2322 → main-dev
+    - generic: 失败
+    - generic: 10/20 11:49
+    - generic: 39.33 min*
+    - generic: 最后结束：DynamicCVPipeline PreCheck Tests
+  - article:
+    - 'button "E2E 详情：PR #2643 第 1/1 次 E2E 157c64c"':
+    - 'link "PR #2643"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2643
+    - generic: 157c64c
+    - text: "[compiler](fix) compiler optimization"
+    - generic: 失败
+    - generic: LH-123L · main-dev → main-dev
+    - generic: 失败
+    - generic: 10/20 11:51
+    - generic: 12.17 min*
+    - generic: 最后结束：Integration Tests
+  - article:
+    - 'button "E2E 详情：PR #2545 第 10/12 次 E2E 643f7a4"':
+    - 'link "PR #2545"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2545
+    - generic: 643f7a4
+    - text: "[Rebase](feat) Rebase feature/simd-simt-compile-mode to main"
+    - generic: 失败
+    - generic: chj-2025 · feature/simd-simt-compile-mode-sync-main-v2 → feature/simd-simt-compile-mode
+    - generic: 失败
+    - generic: 10/20 12:01
+    - generic: 62.73 min*
+    - generic: 最后结束：Integration Tests
+  - article:
+    - 'button "E2E 详情：PR #2476 第 3/8 次 E2E cf05a1f"':
+    - 'link "PR #2476"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2476
+    - generic: cf05a1f
+    - text: "[TritonToLinalg](fix) boundary size Error for make_block_ptr"
+    - generic: 失败
+    - generic: liwei-link · feature/simd-simt-compile-mode → feature/simd-simt-compile-mode
+    - generic: 失败
+    - generic: 10/20 14:40
+    - generic: 36.23 min*
+    - generic: 最后结束：Integration Tests
+  - article:
+    - 'button "E2E 详情：PR #1944 第 1/2 次 E2E 0d113ad"':
+    - 'link "PR #1944"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/1944
+    - generic: 0d113ad
+    - text: "[ssbuffer](fix) build sync operation dependencies in MemoryEffectTracker"
+    - generic: 失败
+    - generic: kcanamgal · refractor → main-dev
+    - generic: 失败
+    - generic: 10/20 15:05
+    - generic: 22.60 min*
+    - generic: 最后结束：DynamicCVPipeline PreCheck Tests
+  - article:
+    - 'button "E2E 详情：PR #2647 第 1/1 次 E2E 568ae90"':
+    - 'link "PR #2647"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2647
+    - generic: 568ae90
+    - text: "[build](fix) Improved compatibility of dependencies"
+    - generic: 失败
+    - generic: Return1456 · compability → main-dev
+    - generic: 失败
+    - generic: 10/20 15:37
+    - generic: 19.78 min*
+    - generic: 最后结束：Integration Tests
+  - article:
+    - 'button "E2E 详情：PR #2621 第 3/3 次 E2E 606c6c8"':
+    - 'link "PR #2621"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2621
+    - generic: 606c6c8
+    - text: "[ssbuffer](fix) add VECTOR_ONLY core_type check in ub-usage-opt pass"
+    - generic: 失败
+    - generic: SUZUKODAZE · reorder_bugfix_cftype → main-dev
+    - generic: 失败
+    - generic: 10/20 15:53
+    - generic: 22.85 min*
+    - generic: 最后结束：DynamicCVPipeline PreCheck Tests
+  - article:
+    - 'button "E2E 详情：PR #2476 第 4/8 次 E2E f52eeb1"':
+    - 'link "PR #2476"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2476
+    - generic: f52eeb1
+    - text: "[TritonToLinalg](fix) boundary size Error for make_block_ptr"
+    - generic: 失败
+    - generic: liwei-link · feature/simd-simt-compile-mode → feature/simd-simt-compile-mode
+    - generic: 失败
+    - generic: 10/20 17:01
+    - generic: 1.92 min*
+    - generic: 最后结束：Ascend950 CI
+  - article:
+    - 'button "E2E 详情：PR #2476 第 5/8 次 E2E 8a72af6"':
+    - 'link "PR #2476"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2476
+    - generic: 8a72af6
+    - text: "[TritonToLinalg](fix) boundary size Error for make_block_ptr"
+    - generic: 失败
+    - generic: liwei-link · feature/simd-simt-compile-mode → feature/simd-simt-compile-mode
+    - generic: 失败
+    - generic: 10/20 17:02
+    - generic: 7.52 min*
+    - generic: 最后结束：Integration Tests
+  - article:
+    - 'button "E2E 详情：PR #2476 第 6/8 次 E2E 8eda31d"':
+    - 'link "PR #2476"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2476
+    - generic: 8eda31d
+    - text: "[TritonToLinalg](fix) boundary size Error for make_block_ptr"
+    - generic: 失败
+    - generic: liwei-link · feature/simd-simt-compile-mode → feature/simd-simt-compile-mode
+    - generic: 失败
+    - generic: 10/20 17:08
+    - generic: 93.18 min*
+    - generic: 最后结束：Ascend950 CI
+  - article:
+    - 'button "E2E 详情：PR #2650 第 1/1 次 E2E 2263a49"':
+    - 'link "PR #2650"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2650
+    - generic: 2263a49
+    - text: Erase uc
+    - generic: 失败
+    - generic: cxtverygood · erase_uc → main-dev
+    - generic: 失败
+    - generic: 10/20 17:09
+    - generic: 24.78 min*
+    - generic: 最后结束：DynamicCVPipeline PreCheck Tests
+  - article:
+    - 'button "E2E 详情：PR #2252 第 1/1 次 E2E e8d7e4a"':
+    - 'link "PR #2252"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2252
+    - generic: e8d7e4a
+    - text: Bump actions/labeler from 5 to 7
+    - generic: 失败
+    - generic: dependabot[bot] · dependabot/github_actions/actions/labeler-7 → main
+    - generic: 失败
+    - generic: 10/20 18:49
+    - generic: 0.28 min*
+    - generic: 最后结束：Auto labeling
+  - article:
+    - 'button "E2E 详情：PR #2253 第 1/1 次 E2E bd49459"':
+    - 'link "PR #2253"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2253
+    - generic: bd49459
+    - text: Bump actions/stale from 9 to 11
+    - generic: 失败
+    - generic: dependabot[bot] · dependabot/github_actions/actions/stale-11 → main
+    - generic: 失败
+    - generic: 10/20 18:49
+    - generic: 0.18 min*
+    - generic: 最后结束：Auto labeling
+  - article:
+    - 'button "E2E 详情：PR #2600 第 1/2 次 E2E c6b5316"':
+    - 'link "PR #2600"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2600
+    - generic: c6b5316
+    - text: "[Docs](fix) modify formatting issues in the document"
+    - generic: 失败
+    - generic: zhangwjing · release/3.6.0 → release/3.6.0
+    - generic: 失败
+    - generic: 10/20 18:54
+    - generic: 7.45 min*
+    - generic: 最后结束：Documentation
+  - article:
+    - 'button "E2E 详情：PR #2627 第 2/4 次 E2E 9c38ed6"':
+    - 'link "PR #2627"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2627
+    - generic: 9c38ed6
+    - text: "[ssbuffer](feat) Better support for custom op"
+    - generic: 失败
+    - generic: olivervnc · ssbuf-customOp → main-dev
+    - generic: 失败
+    - generic: 10/20 19:01
+    - generic: 38.68 min*
+    - generic: 最后结束：DynamicCVPipeline PreCheck Tests
+  - article:
+    - 'button "E2E 详情：PR #2654 第 1/1 次 E2E 54d48da"':
+    - 'link "PR #2654"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2654
+    - generic: 54d48da
+    - text: Ub i1
+    - generic: 失败
+    - generic: cxtverygood · ub_i1 → main-dev
+    - generic: 失败
+    - generic: 10/20 19:10
+    - generic: 39.22 min*
+    - generic: 最后结束：DynamicCVPipeline PreCheck Tests
+  - article:
+    - 'button "E2E 详情：PR #2661 第 1/3 次 E2E 13d15f3"':
+    - 'link "PR #2661"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2661
+    - generic: 13d15f3
+    - text: "[Docs](fix) modify contributing document"
+    - generic: 失败
+    - generic: zhangwjing · docs02 → main
+    - generic: 失败
+    - generic: 10/20 20:19
+    - generic: 16.68 min*
+    - generic: 最后结束：Documentation
+  - article:
+    - 'button "E2E 详情：PR #2627 第 3/4 次 E2E ac8483b"':
+    - 'link "PR #2627"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2627
+    - generic: ac8483b
+    - text: "[ssbuffer](feat) Better support for custom op"
+    - generic: 失败
+    - generic: olivervnc · ssbuf-customOp → main-dev
+    - generic: 失败
+    - generic: 10/20 20:35
+    - generic: 20.13 min*
+    - generic: 最后结束：Integration Tests
+  - article:
+    - 'button "E2E 详情：PR #2004 第 1/2 次 E2E e1a2a04"':
+    - 'link "PR #2004"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2004
+    - generic: e1a2a04
+    - text: "[WIP]Mne"
+    - generic: 失败
+    - generic: Hsyy04 · mne → main-dev
+    - generic: 失败
+    - generic: 10/20 20:55
+    - generic: 26.95 min*
+    - generic: 最后结束：Integration Tests
+  - article:
+    - 'button "E2E 详情：PR #2302 第 2/8 次 E2E 41e0d38"':
+    - 'link "PR #2302"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2302
+    - generic: 41e0d38
+    - text: "[ssbuffer](fix) Replace the conditions of \"splittedif\" and \"ssbufif\""
+    - generic: 失败
+    - generic: sxm-ai · fix-split2 → main-dev
+    - generic: 失败
+    - generic: 10/20 21:13
+    - generic: 8.65 min*
+    - generic: 最后结束：Integration Tests
+  - article:
+    - 'button "E2E 详情：PR #2302 第 3/8 次 E2E 1390e0f"':
+    - 'link "PR #2302"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2302
+    - generic: 1390e0f
+    - text: "[ssbuffer](fix) Replace the conditions of \"splittedif\" and \"ssbufif\""
+    - generic: 失败
+    - generic: sxm-ai · fix-split2 → main-dev
+    - generic: 失败
+    - generic: 10/20 21:20
+    - generic: 8.10 min*
+    - generic: 最后结束：DynamicCVPipeline PreCheck Tests
+  - article:
+    - 'button "E2E 详情：PR #2302 第 4/8 次 E2E 1718e9c"':
+    - 'link "PR #2302"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2302
+    - generic: 1718e9c
+    - text: "[ssbuffer](fix) Replace the conditions of \"splittedif\" and \"ssbufif\""
+    - generic: 失败
+    - generic: sxm-ai · fix-split2 → main-dev
+    - generic: 失败
+    - generic: 10/20 21:27
+    - generic: 4.23 min*
+    - generic: 最后结束：Integration Tests
+  - article:
+    - 'button "E2E 详情：PR #2302 第 5/8 次 E2E 70ed40c"':
+    - 'link "PR #2302"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2302
+    - generic: 70ed40c
+    - text: "[ssbuffer](fix) Replace the conditions of \"splittedif\" and \"ssbufif\""
+    - generic: 失败
+    - generic: sxm-ai · fix-split2 → main-dev
+    - generic: 失败
+    - generic: 10/20 21:30
+    - generic: 29.82 min*
+    - generic: 最后结束：Integration Tests
+  - article:
+    - 'button "E2E 详情：PR #2594 第 2/2 次 E2E a480b4c"':
+    - 'link "PR #2594"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2594
+    - generic: a480b4c
+    - text: "[costmodel](feat) Calibrate partial structured SIMD/SIMT memory costs (depends on #2489)"
+    - generic: 失败
+    - generic: maxh2018 · feat/partial-structure-memory-upstream-20261015 → feature/simd-simt-compile-mode
+    - generic: 失败
+    - generic: 10/20 22:08
+    - generic: 99.37 min*
+    - generic: 最后结束：Ascend950 CI
+  - article:
+    - 'button "E2E 详情：PR #2004 第 2/2 次 E2E ddfdae1"':
+    - 'link "PR #2004"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2004
+    - generic: ddfdae1
+    - text: "[WIP]Mne"
+    - generic: 失败
+    - generic: Hsyy04 · mne → main-dev
+    - generic: 失败
+    - generic: 10/21 08:37
+    - generic: 18.85 min*
+    - generic: 最后结束：DynamicCVPipeline PreCheck Tests
+  - article:
+    - 'button "E2E 详情：PR #2476 第 7/8 次 E2E 8eda31d"':
+    - 'link "PR #2476"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2476
+    - generic: 8eda31d · 重跑
+    - text: "[TritonToLinalg](fix) boundary size Error for make_block_ptr"
+    - generic: 失败
+    - generic: liwei-link · feature/simd-simt-compile-mode → feature/simd-simt-compile-mode
+    - generic: 失败
+    - generic: 10/21 09:36
+    - generic: 82.77 min*
+    - generic: 最后结束：Ascend950 CI
+  - article:
+    - 'button "E2E 详情：PR #2661 第 2/3 次 E2E 45dd8b5"':
+    - 'link "PR #2661"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2661
+    - generic: 45dd8b5
+    - text: "[Docs](fix) modify contributing document"
+    - generic: 失败
+    - generic: zhangwjing · docs02 → main
+    - generic: 失败
+    - generic: 10/21 09:41
+    - generic: 29.10 min*
+    - generic: 最后结束：Auto labeling
+  - article:
+    - 'button "E2E 详情：PR #2557 第 1/10 次 E2E 68014c5"':
+    - 'link "PR #2557"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2557
+    - generic: 68014c5
+    - text: "[test](feat) add NPU community cases under pytest_ut/community"
+    - generic: 失败
+    - generic: irrorz · community_cases → main
+    - generic: 失败
+    - generic: 10/21 10:01
+    - generic: 11.87 min*
+    - generic: 最后结束：Integration Tests
+  - article:
+    - 'button "E2E 详情：PR #2557 第 3/10 次 E2E d4b855e"':
+    - 'link "PR #2557"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2557
+    - generic: d4b855e
+    - text: "[test](feat) add NPU community cases under pytest_ut/community"
+    - generic: 失败
+    - generic: irrorz · community_cases → main
+    - generic: 失败
+    - generic: 10/21 10:15
+    - generic: 15.63 min*
+    - generic: 最后结束：Integration Tests
+  - article:
+    - 'button "E2E 详情：PR #2443 第 1/1 次 E2E 4fe8154"':
+    - 'link "PR #2443"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2443
+    - generic: 4fe8154
+    - text: "[sim_costmodel](feat) split loop-carried bodies into stage dependencies"
+    - generic: 失败
+    - generic: shane-kshongmo · hxl/split_loop_carried_dep → feature/simd-simt-compile-mode
+    - generic: 失败
+    - generic: 10/21 10:59
+    - generic: 86.57 min*
+    - generic: 最后结束：Ascend950 CI
+  - article:
+    - 'button "E2E 详情：PR #2557 第 5/10 次 E2E 94e6235"':
+    - 'link "PR #2557"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2557
+    - generic: "94e6235"
+    - text: "[test](feat) add NPU community cases under pytest_ut/community"
+    - generic: 失败
+    - generic: irrorz · community_cases → main
+    - generic: 失败
+    - generic: 10/21 11:03
+    - generic: 27.77 min*
+    - generic: 最后结束：Integration Tests
+  - article:
+    - 'button "E2E 详情：PR #2489 第 9/9 次 E2E 59589e1"':
+    - 'link "PR #2489"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2489
+    - generic: "59589e1"
+    - text: "[costmodel](feat) Calibrate SIMD/SIMT indirect memory costs"
+    - generic: 失败
+    - generic: maxh2018 · feat/indirect-memory-calibration-upstream-20261009 → feature/simd-simt-compile-mode
+    - generic: 失败
+    - generic: 10/21 11:08
+    - generic: 92.82 min*
+    - generic: 最后结束：Ascend950 CI
+  - article:
+    - 'button "E2E 详情：PR #2557 第 7/10 次 E2E 26f29d6"':
+    - 'link "PR #2557"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2557
+    - generic: 26f29d6
+    - text: "[test](feat) add NPU community cases under pytest_ut/community"
+    - generic: 失败
+    - generic: irrorz · community_cases → main
+    - generic: 失败
+    - generic: 10/21 14:56
+    - generic: 4.15 min*
+    - generic: 最后结束：Integration Tests
+  - article:
+    - 'button "E2E 详情：PR #2642 第 6/11 次 E2E d6df087"':
+    - 'link "PR #2642"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2642
+    - generic: d6df087
+    - text: "[opclassifier](fix) classify nested SCF yield per-operand"
+    - generic: 失败
+    - generic: 245516766 · fix-lrf-bug → main-dev
+    - generic: 失败
+    - generic: 10/21 14:56
+    - generic: 7.20 min*
+    - generic: 最后结束：DynamicCVPipeline PreCheck Tests
+  - article:
+    - 'button "E2E 详情：PR #2557 第 8/10 次 E2E c0322cc"':
+    - 'link "PR #2557"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2557
+    - generic: c0322cc
+    - text: "[test](feat) add NPU community cases under pytest_ut/community"
+    - generic: 失败
+    - generic: irrorz · community_cases → main
+    - generic: 失败
+    - generic: 10/21 14:59
+    - generic: 3.00 min*
+    - generic: 最后结束：Integration Tests
+  - article:
+    - 'button "E2E 详情：PR #2557 第 9/10 次 E2E b5c40b3"':
+    - 'link "PR #2557"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2557
+    - generic: b5c40b3
+    - text: "[test](feat) add NPU community cases under pytest_ut/community"
+    - generic: 失败
+    - generic: irrorz · community_cases → main
+    - generic: 失败
+    - generic: 10/21 15:01
+    - generic: 5.50 min*
+    - generic: 最后结束：Integration Tests
+  - article:
+    - 'button "E2E 详情：PR #2642 第 7/11 次 E2E 3a4d643"':
+    - 'link "PR #2642"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2642
+    - generic: 3a4d643
+    - text: "[opclassifier](fix) classify nested SCF yield per-operand"
+    - generic: 失败
+    - generic: 245516766 · fix-lrf-bug → main-dev
+    - generic: 失败
+    - generic: 10/21 15:02
+    - generic: 3.62 min*
+    - generic: 最后结束：Integration Tests
+  - article:
+    - 'button "E2E 详情：PR #2642 第 8/11 次 E2E ad2b865"':
+    - 'link "PR #2642"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2642
+    - generic: ad2b865
+    - text: "[opclassifier](fix) classify nested SCF yield per-operand"
+    - generic: 失败
+    - generic: 245516766 · fix-lrf-bug → main-dev
+    - generic: 失败
+    - generic: 10/21 15:04
+    - generic: 4.42 min*
+    - generic: 最后结束：DynamicCVPipeline PreCheck Tests
+  - article:
+    - 'button "E2E 详情：PR #2674 第 2/3 次 E2E 90e3e5e"':
+    - 'link "PR #2674"':
+      - /url: https://github.com/triton-lang/triton-ascend/pull/2674
+    - generic: 90e3e5e
+    - text: "[ssbuffer](fix) hoist and unify redirected output …"
+    - generic: 失败
+    - generic: olivervnc · splitif-hoist → main-dev
+    - generic: 失败
+    - generic: 10/21 16:55
+    - generic: 7.32 min*
+    - generic: 最后结束：Documentation
+  - strong: 口径：
+  - text: E2E 从提交事件到该批次最后一项自动检查结束，包含排队与依赖等待；并行任务不相加。无法恢复精确提交事件时使用最早 workflow 创建时间，并在悬浮卡片中注明。成功和失败批次参与趋势；取消与运行中仅展示已观测耗时。
+  - strong: 数据边界：
+  - text: 196 个批次使用近似起点，0 个批次存在明细或关联缺口。
+  - text: 监控中心
+  - generic: ·
+  - text: OPEN EULER × TRITON-ASCEND
+  - generic: 196 BATCHES · 76 PR · 当前筛选范围 · 采集于 10/21 17:17

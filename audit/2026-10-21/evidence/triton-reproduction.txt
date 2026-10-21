@@ -1,0 +1,114 @@
+"""Read-only public Triton audit; run: python -X utf8 audit/2026-10-21/evidence/triton-reproduction.txt
+Reads public HTTPS endpoints without authentication. Writes only sibling triton-data-audit.json.
+No production collection, workflow dispatch, Git operation, browser control, or remote mutation.
+"""
+import collections
+import concurrent.futures
+import datetime
+import hashlib
+import json
+import pathlib
+import urllib.parse
+import urllib.request
+
+UTC = datetime.timezone.utc
+CN = datetime.timezone(datetime.timedelta(hours=8))
+SITE = "https://tianli-backkom.github.io/union_monitor/"
+API = "https://api.github.com/repos/triton-lang/triton-ascend"
+MONITOR = "https://api.github.com/repos/tianli-backkom/union_monitor"
+DAY_START = "2026-10-20T16:00:00Z"
+
+
+def get(url):
+    req = urllib.request.Request(url, headers={"User-Agent": "Codex-readonly-public-audit", "Accept": "application/vnd.github+json"})
+    with urllib.request.urlopen(req, timeout=40) as response:
+        raw = response.read()
+        headers = {k: v for k, v in response.headers.items() if k.lower() in ("date", "etag", "last-modified", "age", "cache-control", "link", "x-ratelimit-remaining")}
+    return json.loads(raw), {"url": url, "retrieved_at_utc": datetime.datetime.now(UTC).isoformat(), "sha256_raw_bytes": hashlib.sha256(raw).hexdigest(), "headers": headers}
+
+
+def picked(row, keys):
+    return {k: row.get(k) for k in keys}
+
+
+def counts(batches):
+    return {"batches": len(batches), "involved_prs": len({b["pr"] for b in batches if b.get("pr")}),
+            "workflow_attempts": len({(w["id"], w.get("attempt", 1)) for b in batches for w in b.get("workflows", [])}),
+            "kind_counts": dict(collections.Counter(b.get("kind") for b in batches)),
+            "base_branch_batch_counts": dict(collections.Counter(b.get("base_branch") for b in batches)),
+            "pr_numbers": sorted({b["pr"] for b in batches if b.get("pr")})}
+
+
+def main():
+    site, site_source = get(SITE + "data/triton.json")
+    manifest, manifest_source = get(SITE + "data/triton-manifest.json")
+    end = site["window_end"]
+    batches = site["batches"]
+    pubpairs = {(w["id"], w.get("attempt", 1)) for b in batches for w in b.get("workflows", [])}
+    pubids = {i[0] for i in pubpairs}
+
+    def actions(event):
+        rows, pages, declared = [], [], None
+        for page in range(1, 12):
+            url = API + "/actions/runs?" + urllib.parse.urlencode({"event": event, "created": DAY_START + ".." + end, "per_page": 100, "page": page})
+            data, source = get(url)
+            declared = data["total_count"] if declared is None else declared
+            pages.append({**source, "total_count": data["total_count"], "returned_rows": len(data["workflow_runs"])})
+            rows.extend(data["workflow_runs"])
+            if len(data["workflow_runs"]) < 100:
+                break
+        return {"event": event, "total_count": declared, "retrieved_count": len(rows), "unique_run_ids": len({r["id"] for r in rows}),
+                "pagination_complete": len(rows) == declared and len({r["id"] for r in rows}) == declared,
+                "pages": pages,
+                "source_run_ids_absent_from_public": [picked(r, ["id", "event", "created_at", "updated_at", "run_started_at", "run_attempt", "head_sha", "head_branch", "html_url"]) for r in rows if r["id"] not in pubids],
+                "current_attempt_pairs_absent_from_public": [picked(r, ["id", "run_attempt", "created_at", "run_started_at", "html_url"]) for r in rows if (r["id"], r.get("run_attempt", 1)) not in pubpairs],
+                "run_ids": [r["id"] for r in rows]}
+
+    endpoints = {
+        "pulls": API + "/pulls?state=all&sort=created&direction=desc&per_page=100&page=1",
+        "refresh": MONITOR + "/actions/workflows/triton-refresh.yml/runs?per_page=10&page=1",
+        "pages": MONITOR + "/actions/workflows/pages.yml/runs?per_page=3&page=1",
+    }
+    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as pool:
+        future_reads = {key: pool.submit(get, url) for key, url in endpoints.items()}
+        future_events = [pool.submit(actions, event) for event in ("pull_request", "pull_request_target")]
+        reads = {key: f.result() for key, f in future_reads.items()}
+        event_reports = [f.result() for f in future_events]
+    prs, prs_source = reads["pulls"]
+    today = [p for p in prs if p["created_at"] >= DAY_START]
+    prs_small = [{"number": p["number"], "created_at": p["created_at"], "updated_at": p["updated_at"], "base_branch": p["base"]["ref"], "state": p["state"], "html_url": p["html_url"], "created_by_site_cutoff": p["created_at"] <= end, "present_in_site": p["number"] in {b.get("pr") for b in batches}} for p in today]
+    flow_keys = ["id", "head_sha", "event", "status", "conclusion", "html_url", "created_at", "updated_at", "run_started_at", "run_attempt"]
+    workflows = {key: {"source": reads[key][1], "runs": [picked(r, flow_keys) for r in reads[key][0]["workflow_runs"]]} for key in ("refresh", "pages")}
+    observed = datetime.datetime.now(UTC)
+    same_day = [b for b in batches if DAY_START <= str(b.get("start_at", "")) <= end]
+    report = {
+        "audit_kind": "read_only_public_api_and_published_snapshot", "observed_at_utc": observed.isoformat(), "observed_at_Asia_Shanghai": observed.astimezone(CN).isoformat(),
+        "timezone": "Asia/Shanghai", "day_start_utc": DAY_START, "repository": site["repo"],
+        "site_source": site_source, "manifest_source": manifest_source,
+        "site_metadata": {k: v for k, v in site.items() if k != "batches"}, "manifest": manifest,
+        "site_counts_72_hours": counts(batches), "site_counts_today_through_site_cutoff": counts(same_day),
+        "site_counts_today_main_main_dev": counts([b for b in same_day if b.get("base_branch") in ("main", "main-dev")]),
+        "today_batch_rows": [picked(b, ["id", "pr", "base_branch", "kind", "start_at", "sha"]) for b in same_day],
+        "pr_api_source": prs_source, "pr_api_pagination": {"page": 1, "per_page": 100, "returned": len(prs), "oldest_created_at": prs[-1]["created_at"] if prs else None, "today_enumeration_complete": bool(prs) and prs[-1]["created_at"] < DAY_START},
+        "new_prs_today": prs_small,
+        "new_pr_counts": {"through_source_retrieval": len(today), "through_site_cutoff": sum(p["created_at"] <= end for p in today), "created_after_site_cutoff": sum(p["created_at"] > end for p in today), "main_main_dev_through_retrieval": sum(p["base"]["ref"] in ("main", "main-dev") for p in today), "before_site_cutoff_absent_public": [p["number"] for p in today if p["created_at"] <= end and p["number"] not in {b.get("pr") for b in batches}]},
+        "same_cutoff_action_run_reconciliation": event_reports,
+        "dashboard_workflows": workflows,
+        "planned_20h_status": {"planned_time_utc": "2026-10-21T12:00:00Z", "workflow_runs_created_at_or_after_planned_time": [r for r in workflows["refresh"]["runs"] if r["created_at"] >= "2026-10-21T12:00:00Z"], "cause": "unknown; public run listing alone cannot establish why a nominal schedule has no created run, nor distinguish schedule delay, missing trigger, or pre-run scheduling queue"},
+        "scope_and_limits": [
+            "New PR counts use PR created_at; involved PRs deduplicate PR identities represented by selected batches; initial batches are PR+head SHA, and reruns use run_id+attempt. These counts are different metrics.",
+            "The site covers every base branch returned by its collector, despite catalog declaring main/main-dev; compare the same branch scope explicitly.",
+            "Actions reconciliation fetches both event types, created within today's UTC+8 day up to the site's fixed cutoff. Run IDs can be compared; current attempts and mutable states may have advanced after publication.",
+            "This is not a complete independent replay of the entire 72-hour source enumeration or jobs. A manifest run-count difference must not be called missing PRs or missing workflows without an identity/reason ledger.",
+            "PR API page 1 completeness is established only when the oldest returned created_at predates today's boundary. PR base branches are current metadata and may have changed since publication.",
+            "No authenticated artifact download was used; source raw runs/jobs captured during production were not available in this audit.",
+            "collected_at records completion of collection, while window_end is the frozen observation cutoff; the collection takes time and is not an atomic source snapshot.",
+        ],
+    }
+    target = pathlib.Path(__file__).with_name("triton-data-audit.json")
+    target.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    print(json.dumps({"written": str(target), "observed_at_Asia_Shanghai": report["observed_at_Asia_Shanghai"], "site_cutoff": end, "today_batches": len(same_day), "today_new_prs": report["new_pr_counts"], "action_reconciliation": [{k: r[k] for k in ("event", "total_count", "retrieved_count", "pagination_complete", "source_run_ids_absent_from_public", "current_attempt_pairs_absent_from_public")} for r in event_reports], "planned_20h_status": report["planned_20h_status"]}, ensure_ascii=False, indent=2))
+
+
+if __name__ == "__main__":
+    main()

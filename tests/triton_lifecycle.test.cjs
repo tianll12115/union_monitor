@@ -97,3 +97,17 @@ test('deactivation releases a navigator pointer that was still captured mid-drag
   assert.equal(navigator.captures.size,0);
   assert.equal(navigator.onpointermove,null);
 });
+
+test('EC-004: Triton shows two metric cards (E2E + NPU queue) with P90/P50/n, no PR/batch score cards', () => {
+  const h=viewHarness();h.view.render(sample(),h.container);
+  assert.match(h.node('[data-role="kE2eN"]').textContent,/^n=\d+/);
+  assert.match(h.node('[data-role="kE2eP50"]').textContent,/^P50 /);
+  assert.match(h.node('[data-role="kE2eP90"]').textContent,/\d/);
+  assert.match(h.node('[data-role="kNpuN"]').textContent,/^n=/);
+  assert.match(h.node('[data-role="kNpuP50"]').textContent,/^P50 /);
+  const src=fs.readFileSync(require.resolve('../web/triton-view.js'),'utf8');
+  assert.doesNotMatch(src,/data-role="kPr"/,'涉及 PR score card retired');
+  assert.doesNotMatch(src,/data-role="kBatch"/,'门禁批次 score card retired');
+  assert.match(src,/data-metric="triton_batch_e2e"/);
+  assert.match(src,/data-metric="triton_npu_max_queue"/);
+});

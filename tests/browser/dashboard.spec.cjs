@@ -94,6 +94,17 @@ test('mobile retains result and duration in complete batch records',async({page}
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);
 });
 
+test('EC-010-AC01: no page-level horizontal overflow across breakpoints',async({page})=>{
+  for (const width of [320,390,768,1024,1440]) {
+    await page.setViewportSize({width,height:800});
+    await ready(page,'#triton');
+    await expect(page.locator('#triton-view [data-role="chart"]')).toBeVisible();
+    await expect(page.locator('#triton-view [data-role="npuChart"]')).toBeVisible();
+    const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>window.innerWidth);
+    expect(overflow,`no horizontal overflow at ${width}px`).toBe(false);
+  }
+});
+
 test('keyboard opens a batch into the unified detail modal and Escape closes it',async({page})=>{
   await ready(page,'#triton');
   const point=page.getByRole('button',{name:/E2E 详情/}).first();

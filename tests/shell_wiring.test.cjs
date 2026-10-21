@@ -13,15 +13,16 @@ test('P-002: shell modules load in dependency order before app.js', () => {
   const idx = name => scripts.indexOf(name);
   assert.ok(idx('catalog.js') > -1, 'catalog.js loaded');
   assert.ok(idx('query-state.js') > idx('catalog.js'), 'query-state after catalog');
-  assert.ok(idx('workbench.js') > idx('query-state.js'), 'workbench after query-state');
-  assert.ok(idx('status-view.js') > idx('workbench.js'), 'status-view after workbench');
-  assert.ok(idx('shell.js') > idx('status-view.js'), 'shell after status-view');
-  assert.ok(idx('workbench-view.js') > idx('shell.js'), 'workbench-view after shell');
-  assert.ok(idx('app.js') > idx('workbench-view.js'), 'app owns the published snapshot read and mounts the workbench');
+  assert.ok(idx('shell.js') > idx('query-state.js'), 'shell after query-state');
+  assert.ok(idx('app.js') > idx('shell.js'), 'app owns the published snapshot read');
+  /* EC-012: the retired workbench deck scripts are no longer loaded. */
+  assert.equal(idx('workbench.js'), -1, 'workbench.js removed');
+  assert.equal(idx('status-view.js'), -1, 'status-view.js removed');
+  assert.equal(idx('workbench-view.js'), -1, 'workbench-view.js removed');
 });
 
-test('EC-001: the workbench nav entry is removed and the brand points at the UBS overview', () => {
-  assert.match(html, /<section id="workbench-view"/);
+test('EC-001: the workbench view and nav entry are removed and the brand points at the UBS overview', () => {
+  assert.doesNotMatch(html, /<section id="workbench-view"/);
   assert.doesNotMatch(html, /data-nav="workbench"/);
   assert.match(html, /href="#projects\/ubs\/overview"/);
 });

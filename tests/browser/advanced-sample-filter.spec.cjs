@@ -46,7 +46,7 @@ test('plain search changes records but not the analysis denominator', async ({ p
 });
 
 test('legacy tf/qf params report the retired conditions instead of filtering', async ({ page }) => {
-  await page.goto('./#ubs/repo/ubs-engine?tf=push&qf=incomplete');
+  await page.goto('./#projects/ubs/engineering?repository=ubs-engine&tf=push&qf=incomplete');
   await expect(page.locator('#reload')).toBeEnabled();
   await expect(page.locator('#prRows')).not.toBeEmpty();
   const notice = page.locator('#notice');

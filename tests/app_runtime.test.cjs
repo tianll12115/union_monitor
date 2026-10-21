@@ -113,12 +113,12 @@ test('a failed reread preserves the current valid snapshot and states that it is
   assert.match(app.element('loading').textContent, /重新加载快照失败.*数据未更新/);
 });
 
-test('workbench reports unavailable task/concern metadata honestly instead of fabricated failed tasks or zero concerns', () => {
+test('EC-009: the retired workbench route collapses to the UBS overview', () => {
   const app = createApp();
   app.run("navigate('#workbench')");
-  const html = app.element('workbench-view').innerHTML;
-  assert.match(html, /未提供|尚未接入/);
-  assert.doesNotMatch(html, /本轮任务.*失败|当前没有需要关注的记录/);
+  assert.equal(app.context.location.hash, '#projects/ubs/overview');
+  assert.equal(app.element('workbench-view').hidden, true);
+  assert.equal(app.element('ubs-view').hidden, false);
 });
 
 test('a repository reread failure keeps its previous validated snapshot available for detail', async () => {
@@ -136,17 +136,15 @@ test('a repository reread failure keeps its previous validated snapshot availabl
   assert.equal(app.run('Metrics.repositoryRows(repositoryIndex,repositorySnapshots)[0].included'), false);
 });
 
-test('workbench reload shows the loaded snapshots without claiming collection task success', async () => {
+test('EC-009: reloading a retired workbench hash settles on the UBS overview', async () => {
   const app = createApp({ fetch: async url => ({ ok: true, json: async () => url.includes('triton')
     ? { collected_at: '2026-10-11T00:00:00Z', batches: [] }
     : { generated_at: '2026-10-11T00:00:00Z', start_ms: 1, end_ms: 2, repositories: [] } }) });
   app.context.location.hash = '#workbench';
-  app.run("navigate('#workbench')");
   await app.run('load()');
   await Promise.resolve();
-  assert.match(app.element('workbench-view').innerHTML, /2026-10-11|2026\/10\/11/);
-  assert.match(app.element('workbench-view').innerHTML, /快照.*读取|读取.*快照/);
-  assert.doesNotMatch(app.element('workbench-view').innerHTML, /本轮任务.*成功|当前没有需要关注的记录/);
+  assert.equal(app.element('ubs-view').hidden, false);
+  assert.equal(app.element('workbench-view').hidden, true);
 });
 
 test('mobile layout keeps Triton result and duration columns in a module scrolling region', () => {

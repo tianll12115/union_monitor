@@ -32,7 +32,7 @@ function createApp({ fetch, setTimeout, clearTimeout } = {}) {
   };
   vm.createContext(context);
   const source = fs.readFileSync(path.join(__dirname, '../../web/app.js'), 'utf8');
-  const wiring = source.indexOf("\nfor(const id of ['query','state','qualityFilter','triggerFilter'])");
+  const wiring = source.indexOf("\nfor(const id of ['query','state'])$(id).addEventListener");
   if (wiring < 0) throw new Error('app event wiring marker missing');
   vm.runInContext(source.slice(0, wiring), context);
   return { context, element, run(code) { return vm.runInContext(code, context); } };

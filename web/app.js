@@ -15,14 +15,14 @@ function resultHTML(bs){const c=counts(bs);const icons={success:'i-check',failur
 function triggerHTML(p){const c=Metrics.triggerCounts(p);return `<div class="trigger-counts"><span>创建 ${c.create}</span><span>推送 ${c.push}</span><span class="${c.retest?'has-retest':''}">重跑 ${c.retest}</span></div><small class="sample">执行 ${p.batches.length} 批${c.other?' · 其他请求 '+c.other:''}${c.unlinked?' · '+c.unlinked+' 个请求未关联门禁':''}${c.unknownBatches?' · '+c.unknownBatches+' 批触发来源未确认':''}</small>`;}
 function failedHTML(p){const b=Metrics.failedWait(p);return b?`<small class="failed-wait">失败等待 ${minute(b.e2e_ms)} 分钟 · #${b.number}${b.cancelled?' · 中止/未执行':''}</small>`:'';}
 function qualityRows(){const rows=[];for(const p of filtered){for(const reason of p.issues||[])rows.push([p.number,'PR',reason]);for(const b of p.batches){for(const reason of b.issues||[])rows.push([p.number,'#'+b.number,reason]);if(b.status==='running')rows.push([p.number,'#'+b.number,'仍在执行：排除主要耗时统计']);}}for(const e of snapshot.meta.errors||[])rows.push(['采集',e.source,e.reason]);return rows;}
-function readFilters(){return {query:$('query').value,state:$('state').value,quality:$('qualityFilter').value,trigger:$('triggerFilter').value};}
+function readFilters(){return {query:$('query').value,state:$('state').value};}
 /* UDR-020: the records/quality list state (S/L conditions, sort, page size,
    page) round-trips through the #projects/ubs/{records|quality} query. Default
    values are omitted so the canonical URL stays short and stable. */
-function recordsState(){return {q:$('query').value,entity:entity,repository:'gitcode:openeuler/'+currentRepository,branch:snapshot?.meta?.branch||'',from:snapshot?.meta?.start_ms??repositoryIndex?.start_ms??'',to:snapshot?.meta?.end_ms??repositoryIndex?.end_ms??'',basis:'pr_created_at',sort:$('sort').value,tm:$('tableMetric').value,state:$('state').value,tf:$('triggerFilter').value,qf:$('qualityFilter').value,ps:pageSize,page:page,pr:detailPR?detailPR.number:'',batch:detailChoice?.batch?.url??''};}
+function recordsState(){return {q:$('query').value,entity:entity,repository:'gitcode:openeuler/'+currentRepository,branch:snapshot?.meta?.branch||'',from:snapshot?.meta?.start_ms??repositoryIndex?.start_ms??'',to:snapshot?.meta?.end_ms??repositoryIndex?.end_ms??'',basis:'pr_created_at',sort:$('sort').value,tm:$('tableMetric').value,state:$('state').value,ps:pageSize,page:page,pr:detailPR?detailPR.number:'',batch:detailChoice?.batch?.url??''};}
 function recordsUrl(){if(view==='triton'&&tritonRecordsMode){const s={sort:tritonRecSort,ps:tritonRecPs,page:tritonRecPage},def={sort:'duration',ps:15,page:1},clean={};for(const k of Object.keys(s))if(String(s[k])!==String(def[k]))clean[k]=s[k];return '#projects/triton/records'+Router.serializeQuery(clean);}if(view!=='ubs-repo'&&view!=='ubs-quality')return null;const task=view==='ubs-quality'?'quality':'records',s=recordsState(),def={q:'',entity:'prs',repository:'',branch:'',from:'',to:'',basis:'pr_created_at',sort:entity==='batches'?'duration':'e2e',tm:'total',state:'',tf:'',qf:'',ps:15,page:1,pr:'',batch:''},clean={};for(const k of Object.keys(s))if(String(s[k])!==String(def[k]))clean[k]=s[k];return '#projects/ubs/'+task+Router.serializeQuery(clean);}
 function syncRecordsUrl(mode){const url=recordsUrl();if(url==null||url===location.hash)return;(mode==='push'?history.pushState:history.replaceState).call(history,null,'',url);}
-function renderActiveConditions(analysisSet){const f=readFilters(),parts=[];if(f.state)parts.push('PR 状态＝'+$('state').selectedOptions[0].textContent);if(f.trigger)parts.push('触发方式＝'+$('triggerFilter').selectedOptions[0].textContent);if(f.quality)parts.push('数据完整性＝'+$('qualityFilter').selectedOptions[0].textContent);const active=parts.length>0;$('activeConditions').hidden=!active;if(active){$('activeConditions').innerHTML='<span>分析集合筛选：'+parts.map(esc).join(' · ')+'</span><strong>有效分母 '+analysisSet.length+' 个 PR</strong><button id="clearConditions" class="text-button">清除高级条件</button>';$('clearConditions').onclick=()=>{for(const id of ['state','triggerFilter','qualityFilter'])$(id).value='';page=1;render();syncRecordsUrl('push');};}}
+function renderActiveConditions(analysisSet){const f=readFilters(),parts=[];if(f.state)parts.push('PR 状态＝'+$('state').selectedOptions[0].textContent);const active=parts.length>0;$('activeConditions').hidden=!active;if(active){$('activeConditions').innerHTML='<span>列表定位：'+parts.map(esc).join(' · ')+'</span><strong>有效分母 '+analysisSet.length+' 个 PR</strong><button id="clearConditions" class="text-button">清除筛选</button>';$('clearConditions').onclick=()=>{$('state').value='';page=1;render();syncRecordsUrl('push');};}}
 /* UDR-018: common records task. The analysis set S stays PR-level (KPI/chart);
    the list L switches entity: batches by default, or PRs where a PR E2E profile
    exists. The batch list derives from S with the stable sort/pagination model. */
@@ -91,6 +91,7 @@ function unavailableProjectTask(route,reason){
 }
 function applyProjectRoute(route){
  const q=route.query||{};
+ let retiredFilters=[];
  if(q.repository&&typeof q.repository!=='string'){unavailableProjectTask(route,'不支持重复或无效的仓库条件。');return;}
  if(!['ubs','triton'].includes(route.project)){unavailableProjectTask(route,'未找到此项目的已接入视图。');return;}
  if(route.task==='method'){applyRoute({domain:'method'});return;}
@@ -115,14 +116,14 @@ function applyProjectRoute(route){
      never inherits residue from a previous route (CP-01/CP-12). Other UBS tasks
      keep incremental handling so a filter chosen before switching away is still
      restored on return without leaking across projects. */
-  if(route.task==='records'){$('query').value='';$('state').value='';$('triggerFilter').value='';$('qualityFilter').value='';$('tableMetric').value='total';pageSize=15;$('pageSize').value='15';page=1;}
+  if(route.task==='records'){$('query').value='';$('state').value='';$('tableMetric').value='total';pageSize=15;$('pageSize').value='15';page=1;}
   entity=(q.entity==='batches')?'batches':'prs';
   if(typeof q.q==='string')$('query').value=q.q;
   setEntitySort(entity,typeof q.sort==='string'?q.sort:undefined);
   if(typeof q.tm==='string'&&['total','queue','duration'].includes(q.tm))$('tableMetric').value=q.tm;
   if(typeof q.state==='string'&&['','open','merged','closed'].includes(q.state))$('state').value=q.state;
-  if(typeof q.tf==='string'&&['','retest','push'].includes(q.tf))$('triggerFilter').value=q.tf;
-  if(typeof q.qf==='string'&&['','complete','incomplete'].includes(q.qf))$('qualityFilter').value=q.qf;
+  if(typeof q.tf==='string')retiredFilters.push('触发方式');
+  if(typeof q.qf==='string')retiredFilters.push('数据完整性');
   if(['15','30','50'].includes(String(q.ps))){pageSize=Number(q.ps);$('pageSize').value=String(q.ps);}
   if(q.page&&/^\d+$/.test(q.page))page=Math.max(1,Number(q.page));
   const pendingPr=(q.pr&&/^\d+$/.test(q.pr))?Number(q.pr):null;
@@ -137,7 +138,8 @@ function applyProjectRoute(route){
   else{closeDetailContext();if(scopeNotice){$('notice').hidden=false;$('notice').textContent=scopeNotice;}}
  }
  const knownKeys=['repository','entity','branch','from','to','basis','q','sort','page','tm','state','tf','qf','ps','pr','batch'],unknownKey=Object.keys(q).find(k=>!knownKeys.includes(k)),dupKey=Object.keys(q).find(k=>Array.isArray(q[k]));
- if(unknownKey||dupKey||(route.project==='triton'&&route.task!=='records'&&Object.keys(q).length)){$('notice').hidden=false;$('notice').textContent=unknownKey?'URL 包含不支持的参数「'+unknownKey+'」，已忽略。':(dupKey?'URL 参数「'+dupKey+'」重复出现，仅保留首个值。':'当前兼容视图不支持部分 URL 条件，请使用页面控件确认范围。');}
+ if(retiredFilters.length){$('notice').hidden=false;$('notice').textContent='已精简：'+retiredFilters.join('、')+'筛选已随高级分析面板移除，请在 PR 详情查看相关字段；本次未按这些条件筛选。';}
+ else if(unknownKey||dupKey||(route.project==='triton'&&route.task!=='records'&&Object.keys(q).length)){$('notice').hidden=false;$('notice').textContent=unknownKey?'URL 包含不支持的参数「'+unknownKey+'」，已忽略。':(dupKey?'URL 参数「'+dupKey+'」重复出现，仅保留首个值。':'当前兼容视图不支持部分 URL 条件，请使用页面控件确认范围。');}
 }
 function applyRoute(route){
   const prevRepo=currentRepository;
@@ -155,7 +157,7 @@ function applyRoute(route){
  document.querySelectorAll('.side-nav [data-nav]').forEach(a=>a.classList.toggle('active',false));markNavActive(domain==='triton'?'triton':'ubs');
  if(repo){$('repoMain').hidden=quality;$('quality').hidden=!quality;}
  $('repositoryControls').hidden=!repo;$('filters').hidden=!ubs;
- $('query').closest('label').hidden=!repo;$('advancedToggle').hidden=!repo;$('advancedFilters').hidden=true;$('advancedToggle').setAttribute('aria-expanded','false');$('activeConditions').hidden=true;
+ $('query').closest('label').hidden=!repo;$('activeConditions').hidden=true;
  $('repositorySelect').value=currentRepository;
  $('crumb').innerHTML=(domain==='triton'?['监控中心','Triton-Ascend',tritonRecordsMode?'批次记录':'门禁效率趋势']:domain==='method'?['监控中心','参考','统计口径']:cross?['监控中心','openEuler UBS','九仓效率总览']:['监控中心','openEuler UBS',currentRepository,...(quality?['数据质量']:[])]).map(esc).join(' <b>/</b> ');
  $('pageSubtitle').textContent=domain==='triton'?(tritonRecordsMode?'Triton-Ascend 批次记录 · 按稳定批次身份去重，未知 PR 保留独立来源':'Triton-Ascend 门禁效率 · 最近 72 小时，从提交到最后一项自动检查结束'):domain==='method'?'统计口径与计算规则':cross?'九仓 PR 工程效率 · 每个 PR 的最长有效 E2E 批次作为代表值':currentRepository+' 门禁效率 · 从提交请求到最后一个子任务结束';
@@ -252,4 +254,4 @@ async function load(){
   if(view==='ubs')$('loading').hidden=false;
  }
 }
-for(const id of ['query','state','qualityFilter','triggerFilter'])$(id).addEventListener(id==='query'?'input':'change',()=>{page=1;render();syncRecordsUrl(id==='query'?'replace':'push')});$('query').addEventListener('change',()=>syncRecordsUrl('push'));for(const id of ['sort','tableMetric','chartMetric'])$(id).onchange=()=>{page=1;render();if(id!=='chartMetric')syncRecordsUrl('push')};$('entity').onchange=()=>{entity=$('entity').value;page=1;render();syncRecordsUrl('push')};$('reset').onclick=()=>{for(const id of ['query','state','qualityFilter','triggerFilter'])$(id).value='';page=1;render();syncRecordsUrl('push')};$('advancedToggle').onclick=()=>{const el=$('advancedFilters');el.hidden=!el.hidden;$('advancedToggle').setAttribute('aria-expanded',String(!el.hidden));};$('prev').onclick=()=>{page--;render();syncRecordsUrl('push')};$('next').onclick=()=>{page++;render();syncRecordsUrl('push')};$('pageSize').onchange=()=>{pageSize=Number($('pageSize').value);page=1;render();syncRecordsUrl('push')};$('export').onclick=exportPRs;$('exportBatches').onclick=exportBatches;$('exportBatchTasks').onclick=exportBatchTasks;$('exportQuality').onclick=exportConcerns;$('closeDetail').onclick=()=>{closeDetailContext();syncRecordsUrl('replace');};$('detail').addEventListener('close',()=>{if(!$('detail').open){detailPR=null;detailSnapshot=null;detailRepo=null;detailChoice=null;tritonDetailBatch=null;if(!closingForNavigation)syncRecordsUrl('replace');}});$('detail').addEventListener('click',e=>{if(e.target===$('detail')){const r=$('detail').getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom){closeDetailContext();syncRecordsUrl('replace');}}});$('reload').onclick=load;$('repositorySelect').onchange=()=>navigate('#ubs/repo/'+encodeURIComponent($('repositorySelect').value));$('backRepositories').onclick=()=>navigate('#ubs');$('repositorySort').onchange=renderRepositories;$('exportRepositories').onclick=exportRepositories;window.addEventListener('hashchange',()=>navigate(location.hash));renderSideNav();navigate(location.hash);load();
+for(const id of ['query','state'])$(id).addEventListener(id==='query'?'input':'change',()=>{page=1;render();syncRecordsUrl(id==='query'?'replace':'push')});$('query').addEventListener('change',()=>syncRecordsUrl('push'));for(const id of ['sort','tableMetric','chartMetric'])$(id).onchange=()=>{page=1;render();if(id!=='chartMetric')syncRecordsUrl('push')};$('entity').onchange=()=>{entity=$('entity').value;page=1;render();syncRecordsUrl('push')};$('reset').onclick=()=>{for(const id of ['query','state'])$(id).value='';page=1;render();syncRecordsUrl('push')};$('prev').onclick=()=>{page--;render();syncRecordsUrl('push')};$('next').onclick=()=>{page++;render();syncRecordsUrl('push')};$('pageSize').onchange=()=>{pageSize=Number($('pageSize').value);page=1;render();syncRecordsUrl('push')};$('export').onclick=exportPRs;$('exportBatches').onclick=exportBatches;$('exportBatchTasks').onclick=exportBatchTasks;$('exportQuality').onclick=exportConcerns;$('closeDetail').onclick=()=>{closeDetailContext();syncRecordsUrl('replace');};$('detail').addEventListener('close',()=>{if(!$('detail').open){detailPR=null;detailSnapshot=null;detailRepo=null;detailChoice=null;tritonDetailBatch=null;if(!closingForNavigation)syncRecordsUrl('replace');}});$('detail').addEventListener('click',e=>{if(e.target===$('detail')){const r=$('detail').getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom){closeDetailContext();syncRecordsUrl('replace');}}});$('reload').onclick=load;$('repositorySelect').onchange=()=>navigate('#ubs/repo/'+encodeURIComponent($('repositorySelect').value));$('backRepositories').onclick=()=>navigate('#ubs');$('repositorySort').onchange=renderRepositories;$('exportRepositories').onclick=exportRepositories;window.addEventListener('hashchange',()=>navigate(location.hash));renderSideNav();navigate(location.hash);load();

@@ -114,7 +114,7 @@ test('UAR-008: a bare records URL rebuilds full state from defaults, not prior r
   const a = app();
   captureRoute(a);
   a.run(indexExpr());
-  a.run("applyProjectRoute({project:'ubs',task:'records',query:{q:'needle',state:'merged',tf:'push',qf:'incomplete',ps:'50',page:'3'}})");
+  a.run("applyProjectRoute({project:'ubs',task:'records',query:{q:'needle',state:'merged',ps:'50',page:'3'}})");
   assert.equal(a.element('query').value, 'needle');
   assert.equal(a.element('state').value, 'merged');
   assert.equal(a.run('pageSize'), 50);
@@ -122,13 +122,11 @@ test('UAR-008: a bare records URL rebuilds full state from defaults, not prior r
   a.run("applyProjectRoute({project:'ubs',task:'records',query:{}})");
   assert.equal(a.element('query').value, '', 'search resets');
   assert.equal(a.element('state').value, '', 'state resets');
-  assert.equal(a.element('triggerFilter').value, '', 'trigger resets');
-  assert.equal(a.element('qualityFilter').value, '', 'quality resets');
   assert.equal(a.run('pageSize'), 15, 'page size resets');
   assert.equal(a.run('page'), 1, 'page resets');
 });
 
-test('UAR-008: clearing advanced conditions rewrites the URL', () => {
+test('UAR-008: clearing the state filter rewrites the URL', () => {
   const a = app();
   a.element('state').value = 'merged';
   a.element('state').selectedOptions = [{ textContent: '已合入' }];
@@ -137,6 +135,18 @@ test('UAR-008: clearing advanced conditions rewrites the URL', () => {
   a.element('clearConditions').onclick();
   assert.equal(a.element('state').value, '', 'state cleared');
   assert.equal(a.context.syncCalls, 1, 'the clear action syncs the share URL exactly once');
+});
+
+test('EC-007: legacy tf/qf conditions report the retired advanced panel instead of filtering', () => {
+  const a = app();
+  captureRoute(a);
+  a.run(indexExpr());
+  a.run("applyProjectRoute({project:'ubs',task:'records',query:{tf:'push',qf:'incomplete'}})");
+  const notice = a.element('notice');
+  assert.equal(notice.hidden, false, 'a notice is shown');
+  assert.match(notice.textContent, /触发方式/, 'trigger condition named as removed');
+  assert.match(notice.textContent, /数据完整性/, 'quality condition named as removed');
+  assert.match(notice.textContent, /未按这些条件筛选/, 'explicitly not applied');
 });
 
 test('UAR-006/UAR-007: the detail binds and round-trips the selected batch identity', () => {

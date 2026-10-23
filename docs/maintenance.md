@@ -31,3 +31,7 @@ GitHub 连接器和原有本地 Git 凭据返回账户 suspended 的 403；Chrom
 第一轮整理后验证：Python 932 项通过（1 项缺本地 Triton 生产工件跳过）、全量 Node 通过、Chromium 47/47、BASIC 12/12、actionlint 通过。
 
 独立审查修复：pre-push 拒绝脏工作区及非当前 HEAD 的推送，并在 UT 后复查身份；PR 提交脚本锁定 UT 前后 SHA、分支并推送明确 SHA，避免测试工作树与所推代码不一致。新增失败阻断和身份变化回归。
+
+## 2026-10-23 合入策略调整
+
+按用户后续明确要求，将人工批准数调整为 0，取消最后一次推送批准和 Code Owner 批准要求。必须走 PR，且当前提交的四项检查及 `Dashboard quality gate` 全绿、分支保持最新、讨论已解决，才可直接合入。管理员遵守保护、禁止强推和删除、本地提交前 UT 均保留。`.github/main-protection.json` 记录当前目标配置，取代上文初始的一次批准策略。

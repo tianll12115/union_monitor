@@ -45,6 +45,11 @@ class PublishedFreshnessTests(unittest.TestCase):
 
 
 class PublishedHealthTests(unittest.TestCase):
+    def test_workflow_targets_its_own_repository_site(self):
+        text = (Path(__file__).resolve().parents[1] / '.github/workflows/published-health.yml').read_text('utf-8')
+        self.assertIn('https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}', text)
+        self.assertIn('--site "$DASHBOARD_SITE"', text)
+
     def inspect(self, status="success", collected_at="2026-10-11T03:00:00Z", problems=None, path="repos/a.json"):
         data = {
             "ubs-manifest.json": {"files": {path: "a" * 64}},

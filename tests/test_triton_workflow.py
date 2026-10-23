@@ -56,7 +56,7 @@ class TritonWorkflowTests(unittest.TestCase):
         commands = [
             "uses: actions/cache/restore@v4",
             "SITE_FALLBACK_URL",
-            "GH_TOKEN: ${{ secrets.GH_TOKEN }}",
+            "GH_TOKEN: ${{ secrets.GH_TOKEN || github.token }}",
             "python -X utf8 -m triton.dashboard --hours 72",
             "python -m unittest discover -s tests",
             "node --test tests/*.test.cjs",

@@ -69,7 +69,11 @@ class PagesWorkflowTests(unittest.TestCase):
         )
 
     def test_triton_collection_uses_the_repo_secret_for_rate_limit(self):
-        self.assertRegex(self.workflow, r"(?ms)Collect Triton gating data\s*\n\s+env:\s*\n\s+GH_TOKEN: \$\{\{ secrets\.GH_TOKEN \}\}")
+        self.assertRegex(self.workflow, r"(?ms)Collect Triton gating data\s*\n\s+env:\s*\n\s+GH_TOKEN: \$\{\{ secrets\.GH_TOKEN \|\| github\.token \}\}")
+
+    def test_manual_branch_build_cannot_deploy(self):
+        deploy = self.workflow.split('\n  deploy:', 1)[1].split('\n  verify:', 1)[0]
+        self.assertIn("if: github.ref == 'refs/heads/main'", deploy)
 
     def test_checkout_uses_full_history_for_commit_mapping_tests(self):
         # Acceptance tests map commit messages to requirement numbers, so the CI

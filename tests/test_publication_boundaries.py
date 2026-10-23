@@ -77,8 +77,8 @@ class PermissionBoundaryTests(unittest.TestCase):
     def test_secret_is_used_only_for_collection_request_not_output(self):
         text = (ROOT / ".github" / "workflows" / "pages.yml").read_text(encoding="utf-8")
         # The token appears only in the Triton gating collect step environment.
-        self.assertIn("GH_TOKEN: ${{ secrets.GH_TOKEN }}", text)
-        self.assertNotIn("GH_TOKEN", text.replace("GH_TOKEN: ${{ secrets.GH_TOKEN }}", ""))
+        self.assertIn("GH_TOKEN: ${{ secrets.GH_TOKEN || github.token }}", text)
+        self.assertNotIn("GH_TOKEN", text.replace("GH_TOKEN: ${{ secrets.GH_TOKEN || github.token }}", ""))
 
 
 if __name__ == "__main__":

@@ -100,6 +100,8 @@ Triton 的历史 PR 关联读取完整的强推事件分页，并通过 GitHub C
 
 每日和增量工作流无论成功或失败都保存 `triton-collection-*` 证据 7 天。可在修复分支手动运行 Triton 增量工作流验证真实采集与构建，仅 main 分支部署看板。
 
+迁移到新仓库后，Triton 优先使用可选的 `GH_TOKEN` secret，未配置时使用该次工作流的 `github.token`。公开健康检查按当前仓库所有者和仓库名计算站点地址。每日流程同样只允许 main 部署；分支手动运行用于构建验证。Pages 需在仓库设置中选择 GitHub Actions，尚未发布时健康检查会如实失败。
+
 | 位置 | 用途 |
 |---|---|
 | `collect.py`、`metrics.py`、`repository_store.py` | GitCode / Jenkins 采集与 UBS 统计 |

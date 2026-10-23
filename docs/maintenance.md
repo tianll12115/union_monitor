@@ -18,8 +18,14 @@
 
 GitHub 连接器和原有本地 Git 凭据返回账户 suspended 的 403；Chrome 中目标仓库的所有者会话可访问。浏览器登录不等于命令行 Git 已切换账户。凭据仅通过 GitHub / Git Credential Manager 的正常登录流程处理，不写入仓库或报告。
 
+已通过 Git Credential Manager 以 `tianll12115` 身份推送功能分支。新仓库原先没有 main 保护；现已启用必需 `Dashboard quality gate`、严格分支更新、至少一次批准、最后一次推送审查、过期批准失效、管理员遵守保护、禁止强推/删除，并启用合入后自动删除远端功能分支。新仓库 main 初始化 commit 为 `8abc962`；本地通过 merge 关联初始化历史，完整项目仍由 PR 引入。
+
+生产迁移修复：Triton token 可回退到本次工作流 token；每日流程仅 main 部署；健康检查使用当前仓库站点，避免新仓库误检查旧站。历史快照恢复地址保留为旧站，允许冷启动迁移；它通过现有校验才可使用，失败不会发布伪造数据。
+
 ## 验证记录
 
 基线在 WSL Ubuntu / Python 3.12.3 执行 922 项 Python 测试通过；1 项因未生成本地 Triton 工件跳过。离线 UT 不证明线上来源完整；真实采集、Pages 发布及新仓库保护配置必须有独立运行证据。
 
 最终验证结果在对应 Git commit / PR 的说明中记录；未经实际执行的 Actions 不标记成功。
+
+第一轮整理后验证：Python 932 项通过（1 项缺本地 Triton 生产工件跳过）、全量 Node 通过、Chromium 47/47、BASIC 12/12、actionlint 通过。

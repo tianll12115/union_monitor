@@ -25,7 +25,9 @@ jobs:
         with:
           python-version: '3.12'
       - name: Verify public files and overdue collection slots
-        run: python -B -m scripts.published_health
+        env:
+          DASHBOARD_SITE: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}
+        run: python -B -m scripts.published_health --site "$DASHBOARD_SITE"
       - name: Retain health report
         if: ${{ always() }}
         uses: actions/upload-artifact@v4

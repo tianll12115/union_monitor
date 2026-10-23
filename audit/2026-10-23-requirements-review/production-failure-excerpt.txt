@@ -1,0 +1,19 @@
+Source: https://github.com/tianll12115/union_monitor/actions/runs/39976648600/job/120492873555
+Extract of original log lines 339-354; timestamps remain UTC.
+
+L339: 2026-10-23T15:23:33.8598503Z REPOSITORY ubs-atomic
+L340: 2026-10-23T15:23:33.8600755Z 读取 master PR 全部分页...
+L341: 2026-10-23T15:23:40.1218375Z REPOSITORY FAILED ubs-atomic: HTTP Error 429: Too Many Requests
+L342: 2026-10-23T15:23:40.1398782Z ##[group]Run python -X utf8 scripts/verify_collection_status.py
+L343: 2026-10-23T15:23:40.1399374Z [36;1mpython -X utf8 scripts/verify_collection_status.py[0m
+L344: 2026-10-23T15:23:40.1455844Z shell: /usr/bin/bash -e {0}
+L345: 2026-10-23T15:23:40.1456057Z env:
+L346: 2026-10-23T15:23:40.1456272Z   pythonLocation: /opt/hostedtoolcache/Python/3.12.15/x64
+L347: 2026-10-23T15:23:40.1456617Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.15/x64/lib/pkgconfig
+L348: 2026-10-23T15:23:40.1456944Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+L349: 2026-10-23T15:23:40.1457239Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+L350: 2026-10-23T15:23:40.1457529Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.15/x64
+L351: 2026-10-23T15:23:40.1457820Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.15/x64/lib
+L352: 2026-10-23T15:23:40.1458277Z ##[endgroup]
+L353: 2026-10-23T15:23:40.1969629Z {"passed": false, "expected_repositories": 9, "checked_repositories": 9, "errors": ["ubs-atomic: collection status failed; HTTP Error 429: Too Many Requests", "ubs-atomic: index metadata has invalid repository identity", "ubs-atomic: repository snapshot reference is missing or invalid"]}
+L354: 2026-10-23T15:23:40.2027232Z ##[error]Process completed with exit code 1.

@@ -1,0 +1,11 @@
+{
+  "legacy_future_time": 9999999999999,
+  "cutoff_expected": 200,
+  "zero_row_text": "— · 创建",
+  "legacy_partial_export": {
+    "ms": 100,
+    "source": "operate_logs",
+    "status": "partial"
+  },
+  "legacy_partial_sort": null
+}

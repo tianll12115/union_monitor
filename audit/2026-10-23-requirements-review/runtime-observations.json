@@ -1,0 +1,1487 @@
+{
+  "baseline": "88ed1aa1e30a46f825527cc5f8cffa0116b657ad",
+  "mode": "offline-fixture, real Chromium",
+  "fixture_sha256": "2b6b7985f0b8364bc63145c5e22f8f78ac9bbec15e17071bfc8e8b88acc344d6",
+  "recorded_at": "2026-10-23T15:54:33.634Z",
+  "cases": [
+    {
+      "id": "NAV-1440",
+      "title": "Cold start and one-click community navigation",
+      "requirement_ids": [
+        "EC-001"
+      ],
+      "actual": {
+        "first_url": "http://dashboard.test:8901/#projects/ubs/overview",
+        "links": [
+          "UBSCore",
+          "Triton-Ascend"
+        ],
+        "link_count": 2,
+        "url_after_click": "http://dashboard.test:8901/#projects/triton/engineering",
+        "active_links": 1,
+        "errors": [],
+        "project_selector_count": 0,
+        "task_placeholder_visible": false
+      },
+      "verification_passed": true
+    },
+    {
+      "id": "NAV-390",
+      "title": "Cold start and one-click community navigation",
+      "requirement_ids": [
+        "EC-001"
+      ],
+      "actual": {
+        "first_url": "http://dashboard.test:8901/#projects/ubs/overview",
+        "links": [
+          "UBSCore",
+          "Triton-Ascend"
+        ],
+        "link_count": 2,
+        "url_after_click": "http://dashboard.test:8901/#projects/triton/engineering",
+        "active_links": 1,
+        "errors": [],
+        "project_selector_count": 0,
+        "task_placeholder_visible": false
+      },
+      "verification_passed": true
+    },
+    {
+      "id": "METRIC-independent",
+      "requirement_ids": [
+        "EC-005"
+      ],
+      "actual": {
+        "kE2eP50": "P50 1.00 min",
+        "kE2eP90": "1.80 min",
+        "kE2eN": "n=2 · 样本不足",
+        "kNpuP50": "P50 1.00 min",
+        "kNpuP90": "2.60 min",
+        "kNpuN": "n=3 · 样本不足"
+      },
+      "expected": {
+        "kE2eP50": "1.00 min",
+        "kE2eP90": "1.80 min",
+        "kE2eN": "n=2",
+        "kNpuP50": "1.00 min",
+        "kNpuP90": "2.60 min",
+        "kNpuN": "n=3"
+      },
+      "verification_passed": true
+    },
+    {
+      "id": "METRIC-npu-missing",
+      "requirement_ids": [
+        "EC-005"
+      ],
+      "actual": {
+        "kE2eP50": "P50 1.00 min",
+        "kE2eP90": "1.80 min",
+        "kE2eN": "n=2 · 样本不足",
+        "kNpuP50": "P50 0.50 min",
+        "kNpuP90": "0.90 min",
+        "kNpuN": "n=2 · 样本不足"
+      },
+      "expected": {
+        "kE2eP50": "1.00 min",
+        "kE2eP90": "1.80 min",
+        "kE2eN": "n=2",
+        "kNpuP50": "0.50 min",
+        "kNpuP90": "0.90 min",
+        "kNpuN": "n=2"
+      },
+      "verification_passed": true
+    },
+    {
+      "id": "METRIC-e2e-missing",
+      "requirement_ids": [
+        "EC-005"
+      ],
+      "actual": {
+        "kE2eP50": "P50 0.00 min",
+        "kE2eP90": "0.00 min",
+        "kE2eN": "n=1 · 样本不足",
+        "kNpuP50": "P50 1.00 min",
+        "kNpuP90": "2.60 min",
+        "kNpuN": "n=3 · 样本不足"
+      },
+      "expected": {
+        "kE2eP50": "0.00 min",
+        "kE2eP90": "0.00 min",
+        "kE2eN": "n=1",
+        "kNpuP50": "1.00 min",
+        "kNpuP90": "2.60 min",
+        "kNpuN": "n=3"
+      },
+      "verification_passed": true
+    },
+    {
+      "id": "RUNTIME-01",
+      "title": "UBS lifecycle list filter changes analysis KPI",
+      "requirement_ids": [
+        "EC-007",
+        "UAR-008",
+        "UDR-016"
+      ],
+      "expected": "S KPI remains unchanged by list state filter",
+      "before": "代表门禁 E2E\n77.00P90 · 分钟\nP50 66.00\n有效 31/31 PR\n每 PR 取最长合格 E2E · 已观测 31 个 PR / 31 次执行",
+      "after": "代表门禁 E2E\n76.00P90 · 分钟\nP50 65.83\n有效 16/16 PR\n每 PR 取最长合格 E2E · 已观测 16 个 PR / 16 次执行",
+      "confirmed": true
+    },
+    {
+      "id": "RUNTIME-02",
+      "title": "Explicit engineering URL inherits prior list state",
+      "requirement_ids": [
+        "EC-009",
+        "UAR-009",
+        "UDR-020"
+      ],
+      "expected": "Missing query parameters select defaults rather than prior state",
+      "before_url": "http://dashboard.test:8901/#projects/ubs/records?q=AUDIT-NO-MATCH-20261023&repository=gitcode%3Aopeneuler%2Fubs-engine&from=1788220800000&to=1790812800000&state=merged",
+      "actual": {
+        "query": "AUDIT-NO-MATCH-20261023",
+        "state": "merged",
+        "count": "0",
+        "url": "http://dashboard.test:8901/#projects/ubs/engineering?repository=gitcode%3Aopeneuler%2Fubs-engine"
+      },
+      "confirmed": true
+    },
+    {
+      "id": "RUNTIME-03",
+      "title": "Triton default attention list and exported set differ",
+      "requirement_ids": [
+        "EC-011",
+        "UAR-018",
+        "UDR-019"
+      ],
+      "expected": "Export matches current L records including collapse-hidden rows only",
+      "controlled_input": "12 successful, qualified batches with durations 1..12 minutes; default attention uses page-level P90",
+      "actual": {
+        "list_title": "关注批次\n2",
+        "rendered_rows": 2,
+        "exported_rows": 12,
+        "displayed_rows": [
+          "PR #2110000000Controlled successful sample 11耗时偏长dev · dev/fusion → main成功10/07 09:0012.00 min*最后结束：Integration Tests",
+          "PR #2100000000Controlled successful sample 10耗时偏长dev · dev/fusion → main成功10/07 09:0011.00 min*最后结束：Integration Tests"
+        ],
+        "csv_header": "\"pr\",\"title\",\"sha\",\"base_branch\",\"kind\",\"start_at\",\"end_at\",\"status\",\"duration_seconds\",\"npu_queue_seconds\",\"approximate\",\"start_source\",\"critical_workflow\",\"missing\",\"pr_url\",\"action_url\""
+      },
+      "confirmed": true
+    },
+    {
+      "id": "RUNTIME-04",
+      "title": "Triton shared URL loses current search condition",
+      "requirement_ids": [
+        "EC-009",
+        "UAR-009",
+        "UDR-020"
+      ],
+      "expected": "A fresh URL restores the same records and controls",
+      "actual": {
+        "original_url": "http://dashboard.test:8901/#projects/triton/engineering",
+        "searched_url": "http://dashboard.test:8901/#projects/triton/engineering",
+        "original_rows": 0,
+        "shared_rows": 5
+      },
+      "confirmed": true
+    },
+    {
+      "id": "RUNTIME-05",
+      "title": "UBS exported file does not carry visible provenance metadata",
+      "requirement_ids": [
+        "EC-011",
+        "UAR-018",
+        "UDR-019"
+      ],
+      "expected": "Downloaded file or companion carries snapshot, scope and units",
+      "actual": {
+        "notice": "已下载：ubs-engine-pr-summary.csv\n实体：L 记录（PR） · 分析范围：当前筛选 PR · 条数：31 · 单位：分钟 · 数据版本：sha256:60acaf382c3df86a6b14c713d061587d388d6b44e666df7914f7df39751169df · 口径版本：ubs-pr-representative-v1",
+        "csv_header": "\"仓库\",\"PR\",\"标题\",\"状态\",\"作者\",\"创建时间\",\"合入时间\",\"提交次数\",\"全部批次数\",\"创建请求数\",\"推送请求数\",\"重跑请求数\",\"代表trigger编号\",\"代表trigger链接\",\"E2E ms\",\"x86排队ms\",\"x86执行ms\",\"x86总计ms\",\"ARM排队ms\",\"ARM执行ms\",\"ARM总计ms\",\"DT排队ms\",\"DT执行ms\",\"DT总计ms\",\"最近提交时间\",\"提交时间ms\",\"提交事件来源\",\"提交时间状态\"",
+        "contains_snapshot": false,
+        "contains_profile": false
+      },
+      "confirmed": true
+    },
+    {
+      "id": "VISUAL-320",
+      "title": "Triton layout at 320px",
+      "requirement_ids": [
+        "EC-010",
+        "UAR-010"
+      ],
+      "actual": {
+        "viewport": 320,
+        "document_width": 320,
+        "svg_labels": [
+          {
+            "text": "16.80 min",
+            "left": 79.578125,
+            "right": 139,
+            "top": 412.79150390625,
+            "bottom": 424.79150390625
+          },
+          {
+            "text": "12.60 min",
+            "left": 79.578125,
+            "right": 139,
+            "top": 490.29150390625,
+            "bottom": 502.29150390625
+          },
+          {
+            "text": "8.40 min",
+            "left": 86.1875,
+            "right": 139,
+            "top": 567.79150390625,
+            "bottom": 579.79150390625
+          },
+          {
+            "text": "4.20 min",
+            "left": 86.1875,
+            "right": 139,
+            "top": 645.29150390625,
+            "bottom": 657.29150390625
+          },
+          {
+            "text": "0.00 min",
+            "left": 86.1875,
+            "right": 139,
+            "top": 722.79150390625,
+            "bottom": 734.79150390625
+          },
+          {
+            "text": "10/06 08:00",
+            "left": 147,
+            "right": 219.625,
+            "top": 748.79150390625,
+            "bottom": 760.79150390625
+          },
+          {
+            "text": "10/09 08:00",
+            "left": 204.375,
+            "right": 277,
+            "top": 748.79150390625,
+            "bottom": 760.79150390625
+          },
+          {
+            "text": "10/06 08:00",
+            "left": 117,
+            "right": 183.015625,
+            "top": 1139.79150390625,
+            "bottom": 1150.79150390625
+          },
+          {
+            "text": "10/09 08:00",
+            "left": 212.984375,
+            "right": 279,
+            "top": 1139.79150390625,
+            "bottom": 1150.79150390625
+          },
+          {
+            "text": "2.24 min",
+            "left": 86.1875,
+            "right": 139,
+            "top": 1512.79150390625,
+            "bottom": 1524.79150390625
+          },
+          {
+            "text": "1.68 min",
+            "left": 86.1875,
+            "right": 139,
+            "top": 1590.29150390625,
+            "bottom": 1602.29150390625
+          },
+          {
+            "text": "1.12 min",
+            "left": 86.1875,
+            "right": 139,
+            "top": 1667.79150390625,
+            "bottom": 1679.79150390625
+          },
+          {
+            "text": "0.56 min",
+            "left": 86.1875,
+            "right": 139,
+            "top": 1745.29150390625,
+            "bottom": 1757.29150390625
+          },
+          {
+            "text": "0.00 min",
+            "left": 86.1875,
+            "right": 139,
+            "top": 1822.79150390625,
+            "bottom": 1834.79150390625
+          },
+          {
+            "text": "10/06 08:00",
+            "left": 147,
+            "right": 219.625,
+            "top": 1848.79150390625,
+            "bottom": 1860.79150390625
+          },
+          {
+            "text": "10/09 08:00",
+            "left": 204.375,
+            "right": 277,
+            "top": 1848.79150390625,
+            "bottom": 1860.79150390625
+          }
+        ],
+        "stat_readouts": [
+          {
+            "text": "3.0 天",
+            "left": 180,
+            "right": 223.6875,
+            "parent_left": 113,
+            "parent_right": 283,
+            "outside_parent": false
+          },
+          {
+            "text": "3 次",
+            "left": 260,
+            "right": 288.625,
+            "parent_left": 113,
+            "parent_right": 283,
+            "outside_parent": true
+          },
+          {
+            "text": "11.67 min",
+            "left": 212,
+            "right": 307.34375,
+            "parent_left": 113,
+            "parent_right": 283,
+            "outside_parent": true
+          },
+          {
+            "text": "10.00 min",
+            "left": 282.515625,
+            "right": 377.859375,
+            "parent_left": 113,
+            "parent_right": 283,
+            "outside_parent": true
+          },
+          {
+            "text": "14.00 min",
+            "left": 210.515625,
+            "right": 305.859375,
+            "parent_left": 113,
+            "parent_right": 283,
+            "outside_parent": true
+          },
+          {
+            "text": "14.00 min",
+            "left": 358.328125,
+            "right": 453.671875,
+            "parent_left": 113,
+            "parent_right": 283,
+            "outside_parent": true
+          },
+          {
+            "text": "3.0 天",
+            "left": 180,
+            "right": 223.6875,
+            "parent_left": 113,
+            "parent_right": 283,
+            "outside_parent": false
+          },
+          {
+            "text": "3 次",
+            "left": 260,
+            "right": 288.625,
+            "parent_left": 113,
+            "parent_right": 283,
+            "outside_parent": true
+          },
+          {
+            "text": "1.50 min",
+            "left": 188,
+            "right": 271.515625,
+            "parent_left": 113,
+            "parent_right": 283,
+            "outside_parent": false
+          },
+          {
+            "text": "1.50 min",
+            "left": 234.515625,
+            "right": 318.03125,
+            "parent_left": 113,
+            "parent_right": 283,
+            "outside_parent": true
+          },
+          {
+            "text": "1.90 min",
+            "left": 162.515625,
+            "right": 246.03125,
+            "parent_left": 113,
+            "parent_right": 283,
+            "outside_parent": false
+          }
+        ]
+      },
+      "page_overflow": false
+    },
+    {
+      "id": "VISUAL-390",
+      "title": "Triton layout at 390px",
+      "requirement_ids": [
+        "EC-010",
+        "UAR-010"
+      ],
+      "actual": {
+        "viewport": 390,
+        "document_width": 390,
+        "svg_labels": [
+          {
+            "text": "16.80 min",
+            "left": 79.578125,
+            "right": 139,
+            "top": 180.569580078125,
+            "bottom": 192.569580078125
+          },
+          {
+            "text": "12.60 min",
+            "left": 79.578125,
+            "right": 139,
+            "top": 258.069580078125,
+            "bottom": 270.069580078125
+          },
+          {
+            "text": "8.40 min",
+            "left": 86.1875,
+            "right": 139,
+            "top": 335.569580078125,
+            "bottom": 347.569580078125
+          },
+          {
+            "text": "4.20 min",
+            "left": 86.1875,
+            "right": 139,
+            "top": 413.069580078125,
+            "bottom": 425.069580078125
+          },
+          {
+            "text": "0.00 min",
+            "left": 86.1875,
+            "right": 139,
+            "top": 490.569580078125,
+            "bottom": 502.569580078125
+          },
+          {
+            "text": "10/06 08:00",
+            "left": 147,
+            "right": 219.625,
+            "top": 516.569580078125,
+            "bottom": 528.569580078125
+          },
+          {
+            "text": "10/09 08:00",
+            "left": 274.375,
+            "right": 347,
+            "top": 516.569580078125,
+            "bottom": 528.569580078125
+          },
+          {
+            "text": "10/06 08:00",
+            "left": 117,
+            "right": 183.015625,
+            "top": 852.569580078125,
+            "bottom": 863.569580078125
+          },
+          {
+            "text": "10/09 08:00",
+            "left": 282.984375,
+            "right": 349,
+            "top": 852.569580078125,
+            "bottom": 863.569580078125
+          },
+          {
+            "text": "2.24 min",
+            "left": 86.1875,
+            "right": 139,
+            "top": 1168.569580078125,
+            "bottom": 1180.569580078125
+          },
+          {
+            "text": "1.68 min",
+            "left": 86.1875,
+            "right": 139,
+            "top": 1246.069580078125,
+            "bottom": 1258.069580078125
+          },
+          {
+            "text": "1.12 min",
+            "left": 86.1875,
+            "right": 139,
+            "top": 1323.569580078125,
+            "bottom": 1335.569580078125
+          },
+          {
+            "text": "0.56 min",
+            "left": 86.1875,
+            "right": 139,
+            "top": 1401.069580078125,
+            "bottom": 1413.069580078125
+          },
+          {
+            "text": "0.00 min",
+            "left": 86.1875,
+            "right": 139,
+            "top": 1478.569580078125,
+            "bottom": 1490.569580078125
+          },
+          {
+            "text": "10/06 08:00",
+            "left": 147,
+            "right": 219.625,
+            "top": 1504.569580078125,
+            "bottom": 1516.569580078125
+          },
+          {
+            "text": "10/09 08:00",
+            "left": 274.375,
+            "right": 347,
+            "top": 1504.569580078125,
+            "bottom": 1516.569580078125
+          }
+        ],
+        "stat_readouts": [
+          {
+            "text": "3.0 天",
+            "left": 180,
+            "right": 223.6875,
+            "parent_left": 113,
+            "parent_right": 353,
+            "outside_parent": false
+          },
+          {
+            "text": "3 次",
+            "left": 295,
+            "right": 323.625,
+            "parent_left": 113,
+            "parent_right": 353,
+            "outside_parent": false
+          },
+          {
+            "text": "11.67 min",
+            "left": 212,
+            "right": 307.34375,
+            "parent_left": 113,
+            "parent_right": 353,
+            "outside_parent": false
+          },
+          {
+            "text": "10.00 min",
+            "left": 317.515625,
+            "right": 412.859375,
+            "parent_left": 113,
+            "parent_right": 353,
+            "outside_parent": true
+          },
+          {
+            "text": "14.00 min",
+            "left": 210.515625,
+            "right": 305.859375,
+            "parent_left": 113,
+            "parent_right": 353,
+            "outside_parent": false
+          },
+          {
+            "text": "14.00 min",
+            "left": 393.328125,
+            "right": 488.671875,
+            "parent_left": 113,
+            "parent_right": 353,
+            "outside_parent": true
+          },
+          {
+            "text": "3.0 天",
+            "left": 180,
+            "right": 223.6875,
+            "parent_left": 113,
+            "parent_right": 353,
+            "outside_parent": false
+          },
+          {
+            "text": "3 次",
+            "left": 295,
+            "right": 323.625,
+            "parent_left": 113,
+            "parent_right": 353,
+            "outside_parent": false
+          },
+          {
+            "text": "1.50 min",
+            "left": 188,
+            "right": 271.515625,
+            "parent_left": 113,
+            "parent_right": 353,
+            "outside_parent": false
+          },
+          {
+            "text": "1.50 min",
+            "left": 269.515625,
+            "right": 353.03125,
+            "parent_left": 113,
+            "parent_right": 353,
+            "outside_parent": true
+          },
+          {
+            "text": "1.90 min",
+            "left": 162.515625,
+            "right": 246.03125,
+            "parent_left": 113,
+            "parent_right": 353,
+            "outside_parent": false
+          }
+        ]
+      },
+      "page_overflow": false
+    },
+    {
+      "id": "VISUAL-768",
+      "title": "Triton layout at 768px",
+      "requirement_ids": [
+        "EC-010",
+        "UAR-010"
+      ],
+      "actual": {
+        "viewport": 768,
+        "document_width": 768,
+        "svg_labels": [
+          {
+            "text": "16.80 min",
+            "left": 93.578125,
+            "right": 153,
+            "top": -229.828125,
+            "bottom": -217.828125
+          },
+          {
+            "text": "12.60 min",
+            "left": 93.578125,
+            "right": 153,
+            "top": -152.328125,
+            "bottom": -140.328125
+          },
+          {
+            "text": "8.40 min",
+            "left": 100.1875,
+            "right": 153,
+            "top": -74.828125,
+            "bottom": -62.828125
+          },
+          {
+            "text": "4.20 min",
+            "left": 100.1875,
+            "right": 153,
+            "top": 2.671875,
+            "bottom": 14.671875
+          },
+          {
+            "text": "0.00 min",
+            "left": 100.1875,
+            "right": 153,
+            "top": 80.171875,
+            "bottom": 92.171875
+          },
+          {
+            "text": "10/06 08:00",
+            "left": 161,
+            "right": 233.625,
+            "top": 106.171875,
+            "bottom": 118.171875
+          },
+          {
+            "text": "10/06 22:24",
+            "left": 234.6875,
+            "right": 307.6982421875,
+            "top": 106.171875,
+            "bottom": 118.171875
+          },
+          {
+            "text": "10/07 12:48",
+            "left": 344.6875,
+            "right": 417.6982421875,
+            "top": 106.171875,
+            "bottom": 118.171875
+          },
+          {
+            "text": "10/08 03:12",
+            "left": 454.6875,
+            "right": 527.3125,
+            "top": 106.171875,
+            "bottom": 118.171875
+          },
+          {
+            "text": "10/08 17:36",
+            "left": 564.6875,
+            "right": 637.3125,
+            "top": 106.171875,
+            "bottom": 118.171875
+          },
+          {
+            "text": "10/09 08:00",
+            "left": 638.375,
+            "right": 711,
+            "top": 106.171875,
+            "bottom": 118.171875
+          },
+          {
+            "text": "10/06 08:00",
+            "left": 117,
+            "right": 183.015625,
+            "top": 402.171875,
+            "bottom": 413.171875
+          },
+          {
+            "text": "10/09 08:00",
+            "left": 660.984375,
+            "right": 727,
+            "top": 402.171875,
+            "bottom": 413.171875
+          },
+          {
+            "text": "2.24 min",
+            "left": 100.1875,
+            "right": 153,
+            "top": 592.171875,
+            "bottom": 604.171875
+          },
+          {
+            "text": "1.68 min",
+            "left": 100.1875,
+            "right": 153,
+            "top": 669.671875,
+            "bottom": 681.671875
+          },
+          {
+            "text": "1.12 min",
+            "left": 100.1875,
+            "right": 153,
+            "top": 747.171875,
+            "bottom": 759.171875
+          },
+          {
+            "text": "0.56 min",
+            "left": 100.1875,
+            "right": 153,
+            "top": 824.671875,
+            "bottom": 836.671875
+          },
+          {
+            "text": "0.00 min",
+            "left": 100.1875,
+            "right": 153,
+            "top": 902.171875,
+            "bottom": 914.171875
+          },
+          {
+            "text": "10/06 08:00",
+            "left": 161,
+            "right": 233.625,
+            "top": 928.171875,
+            "bottom": 940.171875
+          },
+          {
+            "text": "10/06 22:24",
+            "left": 234.6875,
+            "right": 307.6982421875,
+            "top": 928.171875,
+            "bottom": 940.171875
+          },
+          {
+            "text": "10/07 12:48",
+            "left": 344.6875,
+            "right": 417.6982421875,
+            "top": 928.171875,
+            "bottom": 940.171875
+          },
+          {
+            "text": "10/08 03:12",
+            "left": 454.6875,
+            "right": 527.3125,
+            "top": 928.171875,
+            "bottom": 940.171875
+          },
+          {
+            "text": "10/08 17:36",
+            "left": 564.6875,
+            "right": 637.3125,
+            "top": 928.171875,
+            "bottom": 940.171875
+          },
+          {
+            "text": "10/09 08:00",
+            "left": 638.375,
+            "right": 711,
+            "top": 928.171875,
+            "bottom": 940.171875
+          }
+        ],
+        "stat_readouts": [
+          {
+            "text": "3.0 天",
+            "left": 180,
+            "right": 223.6875,
+            "parent_left": 113,
+            "parent_right": 731,
+            "outside_parent": false
+          },
+          {
+            "text": "3 次",
+            "left": 310.6875,
+            "right": 339.3125,
+            "parent_left": 113,
+            "parent_right": 731,
+            "outside_parent": false
+          },
+          {
+            "text": "11.67 min",
+            "left": 450.3125,
+            "right": 545.65625,
+            "parent_left": 113,
+            "parent_right": 731,
+            "outside_parent": false
+          },
+          {
+            "text": "10.00 min",
+            "left": 219.515625,
+            "right": 314.859375,
+            "parent_left": 113,
+            "parent_right": 731,
+            "outside_parent": false
+          },
+          {
+            "text": "14.00 min",
+            "left": 424.375,
+            "right": 519.71875,
+            "parent_left": 113,
+            "parent_right": 731,
+            "outside_parent": false
+          },
+          {
+            "text": "14.00 min",
+            "left": 295.328125,
+            "right": 390.671875,
+            "parent_left": 113,
+            "parent_right": 731,
+            "outside_parent": false
+          },
+          {
+            "text": "3.0 天",
+            "left": 180,
+            "right": 223.6875,
+            "parent_left": 113,
+            "parent_right": 731,
+            "outside_parent": false
+          },
+          {
+            "text": "3 次",
+            "left": 310.6875,
+            "right": 339.3125,
+            "parent_left": 113,
+            "parent_right": 731,
+            "outside_parent": false
+          },
+          {
+            "text": "1.50 min",
+            "left": 426.3125,
+            "right": 509.828125,
+            "parent_left": 113,
+            "parent_right": 731,
+            "outside_parent": false
+          },
+          {
+            "text": "1.50 min",
+            "left": 571.34375,
+            "right": 654.859375,
+            "parent_left": 113,
+            "parent_right": 731,
+            "outside_parent": false
+          },
+          {
+            "text": "1.90 min",
+            "left": 171.515625,
+            "right": 255.03125,
+            "parent_left": 113,
+            "parent_right": 731,
+            "outside_parent": false
+          }
+        ]
+      },
+      "page_overflow": false
+    },
+    {
+      "id": "VISUAL-1024",
+      "title": "Triton layout at 1024px",
+      "requirement_ids": [
+        "EC-010",
+        "UAR-010"
+      ],
+      "actual": {
+        "viewport": 1024,
+        "document_width": 1024,
+        "svg_labels": [
+          {
+            "text": "16.80 min",
+            "left": 211.578125,
+            "right": 271,
+            "top": -328.828125,
+            "bottom": -316.828125
+          },
+          {
+            "text": "12.60 min",
+            "left": 211.578125,
+            "right": 271,
+            "top": -251.328125,
+            "bottom": -239.328125
+          },
+          {
+            "text": "8.40 min",
+            "left": 218.1875,
+            "right": 271,
+            "top": -173.828125,
+            "bottom": -161.828125
+          },
+          {
+            "text": "4.20 min",
+            "left": 218.1875,
+            "right": 271,
+            "top": -96.328125,
+            "bottom": -84.328125
+          },
+          {
+            "text": "0.00 min",
+            "left": 218.1875,
+            "right": 271,
+            "top": -18.828125,
+            "bottom": -6.828125
+          },
+          {
+            "text": "10/06 08:00",
+            "left": 279,
+            "right": 351.625,
+            "top": 7.171875,
+            "bottom": 19.171875
+          },
+          {
+            "text": "10/06 20:00",
+            "left": 356.6875,
+            "right": 429.3125,
+            "top": 7.171875,
+            "bottom": 19.171875
+          },
+          {
+            "text": "10/07 08:00",
+            "left": 470.6875,
+            "right": 543.3125,
+            "top": 7.171875,
+            "bottom": 19.171875
+          },
+          {
+            "text": "10/07 20:00",
+            "left": 584.6875,
+            "right": 657.3125,
+            "top": 7.171875,
+            "bottom": 19.171875
+          },
+          {
+            "text": "10/08 08:00",
+            "left": 698.6875,
+            "right": 771.3125,
+            "top": 7.171875,
+            "bottom": 19.171875
+          },
+          {
+            "text": "10/08 20:00",
+            "left": 812.6875,
+            "right": 885.3125,
+            "top": 7.171875,
+            "bottom": 19.171875
+          },
+          {
+            "text": "10/09 08:00",
+            "left": 890.375,
+            "right": 963,
+            "top": 7.171875,
+            "bottom": 19.171875
+          },
+          {
+            "text": "10/06 08:00",
+            "left": 235,
+            "right": 301.015625,
+            "top": 278.171875,
+            "bottom": 289.171875
+          },
+          {
+            "text": "10/09 08:00",
+            "left": 912.984375,
+            "right": 979,
+            "top": 278.171875,
+            "bottom": 289.171875
+          },
+          {
+            "text": "2.24 min",
+            "left": 218.1875,
+            "right": 271,
+            "top": 468.171875,
+            "bottom": 480.171875
+          },
+          {
+            "text": "1.68 min",
+            "left": 218.1875,
+            "right": 271,
+            "top": 545.671875,
+            "bottom": 557.671875
+          },
+          {
+            "text": "1.12 min",
+            "left": 218.1875,
+            "right": 271,
+            "top": 623.171875,
+            "bottom": 635.171875
+          },
+          {
+            "text": "0.56 min",
+            "left": 218.1875,
+            "right": 271,
+            "top": 700.671875,
+            "bottom": 712.671875
+          },
+          {
+            "text": "0.00 min",
+            "left": 218.1875,
+            "right": 271,
+            "top": 778.171875,
+            "bottom": 790.171875
+          },
+          {
+            "text": "10/06 08:00",
+            "left": 279,
+            "right": 351.625,
+            "top": 804.171875,
+            "bottom": 816.171875
+          },
+          {
+            "text": "10/06 20:00",
+            "left": 356.6875,
+            "right": 429.3125,
+            "top": 804.171875,
+            "bottom": 816.171875
+          },
+          {
+            "text": "10/07 08:00",
+            "left": 470.6875,
+            "right": 543.3125,
+            "top": 804.171875,
+            "bottom": 816.171875
+          },
+          {
+            "text": "10/07 20:00",
+            "left": 584.6875,
+            "right": 657.3125,
+            "top": 804.171875,
+            "bottom": 816.171875
+          },
+          {
+            "text": "10/08 08:00",
+            "left": 698.6875,
+            "right": 771.3125,
+            "top": 804.171875,
+            "bottom": 816.171875
+          },
+          {
+            "text": "10/08 20:00",
+            "left": 812.6875,
+            "right": 885.3125,
+            "top": 804.171875,
+            "bottom": 816.171875
+          },
+          {
+            "text": "10/09 08:00",
+            "left": 890.375,
+            "right": 963,
+            "top": 804.171875,
+            "bottom": 816.171875
+          }
+        ],
+        "stat_readouts": [
+          {
+            "text": "3.0 天",
+            "left": 298,
+            "right": 341.6875,
+            "parent_left": 231,
+            "parent_right": 983,
+            "outside_parent": false
+          },
+          {
+            "text": "3 次",
+            "left": 428.6875,
+            "right": 457.3125,
+            "parent_left": 231,
+            "parent_right": 983,
+            "outside_parent": false
+          },
+          {
+            "text": "11.67 min",
+            "left": 568.3125,
+            "right": 663.65625,
+            "parent_left": 231,
+            "parent_right": 983,
+            "outside_parent": false
+          },
+          {
+            "text": "10.00 min",
+            "left": 773.171875,
+            "right": 868.515625,
+            "parent_left": 231,
+            "parent_right": 983,
+            "outside_parent": false
+          },
+          {
+            "text": "14.00 min",
+            "left": 337.515625,
+            "right": 432.859375,
+            "parent_left": 231,
+            "parent_right": 983,
+            "outside_parent": false
+          },
+          {
+            "text": "14.00 min",
+            "left": 618.1875,
+            "right": 713.53125,
+            "parent_left": 231,
+            "parent_right": 983,
+            "outside_parent": false
+          },
+          {
+            "text": "3.0 天",
+            "left": 298,
+            "right": 341.6875,
+            "parent_left": 231,
+            "parent_right": 983,
+            "outside_parent": false
+          },
+          {
+            "text": "3 次",
+            "left": 428.6875,
+            "right": 457.3125,
+            "parent_left": 231,
+            "parent_right": 983,
+            "outside_parent": false
+          },
+          {
+            "text": "1.50 min",
+            "left": 544.3125,
+            "right": 627.828125,
+            "parent_left": 231,
+            "parent_right": 983,
+            "outside_parent": false
+          },
+          {
+            "text": "1.50 min",
+            "left": 689.34375,
+            "right": 772.859375,
+            "parent_left": 231,
+            "parent_right": 983,
+            "outside_parent": false
+          },
+          {
+            "text": "1.90 min",
+            "left": 834.375,
+            "right": 917.890625,
+            "parent_left": 231,
+            "parent_right": 983,
+            "outside_parent": false
+          }
+        ]
+      },
+      "page_overflow": false
+    },
+    {
+      "id": "VISUAL-1440",
+      "title": "Triton layout at 1440px",
+      "requirement_ids": [
+        "EC-010",
+        "UAR-010"
+      ],
+      "actual": {
+        "viewport": 1440,
+        "document_width": 1440,
+        "svg_labels": [
+          {
+            "text": "16.80 min",
+            "left": 267.578125,
+            "right": 327,
+            "top": -378.015625,
+            "bottom": -366.015625
+          },
+          {
+            "text": "12.60 min",
+            "left": 267.578125,
+            "right": 327,
+            "top": -300.515625,
+            "bottom": -288.515625
+          },
+          {
+            "text": "8.40 min",
+            "left": 274.1875,
+            "right": 327,
+            "top": -223.015625,
+            "bottom": -211.015625
+          },
+          {
+            "text": "4.20 min",
+            "left": 274.1875,
+            "right": 327,
+            "top": -145.515625,
+            "bottom": -133.515625
+          },
+          {
+            "text": "0.00 min",
+            "left": 274.1875,
+            "right": 327,
+            "top": -68.015625,
+            "bottom": -56.015625
+          },
+          {
+            "text": "10/06 08:00",
+            "left": 335,
+            "right": 407.625,
+            "top": -42.015625,
+            "bottom": -30.015625
+          },
+          {
+            "text": "10/06 20:00",
+            "left": 470.0208435058594,
+            "right": 542.6458740234375,
+            "top": -42.015625,
+            "bottom": -30.015625
+          },
+          {
+            "text": "10/07 08:00",
+            "left": 641.3541259765625,
+            "right": 713.9791259765625,
+            "top": -42.015625,
+            "bottom": -30.015625
+          },
+          {
+            "text": "10/07 20:00",
+            "left": 812.6875,
+            "right": 885.3125,
+            "top": -42.015625,
+            "bottom": -30.015625
+          },
+          {
+            "text": "10/08 08:00",
+            "left": 984.0208129882812,
+            "right": 1056.645751953125,
+            "top": -42.015625,
+            "bottom": -30.015625
+          },
+          {
+            "text": "10/08 20:00",
+            "left": 1155.354248046875,
+            "right": 1227.979248046875,
+            "top": -42.015625,
+            "bottom": -30.015625
+          },
+          {
+            "text": "10/09 08:00",
+            "left": 1290.375,
+            "right": 1363,
+            "top": -42.015625,
+            "bottom": -30.015625
+          },
+          {
+            "text": "10/06 08:00",
+            "left": 291,
+            "right": 357.015625,
+            "top": 228.984375,
+            "bottom": 239.984375
+          },
+          {
+            "text": "10/09 08:00",
+            "left": 1312.984375,
+            "right": 1379,
+            "top": 228.984375,
+            "bottom": 239.984375
+          },
+          {
+            "text": "2.24 min",
+            "left": 274.1875,
+            "right": 327,
+            "top": 418.984375,
+            "bottom": 430.984375
+          },
+          {
+            "text": "1.68 min",
+            "left": 274.1875,
+            "right": 327,
+            "top": 496.484375,
+            "bottom": 508.484375
+          },
+          {
+            "text": "1.12 min",
+            "left": 274.1875,
+            "right": 327,
+            "top": 573.984375,
+            "bottom": 585.984375
+          },
+          {
+            "text": "0.56 min",
+            "left": 274.1875,
+            "right": 327,
+            "top": 651.484375,
+            "bottom": 663.484375
+          },
+          {
+            "text": "0.00 min",
+            "left": 274.1875,
+            "right": 327,
+            "top": 728.984375,
+            "bottom": 740.984375
+          },
+          {
+            "text": "10/06 08:00",
+            "left": 335,
+            "right": 407.625,
+            "top": 754.984375,
+            "bottom": 766.984375
+          },
+          {
+            "text": "10/06 20:00",
+            "left": 470.0208435058594,
+            "right": 542.6458740234375,
+            "top": 754.984375,
+            "bottom": 766.984375
+          },
+          {
+            "text": "10/07 08:00",
+            "left": 641.3541259765625,
+            "right": 713.9791259765625,
+            "top": 754.984375,
+            "bottom": 766.984375
+          },
+          {
+            "text": "10/07 20:00",
+            "left": 812.6875,
+            "right": 885.3125,
+            "top": 754.984375,
+            "bottom": 766.984375
+          },
+          {
+            "text": "10/08 08:00",
+            "left": 984.0208129882812,
+            "right": 1056.645751953125,
+            "top": 754.984375,
+            "bottom": 766.984375
+          },
+          {
+            "text": "10/08 20:00",
+            "left": 1155.354248046875,
+            "right": 1227.979248046875,
+            "top": 754.984375,
+            "bottom": 766.984375
+          },
+          {
+            "text": "10/09 08:00",
+            "left": 1290.375,
+            "right": 1363,
+            "top": 754.984375,
+            "bottom": 766.984375
+          }
+        ],
+        "stat_readouts": [
+          {
+            "text": "3.0 天",
+            "left": 354,
+            "right": 397.6875,
+            "parent_left": 287,
+            "parent_right": 1383,
+            "outside_parent": false
+          },
+          {
+            "text": "3 次",
+            "left": 484.6875,
+            "right": 513.3125,
+            "parent_left": 287,
+            "parent_right": 1383,
+            "outside_parent": false
+          },
+          {
+            "text": "11.67 min",
+            "left": 624.3125,
+            "right": 719.65625,
+            "parent_left": 287,
+            "parent_right": 1383,
+            "outside_parent": false
+          },
+          {
+            "text": "10.00 min",
+            "left": 829.171875,
+            "right": 924.515625,
+            "parent_left": 287,
+            "parent_right": 1383,
+            "outside_parent": false
+          },
+          {
+            "text": "14.00 min",
+            "left": 1034.03125,
+            "right": 1129.375,
+            "parent_left": 287,
+            "parent_right": 1383,
+            "outside_parent": false
+          },
+          {
+            "text": "14.00 min",
+            "left": 469.328125,
+            "right": 564.671875,
+            "parent_left": 287,
+            "parent_right": 1383,
+            "outside_parent": false
+          },
+          {
+            "text": "3.0 天",
+            "left": 354,
+            "right": 397.6875,
+            "parent_left": 287,
+            "parent_right": 1383,
+            "outside_parent": false
+          },
+          {
+            "text": "3 次",
+            "left": 484.6875,
+            "right": 513.3125,
+            "parent_left": 287,
+            "parent_right": 1383,
+            "outside_parent": false
+          },
+          {
+            "text": "1.50 min",
+            "left": 600.3125,
+            "right": 683.828125,
+            "parent_left": 287,
+            "parent_right": 1383,
+            "outside_parent": false
+          },
+          {
+            "text": "1.50 min",
+            "left": 745.34375,
+            "right": 828.859375,
+            "parent_left": 287,
+            "parent_right": 1383,
+            "outside_parent": false
+          },
+          {
+            "text": "1.90 min",
+            "left": 890.375,
+            "right": 973.890625,
+            "parent_left": 287,
+            "parent_right": 1383,
+            "outside_parent": false
+          }
+        ]
+      },
+      "page_overflow": false
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "baseline": "88ed1aa1e30a46f825527cc5f8cffa0116b657ad",
+  "recorded_at_utc": "2026-10-23T15:38:34.605592+00:00",
+  "recorded_at_shanghai": "2026-10-23T23:38:34.605592+08:00",
+  "main_protection": {
+    "admins": true,
+    "checks": [
+      {
+        "app_id": 15368,
+        "context": "Dashboard quality gate"
+      }
+    ],
+    "deletions": false,
+    "force_pushes": false,
+    "review_count": 0,
+    "strict": true
+  },
+  "issues": [],
+  "production_jobs": [
+    {
+      "conclusion": "failure",
+      "id": 120492873555,
+      "name": "build",
+      "steps": [
+        {
+          "conclusion": "failure",
+          "name": "Verify every UBS repository collection succeeded"
+        }
+      ]
+    },
+    {
+      "conclusion": "skipped",
+      "id": 120497182434,
+      "name": "deploy",
+      "steps": []
+    },
+    {
+      "conclusion": "skipped",
+      "id": 120497183611,
+      "name": "verify",
+      "steps": []
+    }
+  ],
+  "main_ci": {
+    "conclusion": "success",
+    "head_sha": "88ed1aa1e30a46f825527cc5f8cffa0116b657ad",
+    "html_url": "https://github.com/tianll12115/union_monitor/actions/runs/39976648635",
+    "id": 39976648635,
+    "status": "completed"
+  },
+  "scope_note": "Read-only state snapshot, not a source completeness audit or proof of a successful production deployment.",
+  "new_site": {
+    "url": "https://tianll12115.github.io/union_monitor/",
+    "http_status": 404
+  },
+  "new_data": {
+    "url": "https://tianll12115.github.io/union_monitor/data/repositories.json",
+    "http_status": 404
+  },
+  "production_full_log_sha256": "45bce1b42dca1757036375f807a224fd55c54430b029c4dbac8db7bee49bbb3e"
+}

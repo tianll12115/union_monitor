@@ -142,7 +142,7 @@ async function readAllPages(page) {
 test('[BASIC-003] submitted sort follows code-submission time and the legacy sort=created alias normalizes', async ({ page }) => {
   const prs = buildSnapshot();
   await serve(page, prs);
-  await page.goto('./#ubs/repo/ubs-engine?sort=created');
+  await page.goto('./#projects/ubs/engineering?repository=ubs-engine&sort=created');
   await expect(page.locator('#reload')).toBeEnabled();
   await expect(page.locator('#prRows tr[data-pr]').first()).toBeVisible();
   // Legacy alias normalizes the select to the new submitted semantics instead

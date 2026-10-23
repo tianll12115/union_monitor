@@ -52,7 +52,13 @@ const test = base.test.extend({
       record({ kind: 'pageerror', message: String((error && error.message) || error) });
     });
     page.on('console', (msg) => {
-      if (msg.type() === 'error') record({ kind: 'console', message: msg.text() });
+      if (msg.type() !== 'error') return;
+      // Chromium logs every failed network load to the console itself
+      // ("Failed to load resource: ..."); those are already tracked by the
+      // response/requestfailed handlers below, and would otherwise double-report
+      // the fault-injection failures the tests deliberately allow.
+      if (/^Failed to load resource/.test(msg.text())) return;
+      record({ kind: 'console', message: msg.text() });
     });
     page.on('requestfailed', (request) => {
       const failure = (request.failure() && request.failure().errorText) || '';

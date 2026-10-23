@@ -55,7 +55,7 @@ test('[BASIC-012] pure keyboard enters a community and repo, drives search and s
   // Escape closes the dialog, clears the pr= identity, and focus is not trapped.
   await page.keyboard.press('Escape');
   await expect(page.locator('#detail')).toBeHidden();
-  expect(page.url()).not.toContain('pr=');
+  await expect.poll(() => page.url()).not.toContain('pr=');
   const activeTag = await page.evaluate(() => document.activeElement ? document.activeElement.tagName : '');
   expect(activeTag).toBeTruthy();
   expect(activeTag).not.toBe('BODY');

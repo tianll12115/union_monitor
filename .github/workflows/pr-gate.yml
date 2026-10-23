@@ -56,8 +56,12 @@ jobs:
         run: npm ci --ignore-scripts
       - name: Install Chromium and system libraries
         run: npx playwright install --with-deps chromium
+      - name: Remove stale browser test results
+        run: rm -rf test-results
       - name: Real browser routing, filtering, export and narrow-screen checks
         run: npm run test:browser
+      - name: Verify all 12 BASIC journeys executed and passed
+        run: python scripts/verify_basic_junit.py
       - name: Retain browser failure evidence
         if: ${{ always() }}
         uses: actions/upload-artifact@v4

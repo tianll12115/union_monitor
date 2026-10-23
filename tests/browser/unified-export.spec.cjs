@@ -1,4 +1,4 @@
-const { test, expect } = require('@playwright/test');
+const { test, expect } = require('./error-guard');
 
 // UDR-019: versioned public export. Each scope declares its entity, analysis
 // scope, count and unit, and binds the release/snapshot identity. The CSV body
@@ -12,7 +12,7 @@ async function readDownload(download) {
   return Buffer.concat(chunks).toString('utf8');
 }
 
-test('L record export binds the full filtered set and versioned metadata, not page-truncated', async ({ page }) => {
+test('[BASIC-010] L record export binds the full filtered set and versioned metadata, not page-truncated', async ({ page }) => {
   await page.goto('./#ubs/repo/ubs-engine');
   await page.locator('#entity').selectOption('prs');
   await expect(page.locator('#prRows')).not.toBeEmpty();
@@ -26,6 +26,11 @@ test('L record export binds the full filtered set and versioned metadata, not pa
   const lines = csv.replace(/^\uFEFF/, '').trim().split(/\r?\n/);
   expect(lines[0]).toMatch(/^"仓库","PR"/);
   expect(lines[0]).not.toMatch(/^#/);
+  // Submission-time columns travel with the record, never a comment row.
+  expect(lines[0]).toContain('"最近提交时间"');
+  expect(lines[0]).toContain('"提交时间ms"');
+  expect(lines[0]).toContain('"提交事件来源"');
+  expect(lines[0]).toContain('"提交时间状态"');
   expect(lines.length - 1).toBe(total);
 
   const notice = page.locator('.export-notice');

@@ -1,4 +1,4 @@
-const { test, expect } = require('@playwright/test');
+const { test, expect } = require('./error-guard');
 
 async function readDownload(download) {
   const stream = await download.createReadStream();
@@ -78,7 +78,7 @@ async function serveUbs(page, data) {
     route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(data.snapshot) }));
 }
 
-test('list and batch entities converge on one detail; representative default vs selected batch', async ({ page }) => {
+test('[BASIC-006] list and batch entities converge on one detail; representative default vs selected batch', async ({ page }) => {
   await serveUbs(page, fixture());
   const dialog = page.locator('#detail');
 
@@ -108,7 +108,7 @@ test('list and batch entities converge on one detail; representative default vs 
   await expect(dialog).toBeHidden();
 });
 
-test('no-representative PR shows the reason and the most-recent batch, never a fabricated representative', async ({ page }) => {
+test('[BASIC-006] no-representative PR shows the reason and the most-recent batch, never a fabricated representative', async ({ page }) => {
   await serveUbs(page, fixture());
   await page.goto('./#ubs/repo/ubs-engine');
   await page.locator('#entity').selectOption('prs');
@@ -124,7 +124,7 @@ test('no-representative PR shows the reason and the most-recent batch, never a f
   await expect(dialog.locator('details.representative')).toHaveCount(0);
 });
 
-test('unknown-association batches stay locatable and closing returns to the list', async ({ page }) => {
+test('[BASIC-007] unknown-association batches stay locatable and closing returns to the list', async ({ page }) => {
   await serveUbs(page, fixture());
   await page.goto('./#ubs/repo/ubs-engine');
   await page.locator('#entity').selectOption('prs');

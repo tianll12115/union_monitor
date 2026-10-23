@@ -1,4 +1,4 @@
-const { test, expect } = require('@playwright/test');
+const { test, expect } = require('./error-guard');
 
 // UDR-020: the records list state (S/L conditions, sort, page size, page)
 // round-trips through the #projects/ubs/{records|quality} query. Confirmed
@@ -11,7 +11,7 @@ async function readyRepo(page, hash = '#ubs/repo/ubs-engine') {
   await expect(page.locator('#prRows')).not.toBeEmpty();
 }
 
-test('confirmed changes push into the query and a shared URL restores the controls', async ({ page, context }) => {
+test('[BASIC-002] confirmed changes push into the query and a shared URL restores the controls', async ({ page, context }) => {
   await readyRepo(page);
   await page.locator('#entity').selectOption('prs');
   await page.locator('#state').selectOption('merged');
@@ -41,7 +41,7 @@ test('plain search replaces the URL as the user types, without a condition bar',
   expect(page.url()).toContain('q=ubs-engine');
 });
 
-test('opening and closing a detail carries its identity in the URL', async ({ page }) => {
+test('[BASIC-007] opening and closing a detail carries its identity in the URL', async ({ page }) => {
   await readyRepo(page);
   const firstPr = await page.locator('#prRows tr[data-pr]').first().getAttribute('data-pr');
   await page.locator('#prRows tr[data-pr]').first().click();

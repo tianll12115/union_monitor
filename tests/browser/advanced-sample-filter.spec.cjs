@@ -1,4 +1,4 @@
-const { test, expect } = require('@playwright/test');
+const { test, expect } = require('./error-guard');
 
 // EC-007: the standalone trigger/quality advanced panel is retired; the PR state
 // filter and plain search stay in the list area. Old tf/qf params are reported as
@@ -22,7 +22,7 @@ test('retired advanced panel is not rendered and has no hidden filters', async (
   await expect(page.locator('#qualityFilter')).toHaveCount(0);
 });
 
-test('state filter changes the analysis denominator and is clearable', async ({ page }) => {
+test('[BASIC-005] state filter changes the analysis denominator and is clearable', async ({ page }) => {
   await readyRepo(page);
   await page.locator('#entity').selectOption('prs');
   await page.locator('#state').selectOption('merged');
@@ -42,7 +42,8 @@ test('plain search changes records but not the analysis denominator', async ({ p
   await readyRepo(page);
   await page.locator('#query').fill('no-match-7c331');
   await expect(page.locator('#activeConditions')).toBeHidden();
-  await expect(page.locator('#prRows')).not.toBeEmpty();
+  await expect(page.locator('#prRows tr[data-pr]')).toHaveCount(0);
+  await expect(page.locator('#prRows')).toContainText('当前无匹配 PR');
 });
 
 test('legacy tf/qf params report the retired conditions instead of filtering', async ({ page }) => {

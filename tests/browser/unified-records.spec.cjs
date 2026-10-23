@@ -1,4 +1,4 @@
-const { test, expect } = require('@playwright/test');
+const { test, expect } = require('./error-guard');
 
 // UDR-018-TC01: page length 15/30/50 slices a stable, complete sequence with
 // no loss. The displayed range end is always min(pageSize, total), and
@@ -13,6 +13,66 @@ async function readyRepo(page, hash = '#ubs/repo/ubs-engine') {
 async function total(page) {
   return Number(await page.locator('#prCount').innerText());
 }
+
+// Independent oracle for the submission-time order — recomputed from the served
+// snapshot, never from the production sort function. Unknown (no create/push)
+// sorts last; ties by PR number desc.
+function oracleSubmission(p) {
+  if (p.submission_time_profile === 'ubs-latest-code-submission-v1') {
+    const v = p.latest_submission_ms;
+    return (typeof v === 'number' && Number.isFinite(v) && v >= 0) ? v : null;
+  }
+  if (p.submission_events_status === 'partial' || p.submission_events_status === 'unknown') return null;
+  if ((p.issues || []).some(s => String(s).includes('操作日志采集失败'))) return null;
+  let best = null;
+  for (const e of (p.events || [])) {
+    if (e.kind !== 'create' && e.kind !== 'push') continue;
+    const v = e.time_ms;
+    if (typeof v === 'number' && Number.isInteger(v) && v >= 0 && (best === null || v > best)) best = v;
+  }
+  return best;
+}
+
+function expectedSubmittedOrder(prs) {
+  const values = prs.map(p => ({ p, s: oracleSubmission(p) }));
+  values.sort((a, b) => {
+    const as = a.s, bs = b.s;
+    if (as === null && bs === null) return b.p.number - a.p.number;
+    if (as === null) return 1;
+    if (bs === null) return -1;
+    if (as !== bs) return bs - as;
+    return b.p.number - a.p.number;
+  });
+  return values.map(x => x.p.number);
+}
+
+test('[BASIC-004] the full >=31-PR submitted sequence survives 15/30/50 pagination with no skip or duplicate', async ({ page }) => {
+  await readyRepo(page);
+  const payload = await page.evaluate(async () => await (await fetch('data/repos/ubs-engine.json')).json());
+  const prs = payload.prs;
+  expect(prs.length).toBeGreaterThanOrEqual(31);
+  const expected = expectedSubmittedOrder(prs);
+
+  await page.locator('#sort').selectOption('submitted');
+  await expect(page.locator('#prRows tr[data-pr]').first()).toBeVisible();
+
+  for (const size of [15, 30, 50]) {
+    await page.locator('#pageSize').selectOption(String(size));
+    await expect(page.locator('#pageInfo')).toContainText('1 /');
+    const seen = [];
+    for (;;) {
+      const ids = await page.locator('#prRows tr[data-pr]').evaluateAll(rows => rows.map(r => Number(r.getAttribute('data-pr'))));
+      seen.push(...ids);
+      const next = page.locator('#next');
+      if (await next.isDisabled()) break;
+      await next.click();
+      await expect(page.locator('#prRows tr[data-pr]').first()).toBeVisible();
+    }
+    expect(seen.length, `full sequence length at page size ${size}`).toBe(prs.length);
+    expect(new Set(seen).size, `no duplicates at page size ${size}`).toBe(seen.length);
+    expect(seen, `submitted order at page size ${size}`).toEqual(expected);
+  }
+});
 
 test('page length selector shows 15/30/50 and re-slices without loss', async ({ page }) => {
   await readyRepo(page);

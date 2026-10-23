@@ -1,4 +1,4 @@
-const { test, expect } = require('@playwright/test');
+const { test, expect } = require('./error-guard');
 
 // EC-001/EC-009: two-community sidebar navigation (UBSCore overview, Triton
 // engineering). There is no project selector and no fixed seven-task bar; the
@@ -9,7 +9,7 @@ async function readyOverview(page) {
   await expect(page.locator('#sideTasks')).toBeVisible();
 }
 
-test('the sidebar shows exactly two community entries and no workbench or project selector', async ({ page }) => {
+test('[BASIC-001] the sidebar shows exactly two community entries and no workbench or project selector', async ({ page }) => {
   await readyOverview(page);
   await expect(page.locator('#sideTasks a')).toHaveCount(2);
   await expect(page.locator('#sideTasks')).toContainText('UBSCore');
@@ -30,7 +30,7 @@ test('the two community links carry their canonical entries and tooltips', async
     .toHaveAttribute('title', 'Triton-Ascend');
 });
 
-test('clicking the Triton community opens the merged engineering view and marks it active', async ({ page }) => {
+test('[BASIC-002] clicking the Triton community opens the merged engineering view and marks it active', async ({ page }) => {
   await readyOverview(page);
   await page.locator('#sideTasks a[data-nav="triton"]').click();
   await expect(page.locator('#triton-view')).toBeVisible();

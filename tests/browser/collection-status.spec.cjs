@@ -1,4 +1,4 @@
-const { test, expect } = require('@playwright/test');
+const { test, expect } = require('./error-guard');
 
 // EC-012: the collection-status workbench is retired. The retired #workbench
 // collapses to the UBS overview, and collection health is read from the

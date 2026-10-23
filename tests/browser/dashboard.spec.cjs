@@ -1,4 +1,4 @@
-const {test,expect}=require('@playwright/test');
+const { test, expect, allowError } = require('./error-guard');
 
 async function ready(page,hash='#ubs'){
   await page.goto('./'+hash);
@@ -7,7 +7,7 @@ async function ready(page,hash='#ubs'){
   if(hash==='#ubs')await expect(page.locator('#repositoryRows')).toContainText('ubs-engine');
 }
 
-test('published pages initialise without script exceptions',async({page})=>{
+test('[BASIC-001] published pages initialise without script exceptions',async({page})=>{
   const errors=[];
   page.on('pageerror',error=>errors.push(error.message));
   await ready(page,'#ubs');
@@ -17,7 +17,7 @@ test('published pages initialise without script exceptions',async({page})=>{
   expect(errors).toEqual([]);
 });
 
-test('community links enter a project and the retired workbench collapses to the overview',async({page})=>{
+test('[BASIC-008] community links enter a project and the retired workbench collapses to the overview',async({page})=>{
   await ready(page,'#ubs');
   await page.locator('a[data-nav="triton"]').click();
   await expect(page.locator('#triton-view')).toBeVisible();
@@ -28,6 +28,21 @@ test('community links enter a project and the retired workbench collapses to the
   await expect(page).toHaveURL(/#projects\/ubs\/overview/);
   await expect(page.locator('#ubs-view')).toBeVisible();
   await expect(page.locator('#workbench-view')).toBeHidden();
+});
+
+test('[BASIC-008] Triton branch and window controls expose a real, changeable sample',async({page})=>{
+  await ready(page,'#triton');
+  // Every chart/KPI derives from the same S: the metric identity is countable.
+  await expect(page.locator('#triton-view [data-role="kE2eN"]')).toHaveText(/n=\d+/);
+  // The branch control reflects the snapshot's single branch without fabricating others.
+  await expect(page.locator('#triton-view [data-role="branchSummary"]')).toContainText('合入分支');
+  // A real selection (attention -> all) changes the visible records set.
+  await expect(page.locator('#triton-view [data-role="attention"] .group-title')).toContainText('关注批次');
+  const beforeCount = await page.locator('#triton-view [data-role="attention"] .count').innerText();
+  await page.locator('#triton-view [data-role="showAll"]').click();
+  await expect(page.locator('#triton-view [data-role="attention"] .group-title')).toContainText('全部批次');
+  const afterCount = await page.locator('#triton-view [data-role="attention"] .count').innerText();
+  expect(Number(afterCount)).toBeGreaterThanOrEqual(Number(beforeCount));
 });
 
 test('record search changes records while preserving analysis statistics',async({page})=>{
@@ -77,6 +92,7 @@ test('route changes close bound PR details and browser history restores the acti
 test('failed snapshot reload keeps valid data and restores the control',async({page})=>{
   await ready(page,'#triton');
   const before=await page.locator('#triton-view .kpi-grid').innerText();
+  allowError(page,e=>e.kind==='response'&&e.status===503&&/triton\.json/.test(e.url));
   await page.route('**/data/triton.json*',route=>route.fulfill({status:503,body:'unavailable'}));
   await page.locator('#reload').click();
   await expect(page.locator('[data-role="tritonError"]')).toContainText('503');
@@ -94,7 +110,7 @@ test('mobile retains result and duration in complete batch records',async({page}
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);
 });
 
-test('EC-010-AC01: no page-level horizontal overflow across breakpoints',async({page})=>{
+test('[BASIC-011] EC-010-AC01: no page-level horizontal overflow across breakpoints',async({page})=>{
   for (const width of [320,390,768,1024,1440]) {
     await page.setViewportSize({width,height:800});
     await ready(page,'#triton');
@@ -102,6 +118,9 @@ test('EC-010-AC01: no page-level horizontal overflow across breakpoints',async({
     await expect(page.locator('#triton-view [data-role="npuChart"]')).toBeVisible();
     const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>window.innerWidth);
     expect(overflow,`no horizontal overflow at ${width}px`).toBe(false);
+    // Key controls (navigation + reload) must remain reachable at every width.
+    await expect(page.locator('#reload')).toBeVisible();
+    await expect(page.locator('a[data-nav="ubs"]')).toBeVisible();
   }
 });
 

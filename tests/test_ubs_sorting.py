@@ -60,8 +60,12 @@ def make_batch(number, *, trigger_end=5000, children=(), repo='alpha'):
             'event_id': None, 'sha': None}
 
 
-def make_pr(number, created_ms, batches):
-    return {'number': number, 'created_ms': created_ms, 'batches': list(batches)}
+def make_pr(number, created_ms, batches, *, events=None, repository='org/alpha', url=None):
+    pr = {'number': number, 'created_ms': created_ms, 'batches': list(batches),
+          'repository': repository, 'url': url or f'https://ci.example/pr/{number}'}
+    if events is not None:
+        pr['events'] = list(events)
+    return pr
 
 
 class PagingModelTests(unittest.TestCase):
@@ -102,38 +106,66 @@ class PagingModelTests(unittest.TestCase):
 
 
 class SortPredicateTests(unittest.TestCase):
-    """独立排序谓词（AC01）。"""
+    """独立排序谓词（AC01：提交时间语义）。"""
+
+    @staticmethod
+    def ev(kind, ms, source=None):
+        event = {'id': f'{kind}-{ms}', 'kind': kind, 'time_ms': ms}
+        if source is not None:
+            event['source'] = source
+        return event
 
     @staticmethod
     def prs():
+        create = SortPredicateTests.ev
         return [
             make_pr(101, 500, [make_batch(11, trigger_end=6000, children=[
-                make_child(11, 'x86')])]),                # e2e 5000
+                make_child(11, 'x86')])],
+                events=[create('create', 500), create('push', 5500)]),   # sub 5500
             make_pr(102, 3000, [make_batch(12, children=[
-                make_child(12, 'x86')])]),                # e2e 4000
+                make_child(12, 'x86')])],
+                events=[create('create', 3000)]),                        # sub 3000
             make_pr(103, 1000, [make_batch(13, children=[
-                make_child(13, 'x86')])]),                # e2e 4000
+                make_child(13, 'x86')])],
+                events=[create('create', 1000), create('push', 6000)]),  # sub 6000
             make_pr(104, 9000, [make_batch(14, children=[
-                make_child(14, 'x86', building=True)])]),  # 运行中 → 空
+                make_child(14, 'x86', building=True)])],
+                events=[create('create', 9000)]),                        # sub 9000, e2e null
             make_pr(105, 2000, [make_batch(15, children=[
                 make_child(15, 'x86')]),
-                make_batch(16, children=[make_child(16, 'x86')])]),  # e2e 4000
+                make_batch(16, children=[make_child(16, 'x86')])],
+                events=[create('create', 2000)]),                        # sub 2000, 2 batches
         ]
 
-    def test_sort_e2e_tie_breaks_by_created_and_null_last(self):
+    def test_sort_e2e_tie_breaks_by_submission_and_null_last(self):
         order = [p['number'] for p in vso.own_sort_prs(self.prs(), 'e2e')]
-        self.assertEqual(order, [101, 102, 105, 103, 104])
+        self.assertEqual(order, [101, 103, 102, 105, 104])
 
-    def test_sort_batches_tie_breaks_by_created(self):
+    def test_sort_batches_tie_breaks_by_submission(self):
         order = [p['number'] for p in vso.own_sort_prs(self.prs(), 'batches')]
-        self.assertEqual(order, [105, 104, 102, 103, 101])
+        self.assertEqual(order, [105, 104, 103, 101, 102])
 
-    def test_sort_created_desc_and_stable_ties(self):
-        prs = [make_pr(201, 2500, [make_batch(21)]),
-               make_pr(202, 2500, [make_batch(22)]),
-               make_pr(203, 4000, [make_batch(23)])]
-        order = [p['number'] for p in vso.own_sort_prs(prs, 'created')]
-        self.assertEqual(order, [203, 201, 202])
+    def test_sort_submitted_desc_and_null_last(self):
+        order = [p['number'] for p in vso.own_sort_prs(self.prs(), 'submitted')]
+        self.assertEqual(order, [104, 103, 101, 102, 105])
+
+    def test_retest_and_note_never_update_submission(self):
+        create = self.ev
+        pr = make_pr(201, 2500, [make_batch(21)], events=[
+            create('create', 2500), create('push', 4000), create('retest', 9999)])
+        self.assertEqual(vso.own_submission(pr), 4000)
+
+    def test_unknown_and_partial_place_last(self):
+        create = self.ev
+        partial = make_pr(301, 100, [make_batch(31)], events=[create('create', 100)])
+        partial['submission_events_status'] = 'partial'
+        unknown = make_pr(302, 6000, [make_batch(32)], events=[create('create', 6000)])
+        unknown['submission_time_profile'] = 'ubs-latest-code-submission-v1'
+        unknown['latest_submission_ms'] = None
+        order = [p['number'] for p in vso.own_sort_prs(
+            [partial, unknown, make_pr(303, 500, [make_batch(33)],
+             events=[create('create', 500)])], 'submitted')]
+        self.assertEqual(order, [303, 302, 301])
 
     def test_repo_orders(self):
         rows = [{'name': 'ubs-virt', 'p90': 900.0, 'prs': 3},
@@ -157,23 +189,31 @@ class SyntheticTreeTests(unittest.TestCase):
         self.addCleanup(tmp.cleanup)
         root = Path(tmp.name)
         (root / 'web/data/repos').mkdir(parents=True)
+
+        def ev(kind, ms):
+            return {'id': f'{kind}-{ms}', 'kind': kind, 'time_ms': ms}
+
         alpha = {'meta': {'repository': 'org/alpha', 'start_ms': 1000,
                           'end_ms': 9000}, 'prs': [
             make_pr(101, 500, [make_batch(11, trigger_end=6000, children=[
-                make_child(11, 'x86')])]),
+                make_child(11, 'x86')])],
+                events=[ev('create', 500), ev('push', 5500)]),
             make_pr(102, 3000, [make_batch(12, children=[
-                make_child(12, 'x86')])]),
+                make_child(12, 'x86')])], events=[ev('create', 3000)]),
             make_pr(103, 1000, [make_batch(13, children=[
-                make_child(13, 'x86')])]),
+                make_child(13, 'x86')])],
+                events=[ev('create', 1000), ev('push', 6000)]),
             make_pr(104, 9000, [make_batch(14, children=[
-                make_child(14, 'x86', building=True)])]),
+                make_child(14, 'x86', building=True)])], events=[ev('create', 9000)]),
             make_pr(105, 2000, [make_batch(15, children=[
                 make_child(15, 'x86')]),
-                make_batch(16, children=[make_child(16, 'x86')])])]}
+                make_batch(16, children=[make_child(16, 'x86')])],
+                events=[ev('create', 2000)])]}
         beta = {'meta': {'repository': 'org/beta', 'start_ms': 1000,
                          'end_ms': 9000},
                 'prs': [make_pr(201, 100, [make_batch(21, repo='beta', children=[
-                    make_child(21, 'x86', repo='beta')])])]}
+                    make_child(21, 'x86', repo='beta')])],
+                    events=[ev('create', 100)], repository='org/beta')]}
         index = {'schema_version': 3, 'start_ms': 1000, 'end_ms': 9000,
                  'repositories': [
                      {'name': 'alpha', 'repository': 'org/alpha',
@@ -207,11 +247,11 @@ class SyntheticTreeTests(unittest.TestCase):
         self.assertEqual(report['pr_sorting']['sequences_compared'], 6)
         self.assertEqual(report['pr_sorting']['mismatch_count'], 0)
         self.assertEqual(report['pr_sorting']['per_repo']['alpha']['e2e'],
-                         [101, 102, 105, 103, 104])
+                         [101, 103, 102, 105, 104])
         self.assertEqual(report['pr_sorting']['per_repo']['alpha']['batches'],
-                         [105, 104, 102, 103, 101])
-        self.assertEqual(report['pr_sorting']['per_repo']['alpha']['created'],
-                         [104, 102, 105, 103, 101])
+                         [105, 104, 103, 101, 102])
+        self.assertEqual(report['pr_sorting']['per_repo']['alpha']['submitted'],
+                         [104, 103, 101, 102, 105])
         self.assertTrue(report['repo_sorting']['p90_order']['match'])
         self.assertEqual(report['repo_sorting']['prs_order']['python'],
                          ['alpha', 'beta'])
@@ -224,8 +264,8 @@ class SyntheticTreeTests(unittest.TestCase):
     def test_tampered_sort_tiebreak_exit_one(self):
         root = self.build_tree()
         self.tamper(root, 'core.js',
-                    '(value(a).e2e_ms??-1)||(b.created_ms||0)-(a.created_ms||0)',
-                    '(value(a).e2e_ms??-1)')
+                    "const s=numDesc(submissionValue(a),submissionValue(b));if(s)return s;return prIdentityTie(a,b);",
+                    "return prIdentityTie(a,b);")
         code, report = self.run_tool(root)
         self.assertEqual(code, 1)
         self.assertGreater(report['pr_sorting']['mismatch_count'], 0)

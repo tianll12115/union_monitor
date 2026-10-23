@@ -28,6 +28,7 @@ import math
 import subprocess
 import sys
 from datetime import datetime, timezone
+from functools import cmp_to_key
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -38,7 +39,7 @@ BASELINE_ADDITIONAL = EVIDENCE_REL / 'additional-browser.json'
 AUDIT_BASELINE_FINGERPRINT = (
     'sha256:66f1da360414424006878e771a2bdf3f5922051ef2c0bf56385a4cb64593ec39')
 PAGE_SIZE = 15
-SORT_ORDERS = ('e2e', 'batches', 'created')
+SORT_ORDERS = ('e2e', 'batches', 'submitted')
 BOUNDARY_TOTALS = (0, 1, 15, 16, 30, 31)
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -53,9 +54,9 @@ SOURCE_CONTRACTS = (
     ('next_disabled', "$('next').disabled=page>=pages"),
     ('page_info_format', '${page} / ${pages}'),
     ('empty_state', '当前无匹配 PR，请调整筛选条件。'),
-    ('label_e2e', '代表 E2E 从长到短；相同 E2E 按创建时间从新到旧'),
-    ('label_batches', '批次数从多到少；相同批次数按创建时间从新到旧'),
-    ('label_created', '创建时间从新到旧'),
+    ('label_e2e', '代表 E2E 从长到短；相同 E2E 按提交时间从新到旧'),
+    ('label_batches', '批次数从多到少；相同批次数按提交时间从新到旧'),
+    ('label_submitted', '提交时间从新到旧'),
     ('filter_resets_page', "page=1;render()"),
     ('prev_handler', "page--;render()"),
     ('next_handler', "page++;render()"),
@@ -98,18 +99,96 @@ def paging_partitions(total, size=PAGE_SIZE):
     return seen == list(range(total))
 
 
-def own_sort_prs(prs, order='e2e'):
-    """独立排序谓词：E2E/批次数降序并列按创建时间降序；创建并列保持原序。"""
-    def key(p):
-        created = p.get('created_ms') or 0
-        if order == 'batches':
-            return (len(p.get('batches') or []), created)
-        if order == 'created':
-            return (created,)
-        e2e = vsm.representative(p)[0]['e2e_ms']
-        return (e2e if e2e is not None else -1, created)
+def own_submission(p):
+    """独立重算最近代码提交时间，镜像 web/core.js submissionValue。
 
-    return sorted(prs, key=key, reverse=True)
+    新快照显式字段优先；旧快照从原始 create/push 事件派生（legacy-observed）。
+    retest/note/普通评论永不更新时间；{partial,unknown} 或操作日志采集失败
+    视为未知（None）。"""
+    if p.get('submission_time_profile') == 'ubs-latest-code-submission-v1':
+        value = p.get('latest_submission_ms')
+        return value if (type(value) in (int, float) and math.isfinite(value)
+                         and value >= 0) else None
+    if p.get('submission_events_status') in ('partial', 'unknown'):
+        return None
+    issues = p.get('issues') or []
+    if any('操作日志采集失败' in str(item) for item in issues):
+        return None
+    best = None
+    for event in p.get('events') or []:
+        kind = event.get('kind')
+        source = event.get('source') or (
+            'PR.created_at' if kind == 'create' else
+            'operate_logs' if kind == 'push' else kind)
+        if (kind, source) not in {('create', 'PR.created_at'),
+                                  ('push', 'operate_logs')}:
+            continue
+        value = event.get('time_ms')
+        if (type(value) in (int, float) and math.isfinite(value)
+                and value == int(value) and value >= 0
+                and (best is None or value > best)):
+            best = value
+    return best
+
+
+def _num_desc(a, b):
+    """数值降序、空值最后；无空值时返回符号差。"""
+    an = a if (type(a) in (int, float) and math.isfinite(a)) else None
+    bn = b if (type(b) in (int, float) and math.isfinite(b)) else None
+    if an is None and bn is None:
+        return 0
+    if an is None:
+        return 1
+    if bn is None:
+        return -1
+    return (bn > an) - (bn < an)
+
+
+def _identity_tie(a, b):
+    """提交时间并列时：PR 编号数值降序，再按完整源/仓/URL 身份稳定决胜。"""
+    na = a.get('number')
+    nb = b.get('number')
+    left = na if na is not None else -math.inf
+    right = nb if nb is not None else -math.inf
+    if right != left:
+        return (right > left) - (right < left)
+    ra = str(a.get('repository') or '')
+    rb = str(b.get('repository') or '')
+    if ra != rb:
+        return -1 if ra < rb else 1
+    ua = str(a.get('url') or '')
+    ub = str(b.get('url') or '')
+    return (ua > ub) - (ua < ub)
+
+
+def _cmp_pr(a, b, order):
+    if order == 'batches':
+        delta = len(b.get('batches') or []) - len(a.get('batches') or [])
+        if delta:
+            return (delta > 0) - (delta < 0)
+        sub = _num_desc(own_submission(a), own_submission(b))
+        if sub:
+            return sub
+        return _identity_tie(a, b)
+    if order == 'submitted':
+        sub = _num_desc(own_submission(a), own_submission(b))
+        if sub:
+            return sub
+        return _identity_tie(a, b)
+    e2e = _num_desc(vsm.representative(a)[0]['e2e_ms'],
+                    vsm.representative(b)[0]['e2e_ms'])
+    if e2e:
+        return e2e
+    sub = _num_desc(own_submission(a), own_submission(b))
+    if sub:
+        return sub
+    return _identity_tie(a, b)
+
+
+def own_sort_prs(prs, order='e2e'):
+    """独立排序谓词：E2E/批次数降序，主值并列按提交时间降序（未知最后），
+    再按 PR 编号降序与完整身份稳定决胜；镜像 web/core.js sortPRs。"""
+    return sorted(prs, key=cmp_to_key(lambda a, b: _cmp_pr(a, b, order)))
 
 
 def own_repo_rows(index, snapshots, state=''):

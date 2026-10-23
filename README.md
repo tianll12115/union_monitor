@@ -2,6 +2,8 @@
 
 查看 PR 门禁耗时、失败批次、排队和来源证据。UBS 覆盖 ubs-engine、ubs-comm、ubs-virt、ubs-io、ubs-mem、OmniStateStore、ham、ubturbo、ubs-atomic 九仓；Triton 采集 [triton-lang/triton-ascend](https://github.com/triton-lang/triton-ascend) 最近 72 小时的 GitHub Actions 门禁。
 
+代码目标仓库：[tianll12115/union_monitor](https://github.com/tianll12115/union_monitor)。开发与 PR 提交流程见 [贡献指南](CONTRIBUTING.md)，方案、规格及历史证据见 [文档索引](docs/README.md)。下方旧公开站点地址保留为历史部署入口；新仓库部署验证通过后再切换。
+
 ## 直接使用
 
 - [工作台](https://tianli-backkom.github.io/union_monitor/#workbench)：查看已加载快照和进入项目。
@@ -47,6 +49,8 @@ python serve.py --port 8765
 审查整改及后续实施统一按 [38 项需求与自动化验收规格](docs/requirements/2026-10-12-unified-dashboard-audit-requirements.md) 追踪；每项包含描述、输入/操作/断言、验收条件及已有/待补测试，规格完整不代表业务验收通过。
 
 目标运行时：**Python 3.12 / Node 22**。网页运行本身不依赖 Node 包；浏览器测试使用锁定的 Playwright / Chromium。[PR 工作流](.github/workflows/pr-gate.yml) 汇总 Python、前端、采集契约和工作流语法检查，最终检查名为 `Dashboard quality gate`。
+
+**创建 PR 前必须执行 UT**：`python -B scripts/run_checks.py`，需要浏览器回归时加 `--browser`。安装 hook：`git config core.hooksPath .githooks`。推荐通过 `python -B scripts/submit_pr.py --title "改动说明" --body-file .tmp/pr-body.md` 提交：只有当本轮完整 UT 通过后才推送分支并创建 PR。安装依赖、hook 限制与服务端必需保护配置见贡献指南。
 
 ```powershell
 python -m pip install PyYAML==6.0.3

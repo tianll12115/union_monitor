@@ -1,0 +1,630 @@
+{
+  "schema_version": 1,
+  "purpose": "Read-only UBS audit: collected public snapshot and local pure-model recomputation; no product changes, no source-platform completeness claim.",
+  "source": {
+    "url": "https://tianli-backkom.github.io/union_monitor/data/repos/ubs-engine.json",
+    "user_route": "https://tianli-backkom.github.io/union_monitor/#projects/ubs/records?repository=gitcode%3Aopeneuler%2Fubs-engine&branch=master&from=1789955185009&to=1792547185009",
+    "http_status": 200,
+    "response_bytes": 536164,
+    "raw_response_sha256": "abd2528075ad28755adbbbaa4cf0d42e9fdd04a4e50421c82097e0c4a4334a05",
+    "fetched_at_shanghai": "2026-10-21T20:54:49.3459707+08:00",
+    "collected_at_original": "2026-10-21T01:48:16.588600+00:00",
+    "generated_at_original": "2026-10-21T01:48:16.597231+00:00",
+    "start_ms": 1789955185009,
+    "end_ms": 1792547185009,
+    "branch": "master",
+    "repository": "openeuler/ubs-engine",
+    "collection_errors": [],
+    "matches_user_scope": true
+  },
+  "code": {
+    "git_head": "9ea020f6b3a8ade69696836466a44891366367b9",
+    "browser_verified_here": false,
+    "note": "Models are loaded from this local checkout. Browser evidence belongs to the parent audit."
+  },
+  "totals": {
+    "pr_objects": 36,
+    "unique_pr_numbers": 36,
+    "execution_objects": 107,
+    "unique_execution_urls": 107,
+    "duplicate_execution_url_count": 0,
+    "prs_with_executions": 36,
+    "prs_without_executions": [],
+    "prs_with_valid_representative": 35,
+    "prs_without_valid_representative": [
+      1666
+    ],
+    "prs_with_multiple_executions": 22,
+    "additional_rows_if_execution_grain": 71,
+    "per_pr": [
+      {
+        "pr": 1627,
+        "executions": 9,
+        "representative": 7604
+      },
+      {
+        "pr": 1628,
+        "executions": 1,
+        "representative": 7594
+      },
+      {
+        "pr": 1629,
+        "executions": 4,
+        "representative": 7597
+      },
+      {
+        "pr": 1630,
+        "executions": 7,
+        "representative": 7601
+      },
+      {
+        "pr": 1632,
+        "executions": 2,
+        "representative": 7614
+      },
+      {
+        "pr": 1633,
+        "executions": 1,
+        "representative": 7617
+      },
+      {
+        "pr": 1634,
+        "executions": 1,
+        "representative": 7618
+      },
+      {
+        "pr": 1636,
+        "executions": 1,
+        "representative": 7621
+      },
+      {
+        "pr": 1639,
+        "executions": 2,
+        "representative": 7636
+      },
+      {
+        "pr": 1641,
+        "executions": 5,
+        "representative": 7658
+      },
+      {
+        "pr": 1642,
+        "executions": 1,
+        "representative": 7641
+      },
+      {
+        "pr": 1645,
+        "executions": 2,
+        "representative": 7695
+      },
+      {
+        "pr": 1646,
+        "executions": 2,
+        "representative": 7654
+      },
+      {
+        "pr": 1647,
+        "executions": 8,
+        "representative": 7666
+      },
+      {
+        "pr": 1648,
+        "executions": 3,
+        "representative": 7664
+      },
+      {
+        "pr": 1651,
+        "executions": 1,
+        "representative": 7686
+      },
+      {
+        "pr": 1653,
+        "executions": 1,
+        "representative": 7700
+      },
+      {
+        "pr": 1654,
+        "executions": 5,
+        "representative": 7725
+      },
+      {
+        "pr": 1655,
+        "executions": 3,
+        "representative": 7703
+      },
+      {
+        "pr": 1656,
+        "executions": 2,
+        "representative": 7706
+      },
+      {
+        "pr": 1661,
+        "executions": 2,
+        "representative": 7719
+      },
+      {
+        "pr": 1663,
+        "executions": 1,
+        "representative": 7727
+      },
+      {
+        "pr": 1665,
+        "executions": 8,
+        "representative": 7783
+      },
+      {
+        "pr": 1666,
+        "executions": 1,
+        "representative": null
+      },
+      {
+        "pr": 1667,
+        "executions": 7,
+        "representative": 7736
+      },
+      {
+        "pr": 1668,
+        "executions": 6,
+        "representative": 7740
+      },
+      {
+        "pr": 1669,
+        "executions": 6,
+        "representative": 7747
+      },
+      {
+        "pr": 1685,
+        "executions": 1,
+        "representative": 7800
+      },
+      {
+        "pr": 1687,
+        "executions": 2,
+        "representative": 7802
+      },
+      {
+        "pr": 1688,
+        "executions": 2,
+        "representative": 7806
+      },
+      {
+        "pr": 1690,
+        "executions": 3,
+        "representative": 7812
+      },
+      {
+        "pr": 1691,
+        "executions": 1,
+        "representative": 7811
+      },
+      {
+        "pr": 1692,
+        "executions": 1,
+        "representative": 7815
+      },
+      {
+        "pr": 1696,
+        "executions": 1,
+        "representative": 7822
+      },
+      {
+        "pr": 1701,
+        "executions": 3,
+        "representative": 7832
+      },
+      {
+        "pr": 1702,
+        "executions": 1,
+        "representative": 7833
+      }
+    ]
+  },
+  "pr_1627": {
+    "title": "[UBSE] #feat 统一 hostname 校验并支持 RFC 1123 FQDN 主机名",
+    "author": "hw-sgl",
+    "state": "merged",
+    "created_ms": 1789982610000,
+    "merged_ms": 1790062054000,
+    "event_counts": {
+      "create": 1,
+      "push": 7,
+      "retest": 1,
+      "other": 0,
+      "unlinked": 0,
+      "unknownBatches": 0
+    },
+    "submission_count": 8,
+    "execution_count": 9,
+    "unique_execution_urls": 9,
+    "child_task_count": 45,
+    "status_counts": {
+      "failure": 6,
+      "success": 3
+    },
+    "eligible_count": 9,
+    "detail_group_execution_count": 9,
+    "representative": {
+      "number": 7604,
+      "url": "https://ci.openeuler.openatom.cn/job/multiarch/job/openeuler/job/trigger/job/ubs-engine/7604/",
+      "e2e_ms": 997459,
+      "e2e_minutes": 16.624316666666665,
+      "status": "success",
+      "eligible": true,
+      "independent_oracle_matches_frontend": true,
+      "independent_oracle_matches_stored": true,
+      "task_values": {
+        "representative_batch_url": "https://ci.openeuler.openatom.cn/job/multiarch/job/openeuler/job/trigger/job/ubs-engine/7604/",
+        "representative_batch_number": 7604,
+        "e2e_ms": 997459,
+        "x86": {
+          "url": "https://ci.openeuler.openatom.cn/job/multiarch/job/openeuler/job/x86-64/job/ubs-engine/7594/",
+          "queue_ms": 4845,
+          "duration_ms": 132,
+          "total_ms": 4977
+        },
+        "arm": {
+          "url": "https://ci.openeuler.openatom.cn/job/multiarch/job/openeuler/job/aarch64/job/ubs-engine/7602/",
+          "queue_ms": 4392,
+          "duration_ms": 67067,
+          "total_ms": 71459
+        },
+        "dt": {
+          "url": "https://ci.openeuler.openatom.cn/job/multiarch/job/manual-jobs/job/openeuler/job/UBSCore/job/DT/job/ubs-engine/6889/",
+          "queue_ms": 5434,
+          "duration_ms": 811383,
+          "total_ms": 816817
+        }
+      }
+    },
+    "executions": [
+      {
+        "number": 7589,
+        "url": "https://ci.openeuler.openatom.cn/job/multiarch/job/openeuler/job/trigger/job/ubs-engine/7589/",
+        "status": "failure",
+        "eligible": true,
+        "e2e_ms": 948770,
+        "request_ms": 1789982610000,
+        "end_ms": 1789983558770,
+        "event_id": "create",
+        "event_type": "create",
+        "sha": "4f3e04617a305804d7e5a917c17600e89cadfc19",
+        "child_tasks": 5,
+        "trigger_queue_ms": 10985,
+        "top_level_queue_ms": null
+      },
+      {
+        "number": 7590,
+        "url": "https://ci.openeuler.openatom.cn/job/multiarch/job/openeuler/job/trigger/job/ubs-engine/7590/",
+        "status": "failure",
+        "eligible": true,
+        "e2e_ms": 970049,
+        "request_ms": 1789983180000,
+        "end_ms": 1789984150049,
+        "event_id": "190943788",
+        "event_type": "push",
+        "sha": "0524f587",
+        "child_tasks": 5,
+        "trigger_queue_ms": 10510,
+        "top_level_queue_ms": null
+      },
+      {
+        "number": 7591,
+        "url": "https://ci.openeuler.openatom.cn/job/multiarch/job/openeuler/job/trigger/job/ubs-engine/7591/",
+        "status": "failure",
+        "eligible": true,
+        "e2e_ms": 954108,
+        "request_ms": 1789983308000,
+        "end_ms": 1789984262108,
+        "event_id": "190944463",
+        "event_type": "push",
+        "sha": "7677dac2",
+        "child_tasks": 5,
+        "trigger_queue_ms": 13865,
+        "top_level_queue_ms": null
+      },
+      {
+        "number": 7592,
+        "url": "https://ci.openeuler.openatom.cn/job/multiarch/job/openeuler/job/trigger/job/ubs-engine/7592/",
+        "status": "success",
+        "eligible": true,
+        "e2e_ms": 973748,
+        "request_ms": 1789984152000,
+        "end_ms": 1789985125748,
+        "event_id": "190948329",
+        "event_type": "push",
+        "sha": "59e9c59a",
+        "child_tasks": 5,
+        "trigger_queue_ms": 10363,
+        "top_level_queue_ms": null
+      },
+      {
+        "number": 7593,
+        "url": "https://ci.openeuler.openatom.cn/job/multiarch/job/openeuler/job/trigger/job/ubs-engine/7593/",
+        "status": "failure",
+        "eligible": true,
+        "e2e_ms": 818053,
+        "request_ms": 1789984336000,
+        "end_ms": 1789985154053,
+        "event_id": "190948935",
+        "event_type": "push",
+        "sha": "4166e4fb",
+        "child_tasks": 5,
+        "trigger_queue_ms": 14466,
+        "top_level_queue_ms": null
+      },
+      {
+        "number": 7595,
+        "url": "https://ci.openeuler.openatom.cn/job/multiarch/job/openeuler/job/trigger/job/ubs-engine/7595/",
+        "status": "success",
+        "eligible": true,
+        "e2e_ms": 930528,
+        "request_ms": 1789990262000,
+        "end_ms": 1789991192528,
+        "event_id": "190966713",
+        "event_type": "retest",
+        "sha": "4166e4fb",
+        "child_tasks": 5,
+        "trigger_queue_ms": 10298,
+        "top_level_queue_ms": null
+      },
+      {
+        "number": 7602,
+        "url": "https://ci.openeuler.openatom.cn/job/multiarch/job/openeuler/job/trigger/job/ubs-engine/7602/",
+        "status": "failure",
+        "eligible": true,
+        "e2e_ms": 978948,
+        "request_ms": 1790058817000,
+        "end_ms": 1790059795948,
+        "event_id": "191101912",
+        "event_type": "push",
+        "sha": "f7305d71",
+        "child_tasks": 5,
+        "trigger_queue_ms": 13361,
+        "top_level_queue_ms": null
+      },
+      {
+        "number": 7603,
+        "url": "https://ci.openeuler.openatom.cn/job/multiarch/job/openeuler/job/trigger/job/ubs-engine/7603/",
+        "status": "failure",
+        "eligible": true,
+        "e2e_ms": 969862,
+        "request_ms": 1790058845000,
+        "end_ms": 1790059814862,
+        "event_id": "191102078",
+        "event_type": "push",
+        "sha": "c26fc7f7",
+        "child_tasks": 5,
+        "trigger_queue_ms": 15617,
+        "top_level_queue_ms": null
+      },
+      {
+        "number": 7604,
+        "url": "https://ci.openeuler.openatom.cn/job/multiarch/job/openeuler/job/trigger/job/ubs-engine/7604/",
+        "status": "success",
+        "eligible": true,
+        "e2e_ms": 997459,
+        "request_ms": 1790059919000,
+        "end_ms": 1790060916459,
+        "event_id": "191107818",
+        "event_type": "push",
+        "sha": "2c3b6c33",
+        "child_tasks": 5,
+        "trigger_queue_ms": 11818,
+        "top_level_queue_ms": null
+      }
+    ],
+    "default_batch_list_ranks": [
+      {
+        "number": 7604,
+        "rank": 8,
+        "page_at_15": 1,
+        "e2e_ms": 997459
+      },
+      {
+        "number": 7602,
+        "rank": 10,
+        "page_at_15": 1,
+        "e2e_ms": 978948
+      },
+      {
+        "number": 7592,
+        "rank": 14,
+        "page_at_15": 1,
+        "e2e_ms": 973748
+      },
+      {
+        "number": 7590,
+        "rank": 18,
+        "page_at_15": 2,
+        "e2e_ms": 970049
+      },
+      {
+        "number": 7603,
+        "rank": 19,
+        "page_at_15": 2,
+        "e2e_ms": 969862
+      },
+      {
+        "number": 7591,
+        "rank": 27,
+        "page_at_15": 2,
+        "e2e_ms": 954108
+      },
+      {
+        "number": 7589,
+        "rank": 28,
+        "page_at_15": 2,
+        "e2e_ms": 948770
+      },
+      {
+        "number": 7595,
+        "rank": 37,
+        "page_at_15": 3,
+        "e2e_ms": 930528
+      },
+      {
+        "number": 7593,
+        "rank": 70,
+        "page_at_15": 5,
+        "e2e_ms": 818053
+      }
+    ],
+    "pr_list_rank": 6
+  },
+  "queue_mapping": {
+    "known_top_level_batch_queue_ms": 0,
+    "known_trigger_queue_ms": 107,
+    "known_normalized_record_queue_ms": 0,
+    "conclusion": "records.js reads b.queue_ms; this snapshot stores known queue values at b.trigger.queue_ms. The correct public queue definition still needs to be stated explicitly."
+  },
+  "search_reproduction": [
+    {
+      "query": "1627",
+      "pr_mode_numbers": [
+        1627
+      ],
+      "batch_mode_matches": [
+        {
+          "pr": 1627,
+          "execution": 7589
+        },
+        {
+          "pr": 1627,
+          "execution": 7590
+        },
+        {
+          "pr": 1627,
+          "execution": 7591
+        },
+        {
+          "pr": 1627,
+          "execution": 7592
+        },
+        {
+          "pr": 1627,
+          "execution": 7593
+        },
+        {
+          "pr": 1627,
+          "execution": 7595
+        },
+        {
+          "pr": 1627,
+          "execution": 7602
+        },
+        {
+          "pr": 1627,
+          "execution": 7603
+        },
+        {
+          "pr": 1627,
+          "execution": 7604
+        }
+      ]
+    },
+    {
+      "query": "hw-sgl",
+      "pr_mode_numbers": [
+        1690,
+        1669,
+        1636,
+        1627
+      ],
+      "batch_mode_matches": []
+    },
+    {
+      "query": "0524f587",
+      "pr_mode_numbers": [
+        1627
+      ],
+      "batch_mode_matches": []
+    },
+    {
+      "query": "7604",
+      "pr_mode_numbers": [],
+      "batch_mode_matches": [
+        {
+          "pr": 1627,
+          "execution": 7604
+        }
+      ]
+    }
+  ],
+  "export_projection": {
+    "pr_summary_rows_all": 36,
+    "pr_summary_rows_query_1627": 1,
+    "pr_1627_all_execution_legacy_csv_body_rows": 45,
+    "pr_1627_export_metadata_count": 9,
+    "pr_1627_selected_representative_tasks": 6,
+    "note": "Computed from app.js export loops; this subagent performed no browser downloads."
+  },
+  "source_refs": {
+    "default_grain": [
+      "web/app.js:4",
+      "web/app.js:23",
+      "web/app.js:26",
+      "web/app.js:108",
+      "tests/browser/unified-records.spec.cjs:42"
+    ],
+    "batch_flatten": [
+      "web/records.js:85",
+      "web/records.js:89",
+      "web/app.js:29",
+      "web/app.js:31"
+    ],
+    "representative": [
+      "web/core.js:6",
+      "web/core.js:7",
+      "metrics.py:97",
+      "metrics.py:99",
+      "tests/test_representative.py:7",
+      "tests/test_representative.py:11"
+    ],
+    "detail": [
+      "web/core.js:4",
+      "web/detail.js:32",
+      "web/app.js:196",
+      "web/app.js:197",
+      "tests/browser/unified-detail.spec.cjs:81"
+    ],
+    "search": [
+      "web/app.js:29",
+      "web/app.js:32",
+      "web/core.js:13",
+      "web/core.js:14"
+    ],
+    "queue": [
+      "web/records.js:103",
+      "collect.py:210",
+      "metrics.py:28"
+    ],
+    "exports": [
+      "web/app.js:208",
+      "web/app.js:209",
+      "web/app.js:210",
+      "web/app.js:211",
+      "tests/browser/unified-export.spec.cjs:15"
+    ],
+    "url_scope": [
+      "web/app.js:118",
+      "web/app.js:123",
+      "tests/browser/url-context.spec.cjs:55"
+    ],
+    "historic_requirements": [
+      "docs/requirements/2026-10-12-unified-dashboard-audit-requirements.md:153",
+      "docs/requirements/2026-10-12-unified-dashboard-audit-requirements.md:317",
+      "docs/requirements/2026-10-12-unified-dashboard-audit-requirements.md:335",
+      "docs/requirements/2026-10-12-unified-dashboard-audit-requirements.md:353",
+      "docs/requirements/2026-10-12-unified-dashboard-audit-requirements.md:371"
+    ]
+  },
+  "verification": {
+    "command": "node --test tests/records.test.cjs tests/detail.test.cjs tests/search_sl.test.cjs tests/export_meta.test.cjs",
+    "result": {
+      "tests": 27,
+      "pass": 27,
+      "fail": 0
+    },
+    "limits": "Existing tests verify the old default and pure models, not acceptance of the requested new PR-default behavior or browser end-to-end behavior."
+  }
+}

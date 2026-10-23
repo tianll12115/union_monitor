@@ -1,0 +1,178 @@
+name: Collect and deploy dashboard
+
+on:
+  schedule:
+    # 每日全量采集（北京时间 07:30）；Triton 增量刷新见 triton-refresh.yml
+    - cron: '30 23 * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Restore shared UBS snapshot cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            web/data/repositories.json
+            web/data/repos
+            web/data/snapshot.json
+            web/data/ubs-manifest.json
+            data/repositories.json
+            data/repos
+            data/snapshot.json
+          key: ubs-snapshots-v1-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: |
+            ubs-snapshots-v1-${{ runner.os }}-
+
+      - name: Restore collection cache (daily only)
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            data/raw
+            data/efficiency.sqlite
+            evidence/triton
+          key: ubs-collection-v1-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: |
+            ubs-collection-v1-${{ runner.os }}-
+
+      - name: Collect all repositories
+        run: python -X utf8 collect.py --all --days 30
+
+      - name: Verify every UBS repository collection succeeded
+        run: python -X utf8 scripts/verify_collection_status.py
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Collect Triton gating data
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN || github.token }}
+        run: python -X utf8 -m triton.dashboard --hours 72
+
+      - name: Retain Triton collection evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: triton-collection-${{ github.run_id }}-${{ github.run_attempt }}
+          path: evidence/triton/
+          retention-days: 7
+          if-no-files-found: warn
+
+      - name: Run Python tests
+        run: python -m unittest discover -s tests -v
+
+      - name: Run Node tests
+        run: node --test tests/*.test.cjs
+
+      - name: Audit collected data
+        run: python -X utf8 validate.py
+
+      - name: Verify UBS snapshot bundle and stamp manifest
+        run: python -X utf8 validate_bundle.py --write-manifest
+
+      - name: Save shared UBS snapshot cache
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            web/data/repositories.json
+            web/data/repos
+            web/data/snapshot.json
+            web/data/ubs-manifest.json
+            data/repositories.json
+            data/repos
+            data/snapshot.json
+          key: ubs-snapshots-v1-${{ runner.os }}-${{ github.run_id }}
+
+      - name: Save collection cache
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            data/raw
+            data/efficiency.sqlite
+            evidence/triton
+          key: ubs-collection-v1-${{ runner.os }}-${{ github.run_id }}
+
+      - name: Publish catalog
+        run: python -c "import pathlib,shutil; pathlib.Path('web/data').mkdir(parents=True,exist_ok=True); shutil.copy('catalog.json','web/data/catalog.json')"
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload dashboard
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: web
+
+      - name: Upload deployment manifests
+        uses: actions/upload-artifact@v4
+        with:
+          name: deployment-manifests
+          path: |
+            web/data/triton-manifest.json
+            web/data/ubs-manifest.json
+
+  deploy:
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    outputs:
+      page_url: ${{ steps.deployment.outputs.page_url }}
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+  verify:
+    needs: deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Download deployment manifests
+        uses: actions/download-artifact@v4
+        with:
+          name: deployment-manifests
+          path: web/data
+
+      - name: Verify published data (REQ-022)
+        run: python -X utf8 -m triton.verify_deployment "${{ needs.deploy.outputs.page_url }}"

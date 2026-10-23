@@ -1,0 +1,376 @@
+- complementary:
+  - link "M":
+    - /url: "#workbench"
+    - text: M
+  - navigation "主导航":
+    - link "工作台":
+      - /url: "#workbench"
+      - text: 工作台
+    - generic: 项目
+    - combobox "选择项目":
+      - option "openEuler UBS" [selected]
+      - option "Triton-Ascend"
+    - generic: 任务
+    - link "项目概览":
+      - /url: "#projects/ubs/overview"
+      - text: 项目概览
+    - link "趋势与任务":
+      - /url: "#projects/ubs/trends"
+      - text: 趋势与任务
+    - link "PR 与批次":
+      - /url: "#projects/ubs/records"
+      - text: PR 与批次
+    - link "数据质量":
+      - /url: "#projects/ubs/quality"
+      - text: 数据质量
+    - link "数据与采集":
+      - /url: "#projects/ubs/collection"
+      - text: 数据与采集
+    - link "指标说明":
+      - /url: "#projects/ubs/method"
+      - text: 指标说明
+- banner:
+  - generic: 监控中心 / openEuler UBS / ubs-engine
+  - generic: 快照采集 UBS 2026-10-21 09:51:53 · TRITON 2026-10-21 17:17:34
+  - text: master
+  - button "重新加载快照":
+    - text: 重新加载快照
+- main:
+  - generic: Engineering Monitor
+  - heading "让每一次提交，清晰可见." [level=1]
+  - paragraph: ubs-engine 门禁效率 · 从提交请求到最后一个子任务结束
+  - generic: PR 创建时间范围 · 上海时间
+  - strong: 2026-09-21 → 2026-10-21
+  - generic: 采集于 2026-10-21 09:48:16
+  - button "返回跨仓总览":
+    - text: 返回跨仓总览
+  - text: 当前仓库
+  - combobox "当前仓库":
+    - option "ubs-engine" [selected]
+    - option "ubs-comm"
+    - option "ubs-virt"
+    - option "ubs-io"
+    - option "ubs-mem"
+    - option "OmniStateStore"
+    - option "ham"
+    - option "ubturbo"
+    - option "ubs-atomic"
+  - generic: 采集完成
+  - region "数据筛选":
+    - textbox "搜索 PR":
+      - /placeholder: 搜索 PR 编号、标题、作者或 SHA
+    - text: PR 状态
+    - combobox "PR 状态":
+      - option "全部状态" [selected]
+      - option "开启中"
+      - option "已合入"
+      - option "已关闭未合入"
+    - button "高级筛选"
+    - button "重置"
+  - article:
+    - generic: PR 数量
+    - text: "36"
+    - emphasis: 个
+    - generic: 开启 9 · 合入 20 · 关闭 7
+  - article:
+    - generic: 门禁 E2E
+    - text: "12.12"
+    - emphasis: 平均
+    - generic: P90 17.13 分钟 · 35 个有效 PR
+  - article:
+    - generic: x86 构建
+    - text: "0.16"
+    - emphasis: 平均
+    - generic: P90 0.20 分钟 · 35 个有效 PR
+  - article:
+    - generic: ARM 构建
+    - text: "0.88"
+    - emphasis: 平均
+    - generic: P90 1.41 分钟 · 35 个有效 PR
+  - article:
+    - generic: DT 测试
+    - text: "9.17"
+    - emphasis: 平均
+    - generic: P90 13.95 分钟 · 35 个有效 PR
+  - article:
+    - heading "E2E 耗时趋势" [level=2]
+    - paragraph: 按 PR 创建日期聚合 · 分钟
+    - text: 平均
+    - text: P90
+    - img "按 PR 创建日期统计的 E2E 平均与 P90 趋势":
+      - generic: "0.0"
+      - generic: "8.4"
+      - generic: "16.8"
+      - generic: "25.2"
+      - generic: 09-21
+      - generic: 09-24
+      - generic: 09-30
+      - generic: 10-12
+      - generic: 10-20
+  - article:
+    - heading "门禁任务耗时" [level=2]
+    - paragraph: 每个 PR 代表批次任务 · 分钟
+    - combobox "图表耗时类型":
+      - option "总耗时" [selected]
+      - option "排队"
+      - option "执行"
+    - text: 平均
+    - text: P90
+    - generic: x86 构建
+    - generic: 0.16 / 0.20 · n=35
+    - generic "平均 9.415 s / P90 11.871 s"
+    - generic: ARM 构建
+    - generic: 0.88 / 1.41 · n=35
+    - generic "平均 52.809 s / P90 84.454 s"
+    - generic: DT 测试
+    - generic: 9.17 / 13.95 · n=35
+    - generic "平均 550.404 s / P90 837.077 s"
+  - strong:
+    - text: PR 有效覆盖 97.2% (35/36)
+  - generic: 辅助：全部批次结果 · 成功 58 · 失败 45 · 执行中 2 · 不完整 2
+  - button "查看缺失与排除":
+    - text: 查看缺失与排除
+  - heading "批次效率明细 107" [level=2]
+  - paragraph: 默认按 E2E 从长到短；点击批次进入其 PR 详情
+  - combobox "记录实体":
+    - option "批次" [selected]
+    - option "PR"
+  - combobox "排序":
+    - option "E2E 从长到短" [selected]
+    - option "开始时间从新到旧"
+    - option "排队从长到短"
+  - table:
+    - rowgroup:
+      - row "批次 / PR 状态 开始时间 E2E 排队":
+        - columnheader "批次 / PR"
+        - columnheader "状态"
+        - columnheader "开始时间"
+        - columnheader "E2E"
+        - columnheader "排队"
+        - columnheader
+    - rowgroup:
+      - 'row "#1627[UBSE] #feat 统一 hostname 校验并支持 RFC 1123 FQDN 主机名 Trigger #7589 · 2026-09-21 17:23:30 失败 2026-09-21 17:23:30 15.81 E2E — 排队"':
+        - 'cell "#1627[UBSE] #feat 统一 hostname 校验并支持 RFC 1123 FQDN 主机名 Trigger #7589 · 2026-09-21 17:23:30"':
+          - 'button "#1627[UBSE] #feat 统一 hostname 校验并支持 RFC 1123 FQDN 主机名"'
+          - generic: "Trigger #7589 · 2026-09-21 17:23:30"
+        - cell "失败":
+          - generic: 失败
+        - cell "2026-09-21 17:23:30"
+        - cell "15.81 E2E":
+          - generic: "15.81"
+          - generic: E2E
+        - cell "— 排队":
+          - generic: —
+          - generic: 排队
+        - cell:
+      - 'row "#1627[UBSE] #feat 统一 hostname 校验并支持 RFC 1123 FQDN 主机名 Trigger #7590 · 2026-09-21 17:33:00 失败 2026-09-21 17:33:00 16.17 E2E — 排队"':
+        - 'cell "#1627[UBSE] #feat 统一 hostname 校验并支持 RFC 1123 FQDN 主机名 Trigger #7590 · 2026-09-21 17:33:00"':
+          - 'button "#1627[UBSE] #feat 统一 hostname 校验并支持 RFC 1123 FQDN 主机名"'
+          - generic: "Trigger #7590 · 2026-09-21 17:33:00"
+        - cell "失败":
+          - generic: 失败
+        - cell "2026-09-21 17:33:00"
+        - cell "16.17 E2E":
+          - generic: "16.17"
+          - generic: E2E
+        - cell "— 排队":
+          - generic: —
+          - generic: 排队
+        - cell:
+      - 'row "#1627[UBSE] #feat 统一 hostname 校验并支持 RFC 1123 FQDN 主机名 Trigger #7591 · 2026-09-21 17:35:08 失败 2026-09-21 17:35:08 15.90 E2E — 排队"':
+        - 'cell "#1627[UBSE] #feat 统一 hostname 校验并支持 RFC 1123 FQDN 主机名 Trigger #7591 · 2026-09-21 17:35:08"':
+          - 'button "#1627[UBSE] #feat 统一 hostname 校验并支持 RFC 1123 FQDN 主机名"'
+          - generic: "Trigger #7591 · 2026-09-21 17:35:08"
+        - cell "失败":
+          - generic: 失败
+        - cell "2026-09-21 17:35:08"
+        - cell "15.90 E2E":
+          - generic: "15.90"
+          - generic: E2E
+        - cell "— 排队":
+          - generic: —
+          - generic: 排队
+        - cell:
+      - 'row "#1627[UBSE] #feat 统一 hostname 校验并支持 RFC 1123 FQDN 主机名 Trigger #7592 · 2026-09-21 17:49:12 成功 2026-09-21 17:49:12 16.23 E2E — 排队"':
+        - 'cell "#1627[UBSE] #feat 统一 hostname 校验并支持 RFC 1123 FQDN 主机名 Trigger #7592 · 2026-09-21 17:49:12"':
+          - 'button "#1627[UBSE] #feat 统一 hostname 校验并支持 RFC 1123 FQDN 主机名"'
+          - generic: "Trigger #7592 · 2026-09-21 17:49:12"
+        - cell "成功":
+          - generic: 成功
+        - cell "2026-09-21 17:49:12"
+        - cell "16.23 E2E":
+          - generic: "16.23"
+          - generic: E2E
+        - cell "— 排队":
+          - generic: —
+          - generic: 排队
+        - cell:
+      - 'row "#1627[UBSE] #feat 统一 hostname 校验并支持 RFC 1123 FQDN 主机名 Trigger #7593 · 2026-09-21 17:52:16 失败 2026-09-21 17:52:16 13.63 E2E — 排队"':
+        - 'cell "#1627[UBSE] #feat 统一 hostname 校验并支持 RFC 1123 FQDN 主机名 Trigger #7593 · 2026-09-21 17:52:16"':
+          - 'button "#1627[UBSE] #feat 统一 hostname 校验并支持 RFC 1123 FQDN 主机名"'
+          - generic: "Trigger #7593 · 2026-09-21 17:52:16"
+        - cell "失败":
+          - generic: 失败
+        - cell "2026-09-21 17:52:16"
+        - cell "13.63 E2E":
+          - generic: "13.63"
+          - generic: E2E
+        - cell "— 排队":
+          - generic: —
+          - generic: 排队
+        - cell:
+      - 'row "#1628fix(RMRS): 修正smap结构体本地NUMA组数限制 Trigger #7594 · 2026-09-21 18:19:57 成功 2026-09-21 18:19:57 10.10 E2E — 排队"':
+        - 'cell "#1628fix(RMRS): 修正smap结构体本地NUMA组数限制 Trigger #7594 · 2026-09-21 18:19:57"':
+          - 'button "#1628fix(RMRS): 修正smap结构体本地NUMA组数限制"'
+          - generic: "Trigger #7594 · 2026-09-21 18:19:57"
+        - cell "成功":
+          - generic: 成功
+        - cell "2026-09-21 18:19:57"
+        - cell "10.10 E2E":
+          - generic: "10.10"
+          - generic: E2E
+        - cell "— 排队":
+          - generic: —
+          - generic: 排队
+        - cell:
+      - 'row "#1627[UBSE] #feat 统一 hostname 校验并支持 RFC 1123 FQDN 主机名 Trigger #7595 · 2026-09-21 19:31:02 成功 2026-09-21 19:31:02 15.51 E2E — 排队"':
+        - 'cell "#1627[UBSE] #feat 统一 hostname 校验并支持 RFC 1123 FQDN 主机名 Trigger #7595 · 2026-09-21 19:31:02"':
+          - 'button "#1627[UBSE] #feat 统一 hostname 校验并支持 RFC 1123 FQDN 主机名"'
+          - generic: "Trigger #7595 · 2026-09-21 19:31:02"
+        - cell "成功":
+          - generic: 成功
+        - cell "2026-09-21 19:31:02"
+        - cell "15.51 E2E":
+          - generic: "15.51"
+          - generic: E2E
+        - cell "— 排队":
+          - generic: —
+          - generic: 排队
+        - cell:
+      - 'row "#1629change label Trigger #7596 · 2026-09-21 21:54:47 成功 2026-09-21 21:54:47 2.66 E2E — 排队"':
+        - 'cell "#1629change label Trigger #7596 · 2026-09-21 21:54:47"':
+          - button "#1629change label"
+          - generic: "Trigger #7596 · 2026-09-21 21:54:47"
+        - cell "成功":
+          - generic: 成功
+        - cell "2026-09-21 21:54:47"
+        - cell "2.66 E2E":
+          - generic: "2.66"
+          - generic: E2E
+        - cell "— 排队":
+          - generic: —
+          - generic: 排队
+        - cell:
+      - 'row "#1629change label Trigger #7597 · 2026-09-21 22:00:44 成功 2026-09-21 22:00:44 2.66 E2E — 排队"':
+        - 'cell "#1629change label Trigger #7597 · 2026-09-21 22:00:44"':
+          - button "#1629change label"
+          - generic: "Trigger #7597 · 2026-09-21 22:00:44"
+        - cell "成功":
+          - generic: 成功
+        - cell "2026-09-21 22:00:44"
+        - cell "2.66 E2E":
+          - generic: "2.66"
+          - generic: E2E
+        - cell "— 排队":
+          - generic: —
+          - generic: 排队
+        - cell:
+      - 'row "#1629change label Trigger #7598 · 2026-09-21 22:39:27 成功 2026-09-21 22:39:27 2.36 E2E — 排队"':
+        - 'cell "#1629change label Trigger #7598 · 2026-09-21 22:39:27"':
+          - button "#1629change label"
+          - generic: "Trigger #7598 · 2026-09-21 22:39:27"
+        - cell "成功":
+          - generic: 成功
+        - cell "2026-09-21 22:39:27"
+        - cell "2.36 E2E":
+          - generic: "2.36"
+          - generic: E2E
+        - cell "— 排队":
+          - generic: —
+          - generic: 排队
+        - cell:
+      - 'row "#1630【UBSE】白盒扫描问题修复 Trigger #7599 · 2026-09-22 10:07:08 失败 2026-09-22 10:07:08 16.88 E2E — 排队"':
+        - 'cell "#1630【UBSE】白盒扫描问题修复 Trigger #7599 · 2026-09-22 10:07:08"':
+          - button "#1630【UBSE】白盒扫描问题修复"
+          - generic: "Trigger #7599 · 2026-09-22 10:07:08"
+        - cell "失败":
+          - generic: 失败
+        - cell "2026-09-22 10:07:08"
+        - cell "16.88 E2E":
+          - generic: "16.88"
+          - generic: E2E
+        - cell "— 排队":
+          - generic: —
+          - generic: 排队
+        - cell:
+      - 'row "#1630【UBSE】白盒扫描问题修复 Trigger #7601 · 2026-09-22 14:30:26 失败 2026-09-22 14:30:26 17.22 E2E — 排队"':
+        - 'cell "#1630【UBSE】白盒扫描问题修复 Trigger #7601 · 2026-09-22 14:30:26"':
+          - button "#1630【UBSE】白盒扫描问题修复"
+          - generic: "Trigger #7601 · 2026-09-22 14:30:26"
+        - cell "失败":
+          - generic: 失败
+        - cell "2026-09-22 14:30:26"
+        - cell "17.22 E2E":
+          - generic: "17.22"
+          - generic: E2E
+        - cell "— 排队":
+          - generic: —
+          - generic: 排队
+        - cell:
+      - 'row "#1627[UBSE] #feat 统一 hostname 校验并支持 RFC 1123 FQDN 主机名 Trigger #7602 · 2026-09-22 14:33:37 失败 2026-09-22 14:33:37 16.32 E2E — 排队"':
+        - 'cell "#1627[UBSE] #feat 统一 hostname 校验并支持 RFC 1123 FQDN 主机名 Trigger #7602 · 2026-09-22 14:33:37"':
+          - 'button "#1627[UBSE] #feat 统一 hostname 校验并支持 RFC 1123 FQDN 主机名"'
+          - generic: "Trigger #7602 · 2026-09-22 14:33:37"
+        - cell "失败":
+          - generic: 失败
+        - cell "2026-09-22 14:33:37"
+        - cell "16.32 E2E":
+          - generic: "16.32"
+          - generic: E2E
+        - cell "— 排队":
+          - generic: —
+          - generic: 排队
+        - cell:
+      - 'row "#1627[UBSE] #feat 统一 hostname 校验并支持 RFC 1123 FQDN 主机名 Trigger #7603 · 2026-09-22 14:34:05 失败 2026-09-22 14:34:05 16.16 E2E — 排队"':
+        - 'cell "#1627[UBSE] #feat 统一 hostname 校验并支持 RFC 1123 FQDN 主机名 Trigger #7603 · 2026-09-22 14:34:05"':
+          - 'button "#1627[UBSE] #feat 统一 hostname 校验并支持 RFC 1123 FQDN 主机名"'
+          - generic: "Trigger #7603 · 2026-09-22 14:34:05"
+        - cell "失败":
+          - generic: 失败
+        - cell "2026-09-22 14:34:05"
+        - cell "16.16 E2E":
+          - generic: "16.16"
+          - generic: E2E
+        - cell "— 排队":
+          - generic: —
+          - generic: 排队
+        - cell:
+      - 'row "#1627[UBSE] #feat 统一 hostname 校验并支持 RFC 1123 FQDN 主机名 Trigger #7604 · 2026-09-22 14:51:59 成功 2026-09-22 14:51:59 16.62 E2E — 排队"':
+        - 'cell "#1627[UBSE] #feat 统一 hostname 校验并支持 RFC 1123 FQDN 主机名 Trigger #7604 · 2026-09-22 14:51:59"':
+          - 'button "#1627[UBSE] #feat 统一 hostname 校验并支持 RFC 1123 FQDN 主机名"'
+          - generic: "Trigger #7604 · 2026-09-22 14:51:59"
+        - cell "成功":
+          - generic: 成功
+        - cell "2026-09-22 14:51:59"
+        - cell "16.62 E2E":
+          - generic: "16.62"
+          - generic: E2E
+        - cell "— 排队":
+          - generic: —
+          - generic: 排队
+        - cell:
+  - generic: 显示 1–15 / 107 条 · E2E 从长到短；未知最后，同值按批次身份
+  - text: 每页
+  - combobox "每页条数":
+    - option "15" [selected]
+    - option "30"
+    - option "50"
+  - button "上一页" [disabled]:
+    - text: 上一页
+  - generic: 1 / 8
+  - button "下一页":
+    - text: 下一页
+  - text: 监控中心
+  - generic: ·
+  - text: OPEN EULER × TRITON-ASCEND
+  - generic: 107 批次 · 36 PR · 采集于 2026-10-21 09:48:16

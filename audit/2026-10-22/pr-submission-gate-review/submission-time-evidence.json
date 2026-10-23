@@ -1,0 +1,652 @@
+{
+  "schema_version": 1,
+  "purpose": "Local read-only evidence for latest code submission/push sort excluding reruns. No product change, source refresh, or online completeness claim.",
+  "baseline_sha": "3889c8e4217db60bc3b5e5cde276f8cbd73c2d79",
+  "recorded_at": "2026-10-22T01:09:42.263997+00:00",
+  "inputs": {
+    "snapshots": [
+      {
+        "path": "data/repos/ham.json",
+        "sha256": "6cacdf83f4ec73f6bb59e7dede8857edae3301151d75d6495bf9bd4ab5fd2c1e",
+        "git_tracked": false,
+        "repository": "openeuler/ham",
+        "schema_version": 3,
+        "branch": "master",
+        "start_ms": 1789088985814,
+        "end_ms": 1791680985814,
+        "collected_at": "2026-10-11T01:14:01.100227+00:00",
+        "generated_at": "2026-10-11T01:14:01.103805+00:00",
+        "expected_prs": 1,
+        "collected_prs": 1,
+        "limited": false,
+        "pr_objects": 1,
+        "meta_errors": []
+      },
+      {
+        "path": "data/repos/OmniStateStore.json",
+        "sha256": "0e1ab104c2da74ffd1540b6c2a45983bc5069b6a74a4475219d41dea116eb4a6",
+        "git_tracked": false,
+        "repository": "openeuler/OmniStateStore",
+        "schema_version": 3,
+        "branch": "master",
+        "start_ms": 1789088985814,
+        "end_ms": 1791680985814,
+        "collected_at": "2026-10-11T01:13:53.742951+00:00",
+        "generated_at": "2026-10-11T01:13:53.746423+00:00",
+        "expected_prs": 20,
+        "collected_prs": 20,
+        "limited": false,
+        "pr_objects": 20,
+        "meta_errors": []
+      },
+      {
+        "path": "data/repos/ubs-atomic.json",
+        "sha256": "c0e0a39722a0a3f907d4622926d7cfde7a2b6673348deea7f85b60efb58ba4d5",
+        "git_tracked": false,
+        "repository": "openeuler/ubs-atomic",
+        "schema_version": 3,
+        "branch": "master",
+        "start_ms": 1789088985814,
+        "end_ms": 1791680985814,
+        "collected_at": "2026-10-11T01:14:59.249991+00:00",
+        "generated_at": "2026-10-11T01:14:59.253225+00:00",
+        "expected_prs": 7,
+        "collected_prs": 7,
+        "limited": false,
+        "pr_objects": 7,
+        "meta_errors": []
+      },
+      {
+        "path": "data/repos/ubs-comm.json",
+        "sha256": "9ef6bd062dfaecd2080fdb6b2bdb9d6fe09b46e511700a3b8d87fba84f56b275",
+        "git_tracked": false,
+        "repository": "openeuler/ubs-comm",
+        "schema_version": 3,
+        "branch": "master",
+        "start_ms": 1789088985814,
+        "end_ms": 1791680985814,
+        "collected_at": "2026-10-11T01:11:31.233310+00:00",
+        "generated_at": "2026-10-11T01:11:31.234909+00:00",
+        "expected_prs": 20,
+        "collected_prs": 20,
+        "limited": false,
+        "pr_objects": 20,
+        "meta_errors": []
+      },
+      {
+        "path": "data/repos/ubs-engine.json",
+        "sha256": "304812e11c8c7d771567c015538cb1efc4b88838174b9a83904249f4d5f3ad27",
+        "git_tracked": false,
+        "repository": "openeuler/ubs-engine",
+        "schema_version": 3,
+        "branch": "master",
+        "start_ms": 1789088985814,
+        "end_ms": 1791680985814,
+        "collected_at": "2026-10-11T01:10:50.197511+00:00",
+        "generated_at": "2026-10-11T01:10:50.206251+00:00",
+        "expected_prs": 65,
+        "collected_prs": 65,
+        "limited": false,
+        "pr_objects": 65,
+        "meta_errors": []
+      },
+      {
+        "path": "data/repos/ubs-io.json",
+        "sha256": "8af97dfaa2d85050527bbce5221d1fccb311c16bbdc4f55ea3d1cc9939e64f09",
+        "git_tracked": false,
+        "repository": "openeuler/ubs-io",
+        "schema_version": 3,
+        "branch": "master",
+        "start_ms": 1789088985814,
+        "end_ms": 1791680985814,
+        "collected_at": "2026-10-11T01:13:04.893456+00:00",
+        "generated_at": "2026-10-11T01:13:04.896423+00:00",
+        "expected_prs": 5,
+        "collected_prs": 5,
+        "limited": false,
+        "pr_objects": 5,
+        "meta_errors": []
+      },
+      {
+        "path": "data/repos/ubs-mem.json",
+        "sha256": "3d52ca8471c9365e4f8873e599f5b347439c8d336aeade2db6ee8270f129eb4a",
+        "git_tracked": false,
+        "repository": "openeuler/ubs-mem",
+        "schema_version": 3,
+        "branch": "master",
+        "start_ms": 1789088985814,
+        "end_ms": 1791680985814,
+        "collected_at": "2026-10-11T01:13:22.543171+00:00",
+        "generated_at": "2026-10-11T01:13:22.546632+00:00",
+        "expected_prs": 8,
+        "collected_prs": 8,
+        "limited": false,
+        "pr_objects": 8,
+        "meta_errors": []
+      },
+      {
+        "path": "data/repos/ubs-virt.json",
+        "sha256": "b7bd6e3a848f1071f50dd13fefcc78b252b89b5a8801969042033c308562cb01",
+        "git_tracked": false,
+        "repository": "openeuler/ubs-virt",
+        "schema_version": 3,
+        "branch": "master",
+        "start_ms": 1789088985814,
+        "end_ms": 1791680985814,
+        "collected_at": "2026-10-11T01:12:54.393518+00:00",
+        "generated_at": "2026-10-11T01:12:54.398379+00:00",
+        "expected_prs": 28,
+        "collected_prs": 28,
+        "limited": false,
+        "pr_objects": 28,
+        "meta_errors": []
+      },
+      {
+        "path": "data/repos/ubturbo.json",
+        "sha256": "63d392bfca6ba0568792f20ea987fd13cd33a8d5d7701dc9c929568ed0eaaad3",
+        "git_tracked": false,
+        "repository": "openeuler/ubturbo",
+        "schema_version": 3,
+        "branch": "master",
+        "start_ms": 1789088985814,
+        "end_ms": 1791680985814,
+        "collected_at": "2026-10-11T01:14:43.053930+00:00",
+        "generated_at": "2026-10-11T01:14:43.057957+00:00",
+        "expected_prs": 22,
+        "collected_prs": 22,
+        "limited": false,
+        "pr_objects": 22,
+        "meta_errors": []
+      }
+    ],
+    "raw_sample_cache": [
+      {
+        "path": "data/raw/371fb70dd248b8a2d6d5d6cc11b45854b7306b4bef1251f8fc3f3bd6bb573ff0.json",
+        "sha256": "c3bbc56b39a92bbcd31e2161e76ca80281ca03d8c04610a380d70476fb4dae98",
+        "git_tracked": false,
+        "url": "https://api.gitcode.com/api/v5/repos/openeuler/OmniStateStore/pulls?state=all&base=master&sort=created&direction=desc&page=1&per_page=100",
+        "fetched_at": "2026-10-11T01:13:23.824064+00:00",
+        "row_count": 100
+      },
+      {
+        "path": "data/raw/580fe2e811dcb934d54e9f39a2a4f1e9f0e49375a7881fc8f2dede85200e7dcf.json",
+        "sha256": "303513f4a106c4a6eb94dd3b09665bac39ea1ee4dd3f69c3f33d4b908a207457",
+        "git_tracked": false,
+        "url": "https://api.gitcode.com/api/v5/repos/openeuler/OmniStateStore/pulls/137/operate_logs?page=1&per_page=100",
+        "fetched_at": "2026-10-11T01:13:45.627058+00:00",
+        "row_count": 36
+      },
+      {
+        "path": "data/raw/72c1373cffd0d3c2354852a68e8c77fbfc53edd9217b197e98d5b5f73a3b9320.json",
+        "sha256": "280a415587d61af3f16871f0afede2caa3a2c0452d95843dad846a7c54a363e5",
+        "git_tracked": false,
+        "url": "https://api.gitcode.com/api/v5/repos/openeuler/OmniStateStore/pulls/137/comments?page=1&per_page=100",
+        "fetched_at": "2026-10-11T01:13:31.434653+00:00",
+        "row_count": 25
+      }
+    ],
+    "code": [
+      {
+        "path": "metrics.py",
+        "sha256": "d0ec8508b57199431a5933b1bc29d68c76eccaf4ee25aea08bf6da7329b827fd",
+        "git_tracked": true,
+        "baseline_git_blob_sha256": "d0ec8508b57199431a5933b1bc29d68c76eccaf4ee25aea08bf6da7329b827fd"
+      },
+      {
+        "path": "collect.py",
+        "sha256": "37f11f589d691c418dbc401ea390fca45645afd4ea8ea3b3d061dbb5c18aa4aa",
+        "git_tracked": true,
+        "baseline_git_blob_sha256": "37f11f589d691c418dbc401ea390fca45645afd4ea8ea3b3d061dbb5c18aa4aa"
+      },
+      {
+        "path": "repository_store.py",
+        "sha256": "581d9a2487c6c738d17babc5b80651c630a97480d9571e786f969f4c6649560c",
+        "git_tracked": true,
+        "baseline_git_blob_sha256": "581d9a2487c6c738d17babc5b80651c630a97480d9571e786f969f4c6649560c"
+      },
+      {
+        "path": "web/core.js",
+        "sha256": "4554a0e3e9cbfb87fa7c8dd8bccc6c93626da398b70583aecb7ef3aafa7512b8",
+        "git_tracked": true,
+        "baseline_git_blob_sha256": "0cc1b0e107bea8c163338f847763098ff6ba625f3f3db1c3b9768b4f134104a2"
+      },
+      {
+        "path": "web/app.js",
+        "sha256": "77777d9209915dbffb787713a7103a0fa9f5ed652859e787986f775253bab722",
+        "git_tracked": true,
+        "baseline_git_blob_sha256": "2d0836228c4b7ee5ae893c9840acf1ddc5a516501fdf24dbab8103927b3d562b"
+      },
+      {
+        "path": "web/records.js",
+        "sha256": "3e40b2a18840f54c5b89c8b00db30f2ae7e08fe9918256f17b63d7e7c3ad5b9a",
+        "git_tracked": true,
+        "baseline_git_blob_sha256": "61632c89c2134950a2406e404895473206e675fac032f5c558acc52a1f394a7e"
+      },
+      {
+        "path": "web/index.html",
+        "sha256": "7042b132fc63c6a951a021eab31346f57d7655982b8ec720ed0b09cabe1de011",
+        "git_tracked": true,
+        "baseline_git_blob_sha256": "44f1672e6cc0f971b7a00139bf398a68565739f4b2dc65a97cead5b7b52f4b0d"
+      },
+      {
+        "path": "tests/frontend.test.cjs",
+        "sha256": "d5ddc9572cbd8630d969cc0249496c03c69f28e501839cd8a63689ebf295051e",
+        "git_tracked": true,
+        "baseline_git_blob_sha256": "eb290ec52504bce0b5e0d4a1eb7042e0f09909b2af55be71b2ac905c5e09852c"
+      },
+      {
+        "path": "scripts/verify_ubs_sorting.py",
+        "sha256": "37686b675939ca023dbd8e4b9c60866d28b854bba705dbebbb808527c43e09ff",
+        "git_tracked": true,
+        "baseline_git_blob_sha256": "7c6a11c6644e2a41f062fc265132e7fda9dcfa35e25fd54e11ed9863fe79cccb"
+      },
+      {
+        "path": "tests/test_ubs_sorting.py",
+        "sha256": "fc56990829a32d10a6d7e06d552bfb14dbb9b7fdfdaf6b1105097e41dd464db3",
+        "git_tracked": true,
+        "baseline_git_blob_sha256": "5ce5d0ddfcd7c043974105e447a5f8e00b589c04dbb6f47fba361d3846723a52"
+      }
+    ],
+    "minimal_fixture": {
+      "path": "tests/fixtures/minimal/repos/ubs-engine.json",
+      "sha256": "2b83d51542fd58248d19036e699072482bf5d47e5822e2979a21b98b7fe2a4b0",
+      "git_tracked": true
+    }
+  },
+  "sample_scope": {
+    "origin": "Nine ignored local data/repos/*.json snapshots; not baseline-versioned and not current online production data. data/snapshot.json and web/data mirrors excluded to prevent duplicates.",
+    "repository_count": 9,
+    "pr_objects": 176,
+    "time_basis": "master PR.created_at in inclusive [start_ms,end_ms]; all collected selected-PR events <=end_ms retained.",
+    "start_ms": 1789088985814,
+    "start_shanghai": "2026-09-11T09:09:45.814000+08:00",
+    "end_ms": 1791680985814,
+    "end_shanghai": "2026-10-11T09:09:45.814000+08:00",
+    "network_requests_made": 0,
+    "limit": "meta.errors=[] cannot independently prove platform history completeness or parser coverage."
+  },
+  "independent_recalculation": {
+    "method": "Standard-library JSON; max finite numeric time_ms for kind create/push <=snapshot end, compared with max over all event kinds. No product metrics imports.",
+    "event_kind_counts": {
+      "create": 176,
+      "retest": 108,
+      "push": 473
+    },
+    "event_source_counts": {
+      "PR.created_at": 176,
+      "comments": 108,
+      "operate_logs": 473
+    },
+    "prs_with_events": 176,
+    "prs_without_code_event": 0,
+    "latest_code_is_push": 109,
+    "latest_any_is_retest": 49,
+    "latest_any_time_differs_from_code": 49,
+    "code_time_differs_from_creation": 109,
+    "invalid_or_after_cutoff_events": [],
+    "unlinked_create_push_events": [
+      {
+        "repository": "openeuler/ubs-atomic",
+        "pr": 72,
+        "event_id": "create"
+      },
+      {
+        "repository": "openeuler/ubs-engine",
+        "pr": 1591,
+        "event_id": "create"
+      },
+      {
+        "repository": "openeuler/ubs-virt",
+        "pr": 271,
+        "event_id": "190188551"
+      },
+      {
+        "repository": "openeuler/ubs-virt",
+        "pr": 267,
+        "event_id": "create"
+      },
+      {
+        "repository": "openeuler/ubturbo",
+        "pr": 453,
+        "event_id": "191320133"
+      },
+      {
+        "repository": "openeuler/ubturbo",
+        "pr": 440,
+        "event_id": "create"
+      },
+      {
+        "repository": "openeuler/ubturbo",
+        "pr": 440,
+        "event_id": "190040192"
+      }
+    ],
+    "per_repository": [
+      {
+        "repository": "openeuler/ham",
+        "prs": 1,
+        "latest_push": 0,
+        "latest_any_retest": 1,
+        "code_time_differs_from_creation": 0,
+        "latest_any_differs_from_code": 1,
+        "creation_vs_code_sort_position_changes": 0
+      },
+      {
+        "repository": "openeuler/OmniStateStore",
+        "prs": 20,
+        "latest_push": 9,
+        "latest_any_retest": 4,
+        "code_time_differs_from_creation": 9,
+        "latest_any_differs_from_code": 4,
+        "creation_vs_code_sort_position_changes": 8
+      },
+      {
+        "repository": "openeuler/ubs-atomic",
+        "prs": 7,
+        "latest_push": 5,
+        "latest_any_retest": 3,
+        "code_time_differs_from_creation": 5,
+        "latest_any_differs_from_code": 3,
+        "creation_vs_code_sort_position_changes": 0
+      },
+      {
+        "repository": "openeuler/ubs-comm",
+        "prs": 20,
+        "latest_push": 13,
+        "latest_any_retest": 6,
+        "code_time_differs_from_creation": 13,
+        "latest_any_differs_from_code": 6,
+        "creation_vs_code_sort_position_changes": 13
+      },
+      {
+        "repository": "openeuler/ubs-engine",
+        "prs": 65,
+        "latest_push": 42,
+        "latest_any_retest": 11,
+        "code_time_differs_from_creation": 42,
+        "latest_any_differs_from_code": 11,
+        "creation_vs_code_sort_position_changes": 58
+      },
+      {
+        "repository": "openeuler/ubs-io",
+        "prs": 5,
+        "latest_push": 2,
+        "latest_any_retest": 4,
+        "code_time_differs_from_creation": 2,
+        "latest_any_differs_from_code": 4,
+        "creation_vs_code_sort_position_changes": 0
+      },
+      {
+        "repository": "openeuler/ubs-mem",
+        "prs": 8,
+        "latest_push": 5,
+        "latest_any_retest": 2,
+        "code_time_differs_from_creation": 5,
+        "latest_any_differs_from_code": 2,
+        "creation_vs_code_sort_position_changes": 6
+      },
+      {
+        "repository": "openeuler/ubs-virt",
+        "prs": 28,
+        "latest_push": 22,
+        "latest_any_retest": 10,
+        "code_time_differs_from_creation": 22,
+        "latest_any_differs_from_code": 10,
+        "creation_vs_code_sort_position_changes": 20
+      },
+      {
+        "repository": "openeuler/ubturbo",
+        "prs": 22,
+        "latest_push": 11,
+        "latest_any_retest": 8,
+        "code_time_differs_from_creation": 11,
+        "latest_any_differs_from_code": 8,
+        "creation_vs_code_sort_position_changes": 20
+      }
+    ]
+  },
+  "fixed_sample": {
+    "repository": "openeuler/OmniStateStore",
+    "pr": 137,
+    "created_ms": 1789385714000,
+    "created_at": "2026-09-14T19:35:14+08:00",
+    "latest_code_event": {
+      "id": "189631513",
+      "kind": "push",
+      "time_ms": 1789386120000,
+      "sha": "f2c17c5b",
+      "shas": [
+        "f2c17c5b"
+      ],
+      "source": "operate_logs",
+      "discussion_id": "37aab43abe1110734112b340665d62c49298cbad",
+      "batch_urls": [
+        "https://ci.openeuler.openatom.cn/job/multiarch/job/openeuler/job/trigger/job/OmniStateStore/276/"
+      ]
+    },
+    "latest_code_at_shanghai": "2026-09-14T19:42:00+08:00",
+    "raw_push": {
+      "id": 189631513,
+      "action": "commit",
+      "action_type": "commit",
+      "created_at": "2026-09-14T19:42:00+08:00",
+      "updated_at": "2026-09-14T19:42:00+08:00",
+      "discussion_id": "37aab43abe1110734112b340665d62c49298cbad"
+    },
+    "raw_push_content_prefix": "added 1 commit, force_push=false",
+    "latest_any_event": {
+      "id": "190327572",
+      "kind": "retest",
+      "time_ms": 1789696223000,
+      "sha": "f2c17c5b",
+      "source": "comments",
+      "discussion_id": "980219be89aabd0aacb1d11ca2286589369509f5",
+      "batch_urls": [
+        "https://ci.openeuler.openatom.cn/job/multiarch/job/openeuler/job/trigger/job/OmniStateStore/295/"
+      ]
+    },
+    "latest_any_at_shanghai": "2026-09-18T09:50:23+08:00",
+    "raw_rerun": {
+      "id": 190327572,
+      "body": "/retest",
+      "created_at": "2026-09-18T09:50:23+08:00",
+      "updated_at": "2026-09-18T09:50:23+08:00",
+      "discussion_id": "980219be89aabd0aacb1d11ca2286589369509f5"
+    },
+    "raw_pr_updated_at": "2026-09-18T10:06:35+08:00",
+    "raw_pr_closed_at": "2026-09-18T10:06:33+08:00",
+    "latest_code_vs_creation_ms": 406000,
+    "rerun_vs_latest_code_ms": 310103000,
+    "expected_time_sort_value_ms": 1789386120000,
+    "expected_time_sort_value_shanghai": "2026-09-14T19:42:00+08:00",
+    "git_commit_clock_availability": "No author/committer timestamp in this PR-list payload; current UBS collector fetches no commits endpoint. head.sha has identity but no push time."
+  },
+  "local_log_failure_metadata": {
+    "meta_errors_total": 0,
+    "log_or_comment_failure_issues": [],
+    "status": "No recorded fetch or pagination failure in these nine snapshots. Current code has no structured submission-event completeness marker.",
+    "failure_path": "collect.py:163-164 substitutes logs=[] after log retrieval failure; extract_events still emits create. A bare max(create/push) may then be an earlier lower bound, not the actual latest.",
+    "comment_failure_distinction": "Comment failure affects retest discovery/association; it alone does not invalidate code-submission coverage when PR metadata and operation logs are complete."
+  },
+  "candidate_contract": {
+    "field": "latest_submission_ms",
+    "meaning": "Latest authoritative PR creation or source-code push at/before cutoff, excluding reruns. Claiming exact latest requires adequate code-event history coverage.",
+    "sources": {
+      "create": "PR.created_at; creation log recovers SHA only",
+      "push": "operate_logs.created_at, typed commit action and recognized added-commit/push content"
+    },
+    "provenance": [
+      "latest_submission_event_id",
+      "latest_submission_source",
+      "submission_events_status: complete | partial | unknown",
+      "submission_events_issues"
+    ],
+    "selection": [
+      "Max valid create/push time_ms <=cutoff; finite numeric, non-boolean; preserve legitimate zero.",
+      "Do not require linked trigger, eligible batch, successful run or recovered SHA. Multi-commit/force-push remain code events.",
+      "Deduplicate event identity; conflicting duplicate timestamps are a quality error.",
+      "If persisted redundantly, validate the scalar against its events; use one helper for sort, displayed date and CSV."
+    ],
+    "fallback_boundaries": [
+      "Real schema-v3 events already contain kind/time_ms/source: missing scalar may derive from those events. Mark absent completeness metadata as legacy evidence; no reported failure is not an absolute historical completeness guarantee.",
+      "Use creation as latest only when relevant operation logs are confirmed complete with no subsequent push.",
+      "After log retrieval/pagination failure or known unrecognized commit operation, strict latest_submission_ms is null. Optional latest_observed_submission_ms retains known max as explicitly partial/lower-bound data and must not masquerade as confirmed latest in sorting or export.",
+      "Old snapshots without reliable events/coverage stay unknown; scalar absence does not authorize fallback to created_ms.",
+      "Never substitute PR.updated_at, author/committer dates, batch.request_ms, webhook_ms, Jenkins trigger/queue/start/end or retest."
+    ],
+    "sorting": [
+      "Distinct submitted sort key replaces the selectable creation-time order. Retain current default e2e and current e2e/batches tie rules unless separately requested.",
+      "Sort full L before pagination, valid latest timestamps descending, unknown last, ties by stable repository+PR identity.",
+      "S/window/trend stay based on PR.created_at. Representative E2E, eligibility and same-batch tasks remain unchanged. Batch start sorting remains request_ms."
+    ],
+    "url_csv_display": [
+      "Persist/restore sort=submitted across reload/detail return. Explicitly decide old sort=created handling; do not silently claim preserved creation ordering after remapping.",
+      "Update static/dynamic labels and footer, and show latest submission/provenance so rows explain order. Preserve separately labeled creation metadata.",
+      "PR CSV retains creation column and adds latest-submission column, using same derivation and displayed L order including all pages. Metadata time_basis remains pr_created_at for S."
+    ]
+  },
+  "fixture_gap": {
+    "path": "tests/fixtures/minimal/repos/ubs-engine.json",
+    "pr_objects": 20,
+    "event_kinds": {
+      "create": 20
+    },
+    "all_event_sources_missing": true,
+    "submission_count_exceeds_observed_code_events": 14,
+    "implication": "Minimum fixture proves neither real push coverage nor failure handling. Dedicated create/push/retest, unlinked push, same-time tie, invalid/future timestamps, partial logs and legacy/missing-events fixtures are needed."
+  },
+  "code_references": [
+    {
+      "path": "metrics.py",
+      "start": 53,
+      "end": 75,
+      "purpose": "Authoritative create/push events; comments only retest"
+    },
+    {
+      "path": "metrics.py",
+      "start": 77,
+      "end": 87,
+      "purpose": "Webhook association is separate from code submission time"
+    },
+    {
+      "path": "collect.py",
+      "start": 159,
+      "end": 167,
+      "purpose": "Log failure issues and inclusive <=end_ms cutoff"
+    },
+    {
+      "path": "collect.py",
+      "start": 210,
+      "end": 230,
+      "purpose": "Matched request_ms, unlinked event preservation and current PR projection"
+    },
+    {
+      "path": "collect.py",
+      "start": 238,
+      "end": 245,
+      "purpose": "Persisted creation ordering and schema v3"
+    },
+    {
+      "path": "repository_store.py",
+      "start": 45,
+      "end": 52,
+      "purpose": "JSON payload storage"
+    },
+    {
+      "path": "repository_store.py",
+      "start": 70,
+      "end": 75,
+      "purpose": "Snapshot mirrors"
+    },
+    {
+      "path": "web/core.js",
+      "start": 10,
+      "end": 18,
+      "purpose": "Representative E2E, sortPRs, S filter and search"
+    },
+    {
+      "path": "web/app.js",
+      "start": 25,
+      "end": 39,
+      "purpose": "URL state and entity sort options"
+    },
+    {
+      "path": "web/app.js",
+      "start": 41,
+      "end": 49,
+      "purpose": "S versus sorted L; sort before pagination"
+    },
+    {
+      "path": "web/app.js",
+      "start": 109,
+      "end": 129,
+      "purpose": "Route restoration and parameter validation"
+    },
+    {
+      "path": "web/app.js",
+      "start": 202,
+      "end": 214,
+      "purpose": "Event detail and CSV projection"
+    },
+    {
+      "path": "web/app.js",
+      "start": 248,
+      "end": 248,
+      "purpose": "Sort resets page and syncs URL"
+    },
+    {
+      "path": "web/records.js",
+      "start": 91,
+      "end": 120,
+      "purpose": "Batch start_at=request_ms independent of PR sort"
+    },
+    {
+      "path": "web/index.html",
+      "start": 63,
+      "end": 63,
+      "purpose": "Static sort option"
+    },
+    {
+      "path": "tests/frontend.test.cjs",
+      "start": 22,
+      "end": 28,
+      "purpose": "Current sort assertions"
+    },
+    {
+      "path": "scripts/verify_ubs_sorting.py",
+      "start": 102,
+      "end": 110,
+      "purpose": "Independent frozen sort predicate"
+    },
+    {
+      "path": "tests/test_ubs_sorting.py",
+      "start": 123,
+      "end": 136,
+      "purpose": "Current creation tie ordering"
+    }
+  ],
+  "verification": {
+    "assertions": [
+      "176 distinct repository+PR objects from nine local snapshots",
+      "Sample latest code equals raw push log created_at, excluding later retest",
+      "No invalid/after-cutoff event and no recorded fetch failure in local sample",
+      "Every referenced input SHA256 identified; ignored local caches labeled untracked"
+    ],
+    "product_tests_run": false,
+    "product_files_modified": false,
+    "commit_created_by_subagent": false,
+    "status": "passed",
+    "input_worktree_sha256_checks": 23,
+    "baseline_code_content_checks": 10,
+    "checkout_CRLF_only_differences": [
+      "web/core.js",
+      "web/app.js",
+      "web/records.js",
+      "web/index.html",
+      "tests/frontend.test.cjs",
+      "scripts/verify_ubs_sorting.py",
+      "tests/test_ubs_sorting.py"
+    ],
+    "hash_boundary": "sha256 identifies exact input bytes on disk. Baseline git blobs may use LF while Windows checkouts use CRLF; all code input content equals baseline after CRLF normalization."
+  }
+}

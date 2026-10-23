@@ -1,0 +1,965 @@
+{
+  "schema_version": 1,
+  "artifact": "Read-only PR gate coverage audit evidence",
+  "created_at_utc": "2026-10-22T01:09:55.402144+00:00",
+  "baseline": {
+    "commit": "3889c8e4217db60bc3b5e5cde276f8cbd73c2d79",
+    "observed_head": "3889c8e4217db60bc3b5e5cde276f8cbd73c2d79",
+    "working_directory": "D:\\ubs_core_monitor"
+  },
+  "scope": {
+    "product_files_modified": false,
+    "commit_created_by_auditor": false,
+    "production_collection_or_deploy_rerun": false,
+    "evidence_file_is_the_only_requested_new_file": true,
+    "external_branch_protection_state_verified": false,
+    "limitation": "Local source and test execution do not independently prove current GitHub branch-protection configuration or remote CI status."
+  },
+  "file_hashes": {
+    "algorithm": "SHA256",
+    "representation": "Actual local working-tree bytes at evidence creation, including any CRLF; not normalized Git-blob bytes.",
+    "files": [
+      {
+        "path": "AGENTS.md",
+        "sha256": "6fa00fde551c681f8466e515568245c71b6a8d57539fd9c0b2f4ed75ddd78b29",
+        "bytes": 1092
+      },
+      {
+        "path": ".github/workflows/pr-gate.yml",
+        "sha256": "a86c79f5602fae67270bd247bca31ed240a3aa9527e1f5a53062409c1e10d76c",
+        "bytes": 4114
+      },
+      {
+        "path": "scripts/ci_gate.py",
+        "sha256": "902946b2d8525dcfe46c36e5fc0f933d350536d1215a78b969609be3169789df",
+        "bytes": 1676
+      },
+      {
+        "path": "playwright.config.cjs",
+        "sha256": "3953dca277e9d563a0f26ac299a4e05c58bd9af8b31b3017119925c7d04f0941",
+        "bytes": 865
+      },
+      {
+        "path": "package.json",
+        "sha256": "d3d6aa32584d88ac356e4cf4e64ca2f9dcd37b9def6e2140cf38c38394af9f5a",
+        "bytes": 290
+      },
+      {
+        "path": "package-lock.json",
+        "sha256": "83884220b2bce07fa7cce9f5ceb23cd60f482d6299aa7fc0551bcf2045832192",
+        "bytes": 1768
+      },
+      {
+        "path": "tests/test_ci_gate.py",
+        "sha256": "f7130035d76f135b297740c55b57f4b96c8e5e91c14a8821f599fd21dc1d638c",
+        "bytes": 3054
+      },
+      {
+        "path": "tests/helpers/app-harness.cjs",
+        "sha256": "528dcc664bfd014a164c0554034b6a2e76036df481f4bd55b9e0d9cbbbbd343a",
+        "bytes": 2205
+      },
+      {
+        "path": "tests/records.test.cjs",
+        "sha256": "aefb77f1328c91bd2fed335afabc1bc72432631f88736e3eb32a04ad67bda8f1",
+        "bytes": 6333
+      },
+      {
+        "path": "tests/query_state.test.cjs",
+        "sha256": "6d614097fc1cb416ccb642b73fbed0af1528af6c155075812e4bd7e69a5fc1b4",
+        "bytes": 3254
+      },
+      {
+        "path": "tests/uar_records_20261021.test.cjs",
+        "sha256": "9915a78f47448f315876abcd54b30ab351b1304fef82910fba1411689e78d067",
+        "bytes": 8594
+      },
+      {
+        "path": "tests/app_runtime.test.cjs",
+        "sha256": "79cf00a744f633ed8114c72b811bbfb32dccba3e9b016c557fbb57f2226be8c8",
+        "bytes": 10974
+      },
+      {
+        "path": "tests/test_ubs_sorting.py",
+        "sha256": "fc56990829a32d10a6d7e06d552bfb14dbb9b7fdfdaf6b1105097e41dd464db3",
+        "bytes": 17138
+      },
+      {
+        "path": "scripts/verify_ubs_sorting.py",
+        "sha256": "37686b675939ca023dbd8e4b9c60866d28b854bba705dbebbb808527c43e09ff",
+        "bytes": 22192
+      },
+      {
+        "path": "scripts/devdata.py",
+        "sha256": "7dc551dcab210ec1f4646a2b5fcda1809bcc9013e7d8c86cfb21bbcf8fe7497d",
+        "bytes": 10557
+      },
+      {
+        "path": "tests/fixtures/minimal/repos/ubs-engine.json",
+        "sha256": "2b83d51542fd58248d19036e699072482bf5d47e5822e2979a21b98b7fe2a4b0",
+        "bytes": 38096
+      },
+      {
+        "path": "web/app.js",
+        "sha256": "77777d9209915dbffb787713a7103a0fa9f5ed652859e787986f775253bab722",
+        "bytes": 70557
+      },
+      {
+        "path": "web/core.js",
+        "sha256": "4554a0e3e9cbfb87fa7c8dd8bccc6c93626da398b70583aecb7ef3aafa7512b8",
+        "bytes": 7121
+      },
+      {
+        "path": "web/records.js",
+        "sha256": "3e40b2a18840f54c5b89c8b00db30f2ae7e08fe9918256f17b63d7e7c3ad5b9a",
+        "bytes": 6608
+      },
+      {
+        "path": "web/query-state.js",
+        "sha256": "38eb326b01a824b913dd07c3dff2dcbc5e20435ca82d24f8c7b7a792a9930e6d",
+        "bytes": 2424
+      },
+      {
+        "path": "tests/browser/advanced-sample-filter.spec.cjs",
+        "sha256": "c5b215fb4894996cdd86f308a435c733959003dc9adae449a3e41f34356ec104",
+        "bytes": 2524
+      },
+      {
+        "path": "tests/browser/collection-status.spec.cjs",
+        "sha256": "741a8cf5000c34e46c4ff806122ea98df49040513d20ab7fb09a6a3055726748",
+        "bytes": 994
+      },
+      {
+        "path": "tests/browser/dashboard.spec.cjs",
+        "sha256": "e360d9407650a2c6c840f69d153d4e71b836ca137fb44db7535e2530e8ae3ffd",
+        "bytes": 6689
+      },
+      {
+        "path": "tests/browser/unified-detail.spec.cjs",
+        "sha256": "db4d6158acbcabca4004dff31da89f6a5656cca600d93a1558e5767c0053c01a",
+        "bytes": 13732
+      },
+      {
+        "path": "tests/browser/unified-export.spec.cjs",
+        "sha256": "1309306a7b5c2fa16b0be8fc16d3b1cfb4de33a19238d88f803248b69dec52da",
+        "bytes": 3206
+      },
+      {
+        "path": "tests/browser/unified-navigation.spec.cjs",
+        "sha256": "388774a8bf5d0c62de2a96ff4c746c1c5b669f287f31b38ba461ae8e35be8da6",
+        "bytes": 3060
+      },
+      {
+        "path": "tests/browser/unified-records.spec.cjs",
+        "sha256": "db51d064413974079a4918044005d43f020d7642d86a9ed6f90e96c493ba8239",
+        "bytes": 4947
+      },
+      {
+        "path": "tests/browser/url-context.spec.cjs",
+        "sha256": "bc62fec66a0e074b41814e5e2db82322487806ba8f3bfb91c7841749ef2a61a7",
+        "bytes": 2840
+      }
+    ]
+  },
+  "workflow": {
+    "path": ".github/workflows/pr-gate.yml",
+    "triggers": [
+      "pull_request targeting main",
+      "merge_group",
+      "push to main",
+      "workflow_dispatch"
+    ],
+    "path_filter_present": false,
+    "permissions": {
+      "contents": "read"
+    },
+    "jobs": {
+      "python-tests": {
+        "line": 19,
+        "commands": [
+          "python -m pip install PyYAML==6.0.3",
+          "python -B -m unittest discover -s tests -v"
+        ]
+      },
+      "frontend-tests": {
+        "line": 37,
+        "commands": [
+          "python -B scripts/devdata.py --offline",
+          "node --test tests/*.test.cjs",
+          "npm ci --ignore-scripts",
+          "npx playwright install --with-deps chromium",
+          "npm run test:browser"
+        ],
+        "failure_evidence": "test-results uploaded with always(), retention 14 days"
+      },
+      "collector-contracts": {
+        "line": 70,
+        "commands": [
+          "python -B -m unittest discover -s tests -p 'test_monitor_*.py' -v",
+          "python -B -m unittest discover -s tests -p 'test_triton_*.py' -v",
+          "python -B -m unittest discover -s tests -p 'test_cache_chain.py' -v",
+          "python -B -m unittest discover -s tests -p 'test_verify_deployment.py' -v"
+        ],
+        "note": "These Python patterns overlap the python-tests discovery; they exercise contracts, not a live production collection run."
+      },
+      "workflow-lint": {
+        "line": 90,
+        "tool": "actionlint 1.7.12",
+        "download_sha256_checked": true
+      }
+    },
+    "aggregate": {
+      "job": "quality-gate",
+      "required_check_name": "Dashboard quality gate",
+      "line": 107,
+      "if": "${{ always() }}",
+      "needs": [
+        "python-tests",
+        "frontend-tests",
+        "collector-contracts",
+        "workflow-lint"
+      ],
+      "script": "scripts/ci_gate.py",
+      "acceptance": "Exact required job set and every result == success; failures, cancellations, skips, null, missing/unexpected jobs and malformed JSON fail."
+    }
+  },
+  "test_layers": {
+    "static_and_frozen": "Source strings/regex and committed evidence assertions prove limited source/evidence contracts, not DOM interaction, fresh live-source correctness or layout.",
+    "real_functions_and_vm": "Pure modules execute real functions. app-harness runs real app.js only before event wiring; DOM/network are doubles, arbitrary value assignment is accepted, querySelectorAll is empty, addEventListener is a no-op.",
+    "real_browser": "Chromium exercises real scripts, native controls/dialog, event wiring, network and layout, but only for the actual fixtures/actions/assertions."
+  },
+  "browser_inventory": {
+    "spec_file_count": 8,
+    "declared_test_count": 40,
+    "method": "Enumerate tests/browser/*.spec.cjs and lines matching ^\\s*test\\('...'; source inventory is distinct from observed executed-test results.",
+    "files": [
+      {
+        "path": "tests/browser/advanced-sample-filter.spec.cjs",
+        "test_count": 4,
+        "tests": [
+          {
+            "line": 17,
+            "name": "retired advanced panel is not rendered and has no hidden filters"
+          },
+          {
+            "line": 25,
+            "name": "state filter changes the analysis denominator and is clearable"
+          },
+          {
+            "line": 41,
+            "name": "plain search changes records but not the analysis denominator"
+          },
+          {
+            "line": 48,
+            "name": "legacy tf/qf params report the retired conditions instead of filtering"
+          }
+        ]
+      },
+      {
+        "path": "tests/browser/collection-status.spec.cjs",
+        "test_count": 2,
+        "tests": [
+          {
+            "line": 7,
+            "name": "the retired workbench collapses to the UBS overview, never a card deck"
+          },
+          {
+            "line": 15,
+            "name": "the UBS overview reads repository collection status from the snapshot index"
+          }
+        ]
+      },
+      {
+        "path": "tests/browser/dashboard.spec.cjs",
+        "test_count": 10,
+        "tests": [
+          {
+            "line": 10,
+            "name": "published pages initialise without script exceptions"
+          },
+          {
+            "line": 20,
+            "name": "community links enter a project and the retired workbench collapses to the overview"
+          },
+          {
+            "line": 33,
+            "name": "record search changes records while preserving analysis statistics"
+          },
+          {
+            "line": 43,
+            "name": "CSV download contains the selected records, independent of collapse"
+          },
+          {
+            "line": 58,
+            "name": "route changes close bound PR details and browser history restores the active view"
+          },
+          {
+            "line": 77,
+            "name": "failed snapshot reload keeps valid data and restores the control"
+          },
+          {
+            "line": 87,
+            "name": "mobile retains result and duration in complete batch records"
+          },
+          {
+            "line": 97,
+            "name": "EC-010-AC01: no page-level horizontal overflow across breakpoints"
+          },
+          {
+            "line": 108,
+            "name": "keyboard opens a batch into the unified detail modal and Escape closes it"
+          },
+          {
+            "line": 118,
+            "name": "attention row opens the unified detail modal and closing returns to the dashboard"
+          }
+        ]
+      },
+      {
+        "path": "tests/browser/unified-detail.spec.cjs",
+        "test_count": 6,
+        "tests": [
+          {
+            "line": 81,
+            "name": "list and batch entities converge on one detail; representative default vs selected batch"
+          },
+          {
+            "line": 111,
+            "name": "no-representative PR shows the reason and the most-recent batch, never a fabricated representative"
+          },
+          {
+            "line": 127,
+            "name": "unknown-association batches stay locatable and closing returns to the list"
+          },
+          {
+            "line": 146,
+            "name": "selected-batch task export binds the selected batch tasks, never the whole PR"
+          },
+          {
+            "line": 166,
+            "name": "EC-012: the retired quality task collapses to the UBS overview"
+          },
+          {
+            "line": 220,
+            "name": "triton list rows open the unified detail and closing returns to the merged list"
+          }
+        ]
+      },
+      {
+        "path": "tests/browser/unified-export.spec.cjs",
+        "test_count": 3,
+        "tests": [
+          {
+            "line": 15,
+            "name": "L record export binds the full filtered set and versioned metadata, not page-truncated"
+          },
+          {
+            "line": 38,
+            "name": "S summary export declares its analysis scope and version"
+          },
+          {
+            "line": 49,
+            "name": "PR all-batch export from the detail binds the PR identity and batch count"
+          }
+        ]
+      },
+      {
+        "path": "tests/browser/unified-navigation.spec.cjs",
+        "test_count": 6,
+        "tests": [
+          {
+            "line": 12,
+            "name": "the sidebar shows exactly two community entries and no workbench or project selector"
+          },
+          {
+            "line": 21,
+            "name": "the two community links carry their canonical entries and tooltips"
+          },
+          {
+            "line": 33,
+            "name": "clicking the Triton community opens the merged engineering view and marks it active"
+          },
+          {
+            "line": 41,
+            "name": "clicking UBSCore returns to the overview and marks it active"
+          },
+          {
+            "line": 49,
+            "name": "the retired workbench collapses to the UBS overview"
+          },
+          {
+            "line": 56,
+            "name": "an unsupported task explains the reason instead of faking a view"
+          }
+        ]
+      },
+      {
+        "path": "tests/browser/unified-records.spec.cjs",
+        "test_count": 5,
+        "tests": [
+          {
+            "line": 17,
+            "name": "page length selector shows 15/30/50 and re-slices without loss"
+          },
+          {
+            "line": 32,
+            "name": "changing page length resets to page 1"
+          },
+          {
+            "line": 42,
+            "name": "records default to PR and the entity toggle switches to execution batch"
+          },
+          {
+            "line": 63,
+            "name": "triton records collapse into the merged charts + list view"
+          },
+          {
+            "line": 81,
+            "name": "triton merged view exposes the 时间未知 entry inline"
+          }
+        ]
+      },
+      {
+        "path": "tests/browser/url-context.spec.cjs",
+        "test_count": 4,
+        "tests": [
+          {
+            "line": 14,
+            "name": "confirmed changes push into the query and a shared URL restores the controls"
+          },
+          {
+            "line": 36,
+            "name": "plain search replaces the URL as the user types, without a condition bar"
+          },
+          {
+            "line": 44,
+            "name": "opening and closing a detail carries its identity in the URL"
+          },
+          {
+            "line": 55,
+            "name": "an out-of-window URL explains and shows the current snapshot, not another entity"
+          }
+        ]
+      }
+    ]
+  },
+  "coverage_by_user_journey": [
+    {
+      "journey": "UBS overview and community navigation",
+      "existing_protection": [
+        "Real Chromium checks UBS/Triton visibility, active community links, canonical routes, workbench retirement and unsupported tasks."
+      ],
+      "gaps": [
+        "Global runtime-error monitoring is not shared across every journey; initial pageerror test exercises only UBS overview, Triton entry and reload."
+      ],
+      "references": [
+        {
+          "path": "tests/browser/unified-navigation.spec.cjs",
+          "line": 12,
+          "purpose": "Six navigation tests"
+        },
+        {
+          "path": "tests/browser/dashboard.spec.cjs",
+          "line": 10,
+          "purpose": "Local pageerror listener and limited entry coverage"
+        }
+      ]
+    },
+    {
+      "journey": "PR creation-time sorting and proposed submission-time sorting",
+      "existing_protection": [
+        "Python independent oracle cross-checks actual core.js via Node, including creation-time order and stable ties.",
+        "Synthetic mutation of the E2E creation-time tie-break is expected to fail.",
+        "Browser restores sort=batches control and URL."
+      ],
+      "gaps": [
+        "Browser does not assert actual PR ID order for creation/submission-time sorting.",
+        "New submission-time semantics require updating the independent oracle and adding opposite creation/submission-time fixtures; relabeling alone is insufficient."
+      ],
+      "references": [
+        {
+          "path": "tests/test_ubs_sorting.py",
+          "line": 131,
+          "purpose": "Creation-time stable tie test"
+        },
+        {
+          "path": "tests/test_ubs_sorting.py",
+          "line": 224,
+          "purpose": "Existing negative tie-break mutation"
+        },
+        {
+          "path": "scripts/verify_ubs_sorting.py",
+          "line": 145,
+          "purpose": "Actual Node core.js cross-check"
+        },
+        {
+          "path": "tests/browser/url-context.spec.cjs",
+          "line": 18,
+          "purpose": "Sort control selection without row-order assertion"
+        },
+        {
+          "path": "web/core.js",
+          "line": 15,
+          "purpose": "Actual current PR comparator"
+        }
+      ]
+    },
+    {
+      "journey": "Entity switching and batch sorting",
+      "existing_protection": [
+        "Browser checks default PR entity and switches to batch rows and back.",
+        "Pure Node records tests cover duration/queue/start sorting, zero, unknown-last and stable identity.",
+        "UAR VM tests check rebuilding sort options and requested value."
+      ],
+      "gaps": [
+        "Browser does not assert exact batch order for all batch sorts or cross-entity sort-value fallback.",
+        "VM DOM accepts arbitrary select values and does not model native option validity."
+      ],
+      "references": [
+        {
+          "path": "tests/browser/unified-records.spec.cjs",
+          "line": 42,
+          "purpose": "Real entity-switch test"
+        },
+        {
+          "path": "tests/records.test.cjs",
+          "line": 26,
+          "purpose": "Pure sorting coverage"
+        },
+        {
+          "path": "tests/uar_records_20261021.test.cjs",
+          "line": 103,
+          "purpose": "VM option-rebuild test"
+        },
+        {
+          "path": "tests/helpers/app-harness.cjs",
+          "line": 13,
+          "purpose": "Unconstrained DOM value field"
+        }
+      ]
+    },
+    {
+      "journey": "Pagination 15/30/50 and page reset",
+      "existing_protection": [
+        "Browser checks page-length options and displayed range; changing page length can reset page to 1.",
+        "Pure Node tests partition 31 records and concatenate all model pages without loss or duplicate."
+      ],
+      "gaps": [
+        "Browser range text alone does not prove actual DOM row count, complete ID sequence or no duplicates across pages.",
+        "Browser page-reset case conditionally skips when input has at most 15 records; current root run reported zero skips."
+      ],
+      "references": [
+        {
+          "path": "tests/browser/unified-records.spec.cjs",
+          "line": 17,
+          "purpose": "Range-label checks"
+        },
+        {
+          "path": "tests/browser/unified-records.spec.cjs",
+          "line": 35,
+          "purpose": "Conditional test.skip"
+        },
+        {
+          "path": "tests/records.test.cjs",
+          "line": 62,
+          "purpose": "31-record pure pagination"
+        },
+        {
+          "path": "tests/records.test.cjs",
+          "line": 77,
+          "purpose": "Model full-page concatenation"
+        }
+      ]
+    },
+    {
+      "journey": "UBS search and state analysis denominator",
+      "existing_protection": [
+        "Browser checks state condition bar, denominator text and clearing.",
+        "Pure query-state tests cover case-insensitive fields and analysis/list set separation.",
+        "Triton real browser search already asserts zero row count and unchanged KPI."
+      ],
+      "gaps": [
+        "UBS no-match browser test only asserts tbody not empty: both empty-state placeholder and unfiltered records satisfy it.",
+        "Exact IDs/counts for number/title/author/SHA searches in both UBS entities are not asserted by the current browser suite."
+      ],
+      "references": [
+        {
+          "path": "tests/browser/advanced-sample-filter.spec.cjs",
+          "line": 25,
+          "purpose": "State filter and clear"
+        },
+        {
+          "path": "tests/browser/advanced-sample-filter.spec.cjs",
+          "line": 41,
+          "purpose": "Weak no-match search test"
+        },
+        {
+          "path": "tests/browser/url-context.spec.cjs",
+          "line": 36,
+          "purpose": "URL search also only checks tbody not empty"
+        },
+        {
+          "path": "tests/browser/dashboard.spec.cjs",
+          "line": 33,
+          "purpose": "Stronger existing Triton search test"
+        },
+        {
+          "path": "tests/query_state.test.cjs",
+          "line": 13,
+          "purpose": "Pure case-insensitive field matching"
+        }
+      ]
+    },
+    {
+      "journey": "Shared URLs, history and detail context",
+      "existing_protection": [
+        "Browser restores state/sort/page-size controls in a new page, round-trips PR detail URL, warns about out-of-window URL and exercises back/forward across communities."
+      ],
+      "gaps": [
+        "New-page URL restore does not compare exact record identities/order/page or selected-batch detail identity.",
+        "VM state tests do not replace browser history and native dialog lifecycle behavior."
+      ],
+      "references": [
+        {
+          "path": "tests/browser/url-context.spec.cjs",
+          "line": 14,
+          "purpose": "New-page URL control restore"
+        },
+        {
+          "path": "tests/browser/url-context.spec.cjs",
+          "line": 44,
+          "purpose": "PR detail URL"
+        },
+        {
+          "path": "tests/browser/dashboard.spec.cjs",
+          "line": 58,
+          "purpose": "Route cleanup and browser history"
+        },
+        {
+          "path": "tests/uar_records_20261021.test.cjs",
+          "line": 152,
+          "purpose": "Selected-batch URL model"
+        }
+      ]
+    },
+    {
+      "journey": "Details and CSV export",
+      "existing_protection": [
+        "Browser tests representative and explicit batch selection, no representative reason, unknown associations, return to list, selected-batch task count, and PR export exceeding page size.",
+        "Triton keyboard Enter/Escape and native detail close are exercised."
+      ],
+      "gaps": [
+        "Several export tests validate headers/counts/metadata instead of exact stable entity identities and complete CSV contents.",
+        "A filtered, multi-page result with exact CSV identities and explicit selected-batch task identities would close remaining scope ambiguities."
+      ],
+      "references": [
+        {
+          "path": "tests/browser/unified-detail.spec.cjs",
+          "line": 81,
+          "purpose": "Unified details and selected batch"
+        },
+        {
+          "path": "tests/browser/unified-detail.spec.cjs",
+          "line": 146,
+          "purpose": "Selected task export header/count"
+        },
+        {
+          "path": "tests/browser/unified-export.spec.cjs",
+          "line": 15,
+          "purpose": "Export total greater than 15"
+        },
+        {
+          "path": "tests/browser/unified-export.spec.cjs",
+          "line": 49,
+          "purpose": "PR batches export"
+        },
+        {
+          "path": "tests/browser/dashboard.spec.cjs",
+          "line": 108,
+          "purpose": "Keyboard detail lifecycle"
+        }
+      ]
+    },
+    {
+      "journey": "Load failure, retry and cross-community isolation",
+      "existing_protection": [
+        "Real browser injects Triton HTTP 503 on reread, asserts error, reload enabled and previous KPI unchanged.",
+        "VM tests cover stalled JSON-body timeout, failed index reread and preserving a prior repository snapshot."
+      ],
+      "gaps": [
+        "No symmetric real-browser UBS first-load failure, malformed JSON or reread/recovery matrix.",
+        "No shared unexpected requestfailed/critical resource HTTP-error/console-error assertion across all journeys."
+      ],
+      "references": [
+        {
+          "path": "tests/browser/dashboard.spec.cjs",
+          "line": 77,
+          "purpose": "Existing real 503 reload protection"
+        },
+        {
+          "path": "tests/app_runtime.test.cjs",
+          "line": 91,
+          "purpose": "VM JSON-body timeout test"
+        },
+        {
+          "path": "tests/helpers/app-harness.cjs",
+          "line": 35,
+          "purpose": "VM cuts off event wiring; not a full browser bootstrap"
+        }
+      ]
+    },
+    {
+      "journey": "Responsive layout and keyboard",
+      "existing_protection": [
+        "Real browser checks Triton result/duration on 390px and no page overflow at 320/390/768/1024/1440px.",
+        "Triton detail supports keyboard test."
+      ],
+      "gaps": [
+        "UBS records table/filter/sort/pagination/detail controls do not receive equivalent browser viewport and keyboard journey assertions."
+      ],
+      "references": [
+        {
+          "path": "tests/browser/dashboard.spec.cjs",
+          "line": 87,
+          "purpose": "390px Triton record visibility"
+        },
+        {
+          "path": "tests/browser/dashboard.spec.cjs",
+          "line": 97,
+          "purpose": "Five-width overflow checks"
+        },
+        {
+          "path": "tests/browser/dashboard.spec.cjs",
+          "line": 108,
+          "purpose": "Triton keyboard detail"
+        }
+      ]
+    },
+    {
+      "journey": "Test-suite completeness",
+      "existing_protection": [
+        "Playwright uses one Chromium worker, zero retries, JUnit and failure trace/screenshot.",
+        "Current root browser run completed all 40 tests without skip."
+      ],
+      "gaps": [
+        "No forbidOnly option in current Playwright config.",
+        "No critical-journey executed-test manifest or fail-on-critical-skip report check.",
+        "Potential future .only or conditionally skipped critical test can shrink exercised coverage while the job succeeds; neither is asserted as a current observed regression."
+      ],
+      "references": [
+        {
+          "path": "playwright.config.cjs",
+          "line": 3,
+          "purpose": "Configuration lacks forbidOnly"
+        },
+        {
+          "path": "playwright.config.cjs",
+          "line": 9,
+          "purpose": "Zero retries is existing protection"
+        },
+        {
+          "path": "tests/browser/unified-records.spec.cjs",
+          "line": 35,
+          "purpose": "Present conditional skip"
+        }
+      ]
+    },
+    {
+      "journey": "Required quality-gate and workflow execution contracts",
+      "existing_protection": [
+        "Workflow currently runs actual Node and browser commands.",
+        "Aggregate always runs and rejects all non-success outcomes, missing jobs and unexpected jobs.",
+        "Existing tests cover collector failure/cancel/skip/null, missing/unexpected names and invalid JSON."
+      ],
+      "gaps": [
+        "Existing workflow test uses text presence and does not require frontend browser execution step or parse exact needs/step structure.",
+        "Read-only in-memory replacement of browser command with echo still passes the existing workflow contract."
+      ],
+      "references": [
+        {
+          "path": ".github/workflows/pr-gate.yml",
+          "line": 51,
+          "purpose": "Offline bootstrap and actual frontend execution"
+        },
+        {
+          "path": ".github/workflows/pr-gate.yml",
+          "line": 107,
+          "purpose": "Current required aggregate"
+        },
+        {
+          "path": "scripts/ci_gate.py",
+          "line": 12,
+          "purpose": "Fail-closed exact job/outcome validation"
+        },
+        {
+          "path": "tests/test_ci_gate.py",
+          "line": 48,
+          "purpose": "Text-only workflow assertions"
+        }
+      ]
+    }
+  ],
+  "observed_test_results": [
+    {
+      "suite": "Node all frontend tests",
+      "executor": "pr_gate_coverage_audit subagent; root independently reported same result",
+      "command": "node --test tests/*.test.cjs",
+      "exit_code": 0,
+      "total": 271,
+      "passed": 271,
+      "failed": 0,
+      "skipped": 0,
+      "duration_ms": 424.0769
+    },
+    {
+      "suite": "Playwright all browser tests",
+      "executor": "root agent",
+      "provenance": "Root message: root already ran browser full suite at baseline 3889c8e: 40 passed, 0 skip, 18.4 seconds. Subagent did not rerun browser suite.",
+      "command_as_workflow_declares": "npm run test:browser",
+      "exact_root_shell_environment_observed_by_subagent": false,
+      "total": 40,
+      "passed": 40,
+      "failed": 0,
+      "skipped": 0,
+      "duration_seconds_reported": 18.4
+    },
+    {
+      "suite": "CI aggregate and workflow contracts",
+      "executor": "pr_gate_coverage_audit subagent",
+      "command": "python -B -m unittest discover -s tests -p 'test_ci_gate.py' -v",
+      "exit_code": 0,
+      "total": 5,
+      "passed": 5,
+      "failed": 0
+    },
+    {
+      "suite": "UBS sorting independent-oracle and mutation tests",
+      "executor": "pr_gate_coverage_audit subagent",
+      "command": "python -B -c \"import tempfile,unittest; tempfile.tempdir=r'D:\\ubs_core_monitor'; suite=unittest.defaultTestLoader.discover('tests',pattern='test_ubs_sorting.py'); result=unittest.TextTestRunner(verbosity=2).run(suite); raise SystemExit(not result.wasSuccessful())\"",
+      "exit_code": 0,
+      "total": 16,
+      "passed": 16,
+      "failed": 0,
+      "duration_seconds": 0.231,
+      "environment_retry": {
+        "first_attempt_command": "python -B -m unittest discover -s tests -p 'test_ubs_sorting.py' -v",
+        "first_attempt": "Three SyntheticTree tests and their cleanup produced six ERROR records due to sandbox default TEMP write permission. Thirteen remaining tests passed.",
+        "resolution": "Reused existing tests with tempfile.tempdir set to allowed workspace; auto-cleaned temporary trees. All 16 passed. This was an environment issue, not a product assertion failure."
+      }
+    }
+  ],
+  "read_only_fault_injection": {
+    "name": "Existing workflow contract accepts omitted browser execution",
+    "source_file": ".github/workflows/pr-gate.yml",
+    "mutation": {
+      "old": "run: npm run test:browser",
+      "new": "run: echo browser checks omitted"
+    },
+    "mechanism": "Read original file, mutate string only in memory, mock pathlib.Path.read_text while running existing PullRequestWorkflowTests. No disk/source/workflow edits.",
+    "test": "test_ci_gate.PullRequestWorkflowTests.test_gate_covers_every_pr_and_runs_after_failed_dependencies",
+    "replay": {
+      "working_directory": "D:\\ubs_core_monitor",
+      "python": "python -B",
+      "python_code": "import sys, unittest\nfrom pathlib import Path\nfrom unittest.mock import patch\nsys.path.insert(0, 'tests')\nimport test_ci_gate\noriginal = Path('.github/workflows/pr-gate.yml').read_text('utf-8')\nmutated = original.replace('run: npm run test:browser', 'run: echo browser checks omitted')\nassert mutated != original\nsuite = unittest.defaultTestLoader.loadTestsFromTestCase(test_ci_gate.PullRequestWorkflowTests)\nwith patch.object(Path, 'read_text', return_value=mutated):\n    result = unittest.TextTestRunner(verbosity=2).run(suite)\nprint('IN_MEMORY_ONLY browser run removed; existing workflow contract accepts:', result.wasSuccessful())\nraise SystemExit(not result.wasSuccessful())\n"
+    },
+    "observed": {
+      "exit_code": 0,
+      "tests_run": 1,
+      "passed": 1,
+      "contract_accepts_mutation": true
+    },
+    "interpretation": "Current workflow does execute browser checks. The existing workflow regression contract would not catch replacing that browser run step with echo; aggregator only sees successful job status."
+  },
+  "recommended_minimum_gate_changes": [
+    {
+      "area": "Submission-time oracle and browser order",
+      "files": [
+        "tests/test_ubs_sorting.py",
+        "scripts/verify_ubs_sorting.py",
+        "tests/browser/unified-records.spec.cjs"
+      ],
+      "input_action_assertion": "Fixture has opposite creation/submission order, equal timestamps, missing/zero and push/retest distinctions. Assert exact ID order through real production time selector and actual browser sort selection; assert unknown-last and stable ties.",
+      "negative_faults": [
+        "Comparator still uses created_ms",
+        "Label changes without comparator change",
+        "Rerun or batch request used as new submission"
+      ]
+    },
+    {
+      "area": "Actual paging and sort/entity behavior",
+      "files": [
+        "tests/browser/unified-records.spec.cjs"
+      ],
+      "input_action_assertion": "Use deterministic at least 31 records; exercise all supported entity sorts and page lengths 15/30/50; concatenate actual DOM IDs from every page; require no loss/duplicate, exact order and page reset.",
+      "negative_faults": [
+        "Slice before full sort",
+        "Wrong sort persists after entity change",
+        "Missing or duplicated page rows",
+        "Fixture shrink silently skips reset test"
+      ]
+    },
+    {
+      "area": "UBS search and filter semantics",
+      "files": [
+        "tests/browser/advanced-sample-filter.spec.cjs"
+      ],
+      "input_action_assertion": "Search known number/title/author/SHA and no-match text in both entities; assert exact IDs/counts and zero-match empty state. Compare KPI before/after search and state filtering; clear restores records and URL.",
+      "negative_faults": [
+        "Search input not bound",
+        "Author/SHA omitted",
+        "Search changes denominator",
+        "Filter clear leaves URL residue"
+      ]
+    },
+    {
+      "area": "URL/detail/export identity",
+      "files": [
+        "tests/browser/url-context.spec.cjs",
+        "tests/browser/unified-detail.spec.cjs",
+        "tests/browser/unified-export.spec.cjs"
+      ],
+      "input_action_assertion": "Shared URL includes filters/sort/page and selected batch; reload/new page/back/forward restore exact records and detail identity. Filtered export across pages must contain exact stable identities; selected batch exports exact tasks.",
+      "negative_faults": [
+        "Only control restored but list not restored",
+        "Wrong selected batch",
+        "Export current page only",
+        "Export full PR tasks instead of selected batch"
+      ]
+    },
+    {
+      "area": "Runtime errors and fault recovery",
+      "files": [
+        "tests/browser shared fixture (proposed)",
+        "tests/browser/dashboard.spec.cjs"
+      ],
+      "input_action_assertion": "Shared listener fails unexpected pageerror/console.error/requestfailed/critical HTTP failures; explicit expected-fault allowlist. Add UBS first-load/reload HTTP503 and malformed JSON/recovery; assert valid old identity retained, no fabricated success, retry enabled and other community functional.",
+      "negative_faults": [
+        "Swallowed load failure",
+        "First failure shown as successful zero",
+        "Reload remains disabled",
+        "One community failure breaks the other"
+      ]
+    },
+    {
+      "area": "Suite completeness and workflow execution",
+      "files": [
+        "playwright.config.cjs",
+        "tests/test_ci_gate.py"
+      ],
+      "input_action_assertion": "CI forbids only, requires key journeys executed without skips, validates structured YAML exact needs and real frontend execution steps. Exercise all four jobs with failure/cancelled/skipped/missing outcomes.",
+      "negative_faults": [
+        "Accidental test.only",
+        "Critical conditional skip",
+        "Browser step deleted or replaced by echo",
+        "Required need removed",
+        "continue-on-error or conditional bypass"
+      ]
+    }
+  ],
+  "interpretation_limits": [
+    "A coverage gap is not proof of a current product bug.",
+    "Passing current creation-time tests does not validate a newly defined submission-time requirement.",
+    "No current browser/Node failure was observed in the reported successful runs.",
+    "No test was weakened, product changed, production rerun or commit created by this auditor."
+  ]
+}

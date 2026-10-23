@@ -1,0 +1,2 @@
+# YAML structure contracts; runtime collectors use the Python standard library.
+PyYAML==6.0.3

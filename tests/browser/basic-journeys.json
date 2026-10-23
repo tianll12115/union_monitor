@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "description": "12 basic user journeys that must exist, execute, and pass in the PR browser suite. The CI verifier matches test titles by the literal [BASIC-00X] token.",
+  "required": [
+    { "id": "BASIC-001", "label": "UBS 总览、单仓与 Triton 入口冷启动且无脚本错误" },
+    { "id": "BASIC-002", "label": "跨社区导航与前进/后退保持规范地址与活动状态" },
+    { "id": "BASIC-003", "label": "按最近代码提交时间排序，旧 sort=created 别名规范为 submitted" },
+    { "id": "BASIC-004", "label": "≥31 条样本在 15/30/50 页长下全页遍历无重复遗漏" },
+    { "id": "BASIC-005", "label": "编号/标题/作者/SHA 检索、无匹配空态与状态筛选" },
+    { "id": "BASIC-006", "label": "PR 代表批次与全部执行在详情中收敛且身份正确" },
+    { "id": "BASIC-007", "label": "详情打开/关闭同步 URL 并恢复焦点与列表状态" },
+    { "id": "BASIC-008", "label": "Triton 分支/选窗与 UBS 排队/执行切换按同一 S 派生" },
+    { "id": "BASIC-009", "label": "UBS/Triton 首读与重读失败可见、保留旧身份并可恢复" },
+    { "id": "BASIC-010", "label": "全量 L 记录导出含提交时间列且不被分页截断" },
+    { "id": "BASIC-011", "label": "320–1440 及窄屏无横向溢出且关键控件可达" },
+    { "id": "BASIC-012", "label": "纯键盘进入社区/检索/排序/打开详情并 Escape 恢复" }
+  ]
+}

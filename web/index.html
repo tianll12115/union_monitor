@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>监控中心 · openEuler UBS × Triton-Ascend</title>
+<meta name="description" content="统一工程监控看板：openEuler UBS 九仓 PR 门禁工程效率（跨仓总览、单仓效率、数据质量、统计口径）与 Triton-Ascend 门禁效率趋势，每日快照更新。">
+<meta property="og:title" content="监控中心 · openEuler UBS × Triton-Ascend">
+<meta property="og:description" content="统一监控看板：UBS 跨仓与单仓 PR 门禁效率、数据质量与统计口径；Triton-Ascend 门禁效率趋势。">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="stylesheet" href="style.css">
+<script src="core.js" defer></script>
+<script src="units.js" defer></script>
+<script src="eligibility.js" defer></script>
+<script src="detail.js" defer></script>
+<script src="router.js" defer></script>
+<script src="catalog.js" defer></script>
+<script src="query-state.js" defer></script>
+<script src="shell.js" defer></script>
+<script src="triton-core.js" defer></script>
+<script src="triton-view.js" defer></script>
+<script src="records.js" defer></script>
+<script src="app.js" defer></script>
+</head>
+<body>
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+  <symbol id="i-layout-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></symbol>
+  <symbol id="i-git-pull-request" viewBox="0 0 24 24"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M13 6h3a2 2 0 0 1 2 2v7"/><line x1="6" y1="9" x2="6" y2="21"/></symbol>
+  <symbol id="i-shield-check" viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1 1 0 0 1 1.52 0C14.5 3.8 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></symbol>
+  <symbol id="i-book-open" viewBox="0 0 24 24"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol>
+  <symbol id="i-rotate-cw" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></symbol>
+  <symbol id="i-external-link" viewBox="0 0 24 24"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></symbol>
+  <symbol id="i-arrow-up-right" viewBox="0 0 24 24"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></symbol>
+  <symbol id="i-arrow-left" viewBox="0 0 24 24"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></symbol>
+  <symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></symbol>
+  <symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
+  <symbol id="i-alert-triangle" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></symbol>
+  <symbol id="i-git-branch" viewBox="0 0 24 24"><line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></symbol>
+  <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></symbol>
+</svg>
+<div class="app-shell">
+<aside class="side-nav"><a class="brand" href="#projects/ubs/overview" title="监控中心 UBSCore × Triton-Ascend"><span class="brand-icon">M<svg class="icon"><use href="#i-arrow-up-right"/></svg></span><span>监控中心<small>UBSCore × Triton</small></span></a>
+<nav id="sideNav" aria-label="主导航"><div class="nav-group">社区</div><div id="sideTasks" class="nav-tasks"></div></nav>
+<div class="side-bottom"><span class="local-dot"></span> 每日数据快照<small>GitCode × Jenkins × GitHub Actions<br>每日自动采集更新</small><a id="repositoryLink" href="https://gitcode.com/openeuler/ubs-engine" target="_blank" rel="noreferrer"><span id="repositoryLinkText">查看代码仓</span> <svg class="icon icon-sm"><use href="#i-external-link"/></svg></a></div></aside>
+<div style="flex:1;min-width:0"><header class="topbar"><span id="crumb">监控中心 <b>/</b> openEuler UBS <b>/</b> 九仓效率总览</span><div><span id="freshness">数据读取中…</span><span class="branch" id="branchBadge"><svg class="icon icon-sm"><use href="#i-git-branch"/></svg> <span id="branchName">master</span></span><button id="reload" class="text-button" title="重新加载快照"><svg class="icon icon-sm"><use href="#i-rotate-cw"/></svg>重新加载快照</button></div></header>
+<main>
+<section id="project-task-view" class="view panel unavailable-task" hidden aria-label="项目任务状态"></section>
+<div class="page-head"><div><h1 id="pageTitle">UBSCore 总览</h1><p id="pageSubtitle">九仓 PR 工程效率 · 每个 PR 的最长有效 E2E 批次作为代表值</p></div><div class="date-box" id="dateBox"><small id="rangeLabel">PR 创建时间范围 · 上海时间</small><strong id="range">读取中…</strong><span id="snapshotTime"></span></div></div>
+<div id="notice" class="notice" hidden></div>
+<div id="repositoryControls" class="repository-controls" hidden><button id="backRepositories" class="text-button"><svg class="icon icon-sm"><use href="#i-arrow-left"/></svg>返回跨仓总览</button><label>当前仓库 <select id="repositorySelect" aria-label="当前仓库"></select></label><span id="repositoryStatus"></span></div>
+<section id="filters" class="filters" aria-label="数据筛选"><label class="search" hidden><svg class="icon"><use href="#i-search"/></svg> <input id="query" placeholder="搜索 PR 编号、标题、作者或 SHA" aria-label="搜索 PR"></label><label>PR 状态<select id="state"><option value="">全部状态</option><option value="open">开启中</option><option value="merged">已合入</option><option value="closed">已关闭未合入</option></select></label><button id="reset" class="text-button">重置</button></section>
+<div id="activeConditions" class="active-conditions" hidden></div>
+<div id="loading" class="empty" hidden>正在读取每日数据快照…</div>
+<section id="ubs-view" class="view">
+  <section class="health-summary"><div id="repositoryKpis" class="kpi-grid"></div><div id="repositoryCoverage" class="coverage scope-line"></div></section>
+  <article class="panel"><div class="panel-head"><div><h2>九仓工程对比</h2><p>默认按 E2E P90 从高到低；未知值恒列末位，可切换排序。</p></div><div class="table-actions"><select id="repositorySort" aria-label="仓库排序"><option value="p90">E2E P90 降序</option><option value="name">仓库名称</option><option value="prs">PR 数量降序</option></select><button id="exportRepositories" class="button"><svg class="icon icon-sm"><use href="#i-download"/></svg>导出仓库 CSV</button></div></div><div class="table-scroll"><table class="repository-table"><thead><tr><th>代码仓</th><th>观测 PR / 执行<small>观测规模</small></th><th>代表 E2E<small>P90 / P50 · 有效 n</small></th><th>状态数量<small>成功 / 失败 / 执行中 / 取消</small></th><th>数据覆盖状态</th></tr></thead><tbody id="repositoryRows"></tbody></table></div></article>
+</section>
+<section id="ubs-repo-view" class="view" hidden>
+  <div id="repoMain"><div id="kpis" class="kpi-grid"></div><div class="chart-grid"><article class="panel"><div class="panel-head"><div><h2>E2E 耗时趋势</h2><p>按 PR 创建日期聚合 · 分钟</p></div><span class="legend"><i class="swatch-dot"></i>平均 <i class="swatch swatch-dash"></i>P90</span></div><div id="trend" class="trend"></div></article><article class="panel"><div class="panel-head"><div><h2>门禁任务耗时</h2><p>每个 PR 代表批次任务 · 分钟</p></div><div class="table-actions"><select id="chartMetric" aria-label="图表耗时类型"><option value="total">总耗时</option><option value="queue">排队</option><option value="duration">执行</option></select><span class="legend"><i class="swatch"></i>平均 <i class="swatch-tick"></i>P90</span></div></div><div id="taskChart"></div></article></div><div id="coverage" class="coverage"></div>
+  <section id="prs" class="view panel"><div class="panel-head"><div><h2><span id="recordTitle">PR 效率明细</span> <span id="prCount" class="count"></span></h2><p id="recordHint">默认按代表 E2E 从长到短；点击 PR 展开提交、重跑与子任务</p></div><div class="table-actions"><select id="entity" aria-label="记录实体"><option value="prs">PR</option><option value="batches">执行批次</option></select><select id="tableMetric" aria-label="表格任务耗时类型"><option value="total">任务：总耗时</option><option value="queue">任务：排队耗时</option><option value="duration">任务：执行耗时</option></select><select id="sort" aria-label="排序"><option value="e2e">代表 E2E 从长到短</option><option value="batches">批次数从多到少</option><option value="submitted">提交时间从新到旧</option></select><button id="export" class="button"><svg class="icon icon-sm"><use href="#i-download"/></svg>导出 CSV</button></div></div><div class="table-scroll"><table class="pr-table"><thead id="recordHead"></thead><tbody id="prRows"></tbody></table></div><div class="table-foot"><span id="rowInfo"></span><div><label class="page-size">每页<select id="pageSize" aria-label="每页条数"><option value="15">15</option><option value="30">30</option><option value="50">50</option></select></label><button id="prev" class="button"><svg class="icon icon-sm"><use href="#i-arrow-left"/></svg>上一页</button><span id="pageInfo"></span><button id="next" class="button">下一页<svg class="icon icon-sm"><use href="#i-arrow-right"/></svg></button></div></div></section></div>
+</section>
+<section id="triton-view" class="view" hidden><div class="empty">Triton 门禁视图构建中</div></section>
+<footer>监控中心 <span>·</span> OPEN EULER × TRITON-ASCEND <span class="footer-right" id="footerMeta"></span></footer></main></div>
+</div>
+<dialog id="detail"><div class="detail-top"><span>PR Explorer / 批次追踪</span><div><button id="exportBatchTasks" class="text-button"><svg class="icon icon-sm"><use href="#i-download"/></svg>导出选中批次任务</button><button id="exportBatches" class="text-button"><svg class="icon icon-sm"><use href="#i-download"/></svg>导出批次</button><button id="closeDetail" class="close" aria-label="关闭详情"><svg class="icon icon-sm"><use href="#i-x"/></svg></button></div></div><div id="detailBody"></div></dialog>
+</body></html>

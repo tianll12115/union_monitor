@@ -1,0 +1,6 @@
+{
+  "browser_step_false_condition_contract_problems": [],
+  "fabricated_12_testcase_report_one_case_all_ids_accepted": true,
+  "verifier_returncode": 0,
+  "boundary": "A single skipped browser step still fails real CI because the next step has no fresh JUnit. These probes demonstrate contract and report-validator gaps, not a standalone production CI bypass."
+}

@@ -1,0 +1,61 @@
+{
+  "source_verify_wrong_window_deleted_job_unrelated_pr_evidence": {
+    "status": "verified",
+    "evidence": {
+      "window_start": "2026-01-01T00:00:00Z",
+      "window_end": "2026-01-02T00:00:00Z",
+      "collected_at": null,
+      "payload_window_start": "2026-02-01T00:00:00Z",
+      "payload_window_end": "2026-02-02T00:00:00Z",
+      "window_matches_payload": false,
+      "raw_run_count": 1,
+      "job_evidence_files": 1,
+      "pr_association_files": 1,
+      "published_batches": 1,
+      "published_prs": 1
+    },
+    "categories": {
+      "workflow_attempt_enumeration": {
+        "category": "workflow_attempt_enumeration",
+        "applicable": 1,
+        "verified_consistent": 1,
+        "verified_absent": 0,
+        "derived_consistent": 0,
+        "differences": 0,
+        "missing_evidence": 0,
+        "missing": [],
+        "missing_truncated": false,
+        "difference_details": [],
+        "status": "verified"
+      },
+      "job_enumeration": {
+        "category": "job_enumeration",
+        "applicable": 1,
+        "verified_consistent": 1,
+        "verified_absent": 0,
+        "derived_consistent": 0,
+        "differences": 0,
+        "missing_evidence": 0,
+        "missing": [],
+        "missing_truncated": false,
+        "difference_details": [],
+        "status": "verified"
+      },
+      "pr_association": {
+        "category": "pr_association",
+        "applicable": 1,
+        "verified_consistent": 1,
+        "verified_absent": 0,
+        "derived_consistent": 0,
+        "differences": 0,
+        "missing_evidence": 0,
+        "missing": [],
+        "missing_truncated": false,
+        "difference_details": [],
+        "status": "verified"
+      }
+    }
+  },
+  "direct_assemble_missing_files_is_publishable": true,
+  "default_fallback_accepts_invalid_schema_unknown_profile": true
+}

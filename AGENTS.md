@@ -10,6 +10,6 @@
   - `required_pull_request_reviews`（必须通过 PR 合入；`required_approving_review_count: 0`，`require_last_push_approval: false`，无需人工批准）
 - 所有代码合入 `main` 一律走 Fork-Pull（Pull Request）流程：在分支上提交并推送，创建 Pull Request，不得直接推送到 `main`。
 - 合入前必须等待 CI 门禁 `Dashboard quality gate`（python-tests / frontend-tests / collector-contracts / workflow-lint）全部通过（绿色）后，才能合并 PR 进 `main`。
-- 当前 PR 提交的全部门禁通过、分支与 main 同步且无未解决的审查讨论时，可以直接合入，无需人工批准；不得使用旧提交的绿灯代替当前提交结果。目标保护配置见 `.github/main-protection.json`。
+- 当前 PR 提交的全部门禁通过、分支与 main 同步且没有合并冲突时，可以直接合入，无需人工批准，也不强制解决审查讨论；不得使用旧提交的绿灯代替当前提交结果。目标保护配置见 `.github/main-protection.json`。
 - 门禁失败（红色）时，先修复代码并重新推送，让门禁转绿后再合并；不得通过临时移除保护或直接推送绕过门禁。
 - PR 合并后删除该临时分支，远端与本地只保留 `main` 一个分支。

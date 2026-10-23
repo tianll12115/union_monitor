@@ -33,6 +33,7 @@ class AgentsContractTests(unittest.TestCase):
         self.assertEqual(policy['required_status_checks']['checks'],
                          [{'context': 'Dashboard quality gate', 'app_id': 15368}])
         self.assertTrue(policy['enforce_admins'])
+        self.assertFalse(policy['required_conversation_resolution'])
         self.assertFalse(policy['allow_force_pushes'])
         self.assertFalse(policy['allow_deletions'])
         self.assertIn('无需人工批准', self.agents)

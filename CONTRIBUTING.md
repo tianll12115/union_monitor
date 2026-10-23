@@ -43,7 +43,7 @@ PR 正文文件请放在工作区外或 `.tmp/` 内，避免成为未跟踪文�
 | workflow-lint | 固定版本及 SHA256 的 actionlint |
 | Dashboard quality gate | 四项必须全部 success；失败、取消、跳过或缺项均拒绝 |
 
-仓库 Settings → Branches → main 保护规则：必须通过 PR，无需人工批准（批准数为 0，不要求最后一次推送批准，也不要求 Code Owner 批准）；要求当前提交的 `Dashboard quality gate` 成功并在合入前更新分支、解决审查讨论；管理员同样遵守；禁止强推和删除。满足这些条件即可直接合入。目标配置见 [main 保护配置](.github/main-protection.json)。PR 合并后删除远端和本地临时分支。
+仓库 Settings → Branches → main 保护规则：必须通过 PR，无需人工批准（批准数为 0，不要求最后一次推送批准，也不要求 Code Owner 批准），不强制解决审查讨论；要求当前提交的 `Dashboard quality gate` 成功并在合入前更新分支、消除合并冲突；管理员同样遵守；禁止强推和删除。满足这些条件即可直接合入。目标配置见 [main 保护配置](.github/main-protection.json)。PR 合并后删除远端和本地临时分支。
 
 ## 文档与文件维护
 

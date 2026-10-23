@@ -29,3 +29,5 @@ GitHub 连接器和原有本地 Git 凭据返回账户 suspended 的 403；Chrom
 最终验证结果在对应 Git commit / PR 的说明中记录；未经实际执行的 Actions 不标记成功。
 
 第一轮整理后验证：Python 932 项通过（1 项缺本地 Triton 生产工件跳过）、全量 Node 通过、Chromium 47/47、BASIC 12/12、actionlint 通过。
+
+独立审查修复：pre-push 拒绝脏工作区及非当前 HEAD 的推送，并在 UT 后复查身份；PR 提交脚本锁定 UT 前后 SHA、分支并推送明确 SHA，避免测试工作树与所推代码不一致。新增失败阻断和身份变化回归。

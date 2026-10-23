@@ -25,12 +25,42 @@ class MaintenanceTests(unittest.TestCase):
 
     def test_pre_push_rejects_main_and_executes_unit_gate(self):
         hook = (ROOT / '.githooks/pre-push').read_text()
-        self.assertIn('refs/heads/main', hook)
         self.assertIn('scripts/run_checks.py', hook)
-        self.assertIn('exit 1', hook)
+        self.assertIn('--pre-push', hook)
 
 
 class CheckTests(unittest.TestCase):
+    def test_push_rejects_main_foreign_commit_and_malformed_refs(self):
+        head = 'a' * 40
+        for records in ([f'refs/heads/test {head} refs/heads/main {head}'],
+                        [f'refs/heads/other {"b" * 40} refs/heads/other {head}'],
+                        ['malformed']):
+            with self.subTest(records=records), self.assertRaises(ValueError):
+                run_checks.verify_push_refs(records, head)
+
+    def test_push_accepts_only_tested_head_and_branch_deletion(self):
+        head = 'a' * 40
+        run_checks.verify_push_refs([f'refs/heads/test {head} refs/heads/test {head}'], head)
+        run_checks.verify_push_refs([f'(delete) {"0" * 40} refs/heads/old {head}'], head)
+
+    @patch('scripts.run_checks.check')
+    @patch('scripts.run_checks.git_output')
+    def test_pre_push_rejects_dirty_tree_before_tests(self, git, check):
+        git.side_effect = ['a' * 40, 'codex/test', ' M file.py']
+        with self.assertRaises(ValueError):
+            run_checks.pre_push([])
+        check.assert_not_called()
+
+    @patch('scripts.run_checks.check')
+    @patch('scripts.run_checks.git_output')
+    def test_pre_push_rechecks_identity_and_clean_tree_after_ut(self, git, check):
+        head = 'a' * 40
+        for final in [('b' * 40, 'codex/test', ''),
+                      (head, 'codex/other', ''), (head, 'codex/test', ' M file.py')]:
+            git.side_effect = [head, 'codex/test', '', *final]
+            with self.subTest(final=final), self.assertRaises(ValueError):
+                run_checks.pre_push([f'refs/heads/test {head} refs/heads/test {head}'])
+
     def test_unit_commands_include_both_full_suites(self):
         commands = run_checks.commands(browser=False)
         self.assertTrue(any('discover' in c and 'tests' in c for c in commands))
@@ -54,7 +84,7 @@ class CheckTests(unittest.TestCase):
 class SubmissionTests(unittest.TestCase):
     @patch('scripts.submit_pr.run')
     def test_failed_ut_never_pushes_or_creates_pr(self, run):
-        run.side_effect = ['codex/test', '', subprocess.CalledProcessError(1, 'UT')]
+        run.side_effect = ['codex/test', '', 'a' * 40, subprocess.CalledProcessError(1, 'UT')]
         with self.assertRaises(subprocess.CalledProcessError):
             submit_pr.submit('title', 'body.md', 'origin')
         self.assertFalse(any(c.args[0][:2] in (['git', 'push'], ['gh', 'pr'])
@@ -78,13 +108,24 @@ class SubmissionTests(unittest.TestCase):
 
     @patch('scripts.submit_pr.run')
     def test_ut_precedes_push_and_pr_and_targets_requested_remote(self, run):
-        run.side_effect = ['codex/test', '', '', '', '',
+        head = 'a' * 40
+        run.side_effect = ['codex/test', '', head, '', '', head, 'codex/test', '',
                            'https://github.com/tianll12115/union_monitor.git', '']
         submit_pr.submit('title', 'body.md', 'destination')
         commands = [c.args[0] for c in run.call_args_list]
-        self.assertIn('scripts/run_checks.py', commands[2])
-        self.assertEqual(commands[4], ['git', 'push', '--set-upstream', 'destination', 'HEAD'])
+        self.assertIn('scripts/run_checks.py', commands[3])
+        self.assertEqual(commands[7], ['git', 'push', 'destination', f'{head}:refs/heads/codex/test'])
         self.assertEqual(commands[-1][-2:], ['--repo', 'https://github.com/tianll12115/union_monitor.git'])
+
+    @patch('scripts.submit_pr.run')
+    def test_head_or_branch_changed_during_ut_never_pushes(self, run):
+        head = 'a' * 40
+        for final_head, final_branch in [('b' * 40, 'codex/test'), (head, 'codex/other')]:
+            run.side_effect = ['codex/test', '', head, '', '', final_head, final_branch]
+            run.reset_mock()
+            with self.subTest(branch=final_branch), self.assertRaises(ValueError):
+                submit_pr.submit('title', 'body.md', 'origin')
+            self.assertFalse(any(c.args[0][:2] == ['git', 'push'] for c in run.call_args_list))
 
 
 if __name__ == '__main__':

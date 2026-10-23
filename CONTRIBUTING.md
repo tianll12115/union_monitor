@@ -29,7 +29,7 @@ python -B scripts/submit_pr.py --title "描述改动" --body-file /path/to/pr-bo
 
 PR 正文文件请放在工作区外或 `.tmp/` 内，避免成为未跟踪文件。`submit_pr.py` 要求干净工作区及功能分支，重新运行 UT，复查工作区，再推送当前分支并调用已登录的 GitHub CLI (`gh pr create`)。`--remote NAME` 可指定目标 remote，默认 origin。任何步骤失败都会停止，不使用历史通过报告。
 
-安装的 pre-push hook 同样执行 UT 并拒绝直接推送 main。hook 是本地约定，GitHub 网页/API 可以绕过本地 hook；服务端必须同时启用下一节分支保护。GitHub 无法禁止用户创建失败的 PR，但可以禁止它合入。
+安装的 pre-push hook 同样执行 UT：要求干净工作区、待推 SHA 等于当前 HEAD，拒绝直接推送 main；测试后复查 SHA、分支和工作区。提交脚本也锁定测试前后 SHA 和分支，并推送明确的 SHA。hook 是本地约定，GitHub 网页/API 可以绕过本地 hook；服务端必须同时启用下一节分支保护。GitHub 无法禁止用户创建失败的 PR，但可以禁止它合入。
 
 ## 服务端门禁
 

@@ -22,11 +22,16 @@ def submit(title, body_file, remote='origin'):
         raise ValueError('Create a feature branch; main and detached HEAD are forbidden')
     if run(['git', 'status', '--porcelain']):
         raise ValueError('Commit changes and resolve untracked files before submitting')
+    head = run(['git', 'rev-parse', 'HEAD'])
     # Stream test output so a failure is visible and cannot reach push/create.
     run([sys.executable, '-u', 'scripts/run_checks.py'])
     if run(['git', 'status', '--porcelain']):
         raise ValueError('Tests changed tracked or untracked files; review and commit first')
-    run(['git', 'push', '--set-upstream', remote, 'HEAD'])
+    final_head = run(['git', 'rev-parse', 'HEAD'])
+    final_branch = run(['git', 'branch', '--show-current'])
+    if final_head != head or final_branch != branch:
+        raise ValueError('HEAD or branch changed during UT; retry before submitting')
+    run(['git', 'push', remote, f'{head}:refs/heads/{branch}'])
     repository = run(['git', 'remote', 'get-url', remote])
     print(run(['gh', 'pr', 'create', '--base', 'main', '--head', branch,
                '--title', title, '--body-file', str(Path(body_file).resolve()),

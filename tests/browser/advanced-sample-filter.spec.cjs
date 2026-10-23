@@ -38,7 +38,7 @@ test('[BASIC-005] state filter changes the analysis denominator and is clearable
   expect(await page.locator('#state').inputValue()).toBe('');
 });
 
-test('plain search changes records but not the analysis denominator', async ({ page }) => {
+test('[BASIC-005] plain search changes records but not the analysis denominator', async ({ page }) => {
   await readyRepo(page);
   await page.locator('#query').fill('no-match-7c331');
   await expect(page.locator('#activeConditions')).toBeHidden();

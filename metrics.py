@@ -8,6 +8,48 @@ def ms(value):
     if isinstance(value,(int,float)): return value
     return round(datetime.fromisoformat(value.replace('Z','+00:00')).timestamp()*1000)
 
+SUBMISSION_TIME_PROFILE = 'ubs-latest-code-submission-v1'
+# Authoritative code-submission sources. Only PR creation and platform pushes
+# update a PR's submission time; retests / notes / plain comments never do.
+SUBMISSION_SOURCES = {('create', 'PR.created_at'), ('push', 'operate_logs')}
+
+
+def valid_submission_ms(value, end_ms):
+    """Safe-integer, non-negative, finite milliseconds at or before the cutoff.
+
+    ``0`` is legal. ``None``, booleans, strings, negative values, non-finite
+    values and anything after ``end_ms`` are excluded (and surfaced) rather than
+    being replaced with the current time.
+    """
+    return (type(value) in (int, float) and math.isfinite(value)
+            and value == int(value) and 0 <= value <= end_ms)
+
+
+def latest_submission(events, end_ms):
+    """Latest authoritative code-submission ``(ms, event)`` within the cutoff.
+
+    Only create (PR.created_at) and push (operate_logs) events are candidates;
+    retest/note/comment are excluded. Legacy events without an explicit source
+    are resolved from their kind so old snapshots derive the same value. A push
+    wins over a create at an equal millisecond, otherwise the maximum time wins.
+    """
+    candidates = []
+    for event in events or []:
+        kind = event.get('kind')
+        source = event.get('source') or (
+            'PR.created_at' if kind == 'create' else
+            'operate_logs' if kind == 'push' else kind)
+        if (kind, source) not in SUBMISSION_SOURCES:
+            continue
+        value = event.get('time_ms')
+        if valid_submission_ms(value, end_ms):
+            candidates.append((value, event))
+    if not candidates:
+        return None, None
+    return max(candidates, key=lambda pair: (
+        pair[0], 1 if pair[1].get('kind') == 'push' else 0))
+
+
 def summarize(values):
     a=sorted(v for v in values if isinstance(v,(int,float)) and math.isfinite(v) and v>=0)
     if not a: return {'n':0,'mean':None,'p90':None}

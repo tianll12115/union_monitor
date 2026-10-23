@@ -14,7 +14,7 @@ import urllib.parse
 import urllib.request
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from metrics import ms, in_scope, normalize_job, extract_events, match_event, measure_batch, task_kind, pr_metrics
+from metrics import ms, in_scope, normalize_job, extract_events, match_event, measure_batch, task_kind, pr_metrics, latest_submission, SUBMISSION_TIME_PROFILE
 
 ROOT=Path(__file__).resolve().parent
 CI='https://ci.openeuler.openatom.cn/'
@@ -157,14 +157,33 @@ def run(args, config=None, client=None):
             if m:trigger_by_pr.setdefault(int(m[1]),set()).add(u)
 
     def one_pr(p):
-        n=p['number'];issues=[]
+        n=p['number'];issues=[];logs_failed=False
         try:comments=comments_by_pr[n] if n in comments_by_pr else client.pages(API+f'/pulls/{n}/comments')
         except Exception as e:comments=[];issues.append('评论采集失败: '+str(e))
         try:logs=client.pages(API+f'/pulls/{n}/operate_logs')
-        except Exception as e:logs=[];issues.append('操作日志采集失败: '+str(e))
+        except Exception as e:logs=[];issues.append('操作日志采集失败: '+str(e));logs_failed=True
         comments=[r for r in comments if ms(r.get('created_at')) is not None and ms(r['created_at'])<=end_ms]
         logs=[r for r in logs if ms(r.get('created_at')) is not None and ms(r['created_at'])<=end_ms]
         events=extract_events(p,logs,comments)
+        # PSG-001: derive the latest code-submission time from authoritative
+        # create/push events only. An operate_logs failure marks the submission
+        # status partial (latest confirmed value unknown) but the create time
+        # remains an observed lower bound; a plain comment failure never wipes
+        # the code-event time.
+        latest_submission_ms, latest_submission_event = latest_submission(events, end_ms)
+        create_event = next((e for e in events if e.get('kind') == 'create'), None)
+        observed_submission_ms = create_event.get('time_ms') if create_event else None
+        submission = dict(
+            latest_submission_ms=latest_submission_ms if not logs_failed else None,
+            latest_submission_event_id=(latest_submission_event.get('id')
+                                        if not logs_failed and latest_submission_event else None),
+            latest_submission_source=(latest_submission_event.get('source')
+                                      if not logs_failed and latest_submission_event else None),
+            submission_events_status='partial' if logs_failed else 'complete',
+            submission_time_origin='collected',
+            latest_observed_submission_ms=latest_submission_ms if not logs_failed else observed_submission_ms,
+            submission_time_profile=SUBMISSION_TIME_PROFILE,
+        )
         reports={};triggers=set(trigger_by_pr.get(n,[]))
         for c in comments:
             if c.get('user',{}).get('login')!='openeuler-ci-bot':continue
@@ -227,7 +246,7 @@ def run(args, config=None, client=None):
         state='merged' if p.get('merged_at') or p.get('state')=='merged' else ('open' if p.get('state')=='open' else 'closed')
         return dict(repository=repo,number=n,title=p['title'],state=state,author=p.get('user',{}).get('login',''),url=f'https://gitcode.com/{repo}/pull/{n}',
             created_ms=ms(p['created_at']),merged_ms=ms(p.get('merged_at')),closed_ms=ms(p.get('closed_at')),head_sha=p.get('head',{}).get('sha'),
-            events=events,batches=batches,issues=issues,metrics=pr_metrics(batches),submission_count=sum(e['kind']!='retest' for e in events))
+            events=events,batches=batches,issues=issues,metrics=pr_metrics(batches),submission_count=sum(e['kind']!='retest' for e in events),**submission)
 
     prs=[]
     with futures.ThreadPoolExecutor(max_workers=args.workers) as pool:

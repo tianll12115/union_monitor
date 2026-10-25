@@ -226,7 +226,30 @@
     /* EC-008-AC03: 起点未知但有来源身份（action_url 或 workflow）的批次不进入时间选区S，
        但可在同页"时间未知(n)"入口找到；不计入选区分位数，详情与导出标注时间未知。 */
     const unknownTimePool = () => D.batches.filter(b => !b.start_at && (b.action_url || (b.workflows && b.workflows.length)));
-    const exportPool = () => unknownTime ? unknownTimePool() : searchPool();
+    /* ADR-007: 列表与下载复用同一个排序后的 L —— 导出集合与当前可见列表严格一致，
+       不再让默认关注子集与"全部搜索结果"下载集合分叉（关注批次一行去重、理由合并）。 */
+    const attentionEntries = () => {
+      const summary = currentSummary();
+      const pool = searchPool();
+      const entries = new Map();
+      const addEntry = (batch, reason) => {
+        if (!entries.has(batch.id)) entries.set(batch.id, { batch, reasons: new Set() });
+        if (reason) entries.get(batch.id).reasons.add(reason);
+      };
+      for (const group of core.attentionGroups(pageSet(), summary.p90, searchInput.value)) {
+        for (const batch of group.rows) addEntry(batch, group.label);
+      }
+      for (const batch of pool) if ((batch.missing || []).length) addEntry(batch, '证据缺口');
+      return entries;
+    };
+    const displayedPool = () => {
+      if (unknownTime) return unknownTimePool().slice().sort((a, b) => +new Date(b.end_at || D.window_end) - +new Date(a.end_at || D.window_end));
+      const summary = currentSummary();
+      if (!summary.batches) return [];
+      const pool = searchPool();
+      if (showAll) return pool.slice().sort((a, b) => +new Date(b.start_at) - +new Date(a.start_at));
+      return [...attentionEntries().values()].map(entry => entry.batch);
+    };
     /* REQ-035 AC02: 页脚统计与摘要条共用同一 pageSet（G=分支×时间窗），标注当前筛选范围；采集时间来自 Triton 快照。 */
     const footerText = () => {
       const s = currentSummary();
@@ -576,17 +599,11 @@
       const pool = searchPool();
       /* REQ-026 AC01: the grouping strategy, threshold and labels come from G
          (pageSet) and its valid-sample count; the search only filters the rows
-         inside each group and never changes the strategy. */
-      const groups = showAll
-        ? [{ key: 'all', label: '全部批次', rows: pool.slice().sort((a, b) => +new Date(b.start_at) - +new Date(a.start_at)) }]
-        : core.attentionGroups(pageSet(), summary.p90, searchInput.value);
-      const entries = new Map();
-      function addEntry(batch, reason) {
-        if (!entries.has(batch.id)) entries.set(batch.id, { batch, reasons: new Set() });
-        if (reason) entries.get(batch.id).reasons.add(reason);
-      }
-      for (const group of groups) for (const batch of group.rows) addEntry(batch, showAll ? null : group.label);
-      if (!showAll) for (const batch of pool) if ((batch.missing || []).length) addEntry(batch, '证据缺口');
+         inside each group and never changes the strategy. ADR-007: the list and
+         the CSV download share the same deduped, ordered batch set. */
+      const entries = showAll
+        ? new Map(pool.slice().sort((a, b) => +new Date(b.start_at) - +new Date(a.start_at)).map(batch => [batch.id, { batch, reasons: new Set() }]))
+        : attentionEntries();
       priorityNoteEl.textContent = core.attentionNote(summary.valid);
       attentionEl.innerHTML = `<div class="group-title">${showAll ? '全部批次' : '关注批次'}<span class="count">${entries.size}</span></div><div class="rows">${entries.size ? [...entries.values()].map(entry => rowHtml(entry.batch, showAll ? 'all' : 'priority', [...entry.reasons])).join('') : '<div class="empty">当前没有匹配批次</div>'}</div>`;
       bindRowClicks();
@@ -645,13 +662,14 @@
       }
       notice.textContent = '正在保存 CSV…';
       try {
-        const rows = [csvFields, ...exportPool().map(b => csvFields.map(key =>
+        const pool = displayedPool();
+        const rows = [csvFields, ...pool.map(b => csvFields.map(key =>
           key === 'missing' ? (b.missing || []).join('; ') : key === 'approximate' ? (b.approximate ? 'True' : 'False') : key === 'start_at' ? (b.start_at || '时间未知') : b[key] ?? ''))];
         const file = await root.Metrics.saveCsv(rows, 'triton-batches.csv');
         const qualification = { schema_version: 1, metric: 'triton_commit_attempt_e2e', collected_at: D.collected_at,
           window_start: D.window_start, window_end: D.window_end,
           analysis_scope: { start_at: new Date(viewStart).toISOString(), end_at: new Date(viewEnd).toISOString(), branches: [...selectedBranches], query: searchInput.value },
-          batches: exportPool().map(b => ({ id: b.id, pr: b.pr ?? null,
+          batches: pool.map(b => ({ id: b.id, pr: b.pr ?? null,
             workflow_attempts: (b.workflows || []).map(w => ({ run_id: w.id, attempt: w.attempt || 1 })),
             e2e_sample_eligible: core.sampleEligible(b), e2e_exclusion_reason: b.e2e_exclusion_reason || (b.pr == null ? 'unresolved_pr_batch_identity' : core.sampleEligible(b) ? null : 'non_sample_result') })) };
         const metaUrl = root.URL.createObjectURL(new root.Blob([JSON.stringify(qualification, null, 2)], {type: 'application/json'}));

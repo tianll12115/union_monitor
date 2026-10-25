@@ -78,10 +78,11 @@ function unavailableProjectTask(route,reason){
 }
 function applyProjectRoute(route){
  const q=route.query||{};
- let retiredFilters=[];let sortUpgraded=false;
+ let retiredFilters=[];let sortUpgraded=false;let retiredRecordConditions=[];
  if(q.repository&&typeof q.repository!=='string'){unavailableProjectTask(route,'不支持重复或无效的仓库条件。');return;}
  if(!['ubs','triton'].includes(route.project)){unavailableProjectTask(route,'未找到此项目的已接入视图。');return;}
- if(route.task==='method'){applyRoute({domain:'ubs'});return;}
+ /* ADR-019: 退役任务集中迁移表——method 与 Triton 的质量/采集页统一折叠到当前社区的规范页，并给出可见说明。 */
+ if(route.task==='method'||((route.task==='quality'||route.task==='collection')&&route.project==='triton')){const triton=route.project==='triton',target=triton?{view:'projects',project:'triton',task:'engineering'}:{view:'projects',project:'ubs',task:'overview'};history.replaceState(null,'',Router.formatRoute(target));applyRoute({domain:triton?'triton':'ubs'});$('notice').hidden=false;$('notice').textContent=triton?'此任务页已退役，已并入 Triton-Ascend 工程效能页。':'此任务页已退役，已回到 UBS 总览。';return;}
  /* EC-009/EC-012: 退役页(质量/采集)折叠——能确定仓库则回该仓工程效能，否则回所属社区入口。 */
  if((route.task==='quality'||route.task==='collection')&&route.project==='ubs'){let repo=null;if(route.task==='quality'&&typeof q.repository==='string'&&q.repository!=='all'){const st=/^gitcode:openeuler\/([^/]+)$/.exec(q.repository);repo=st?st[1]:(q.repository.includes(':')?null:q.repository);}const target={view:'projects',project:'ubs',task:repo?'engineering':'overview',query:repo?{repository:repo}:{}};history.replaceState(null,'',Router.formatRoute(target));applyRoute({domain:'ubs',...(repo?{repo}:{})});return;}
  if(route.project==='triton'){
@@ -90,7 +91,7 @@ function applyProjectRoute(route){
   /* EC-003: batch records merge into the engineering page — one S drives the
      summary, two diagnostic charts and the single records list; the legacy
      #projects/triton/records address collapses to the canonical engineering URL. */
-  if(route.task==='records'){history.replaceState(null,'',Router.formatRoute({view:'projects',project:'triton',task:'engineering',query:q.repository?{repository:q.repository}:{}}));}
+  if(route.task==='records'){const tritonKeys=['repository','branch','q','filter','npu','showAll','unknown','from','to','batch'],keep={};for(const k of tritonKeys)if(q[k]!=null)keep[k]=q[k];history.replaceState(null,'',Router.formatRoute({view:'projects',project:'triton',task:'engineering',query:keep}));retiredRecordConditions=Object.keys(q).filter(k=>!tritonKeys.includes(k));}
   applyRoute({domain:'triton'});
  }else{
   if(!['overview','engineering','trends','records'].includes(route.task)){unavailableProjectTask(route,'当前兼容页面未提供此任务视图。');return;}
@@ -132,6 +133,7 @@ function applyProjectRoute(route){
  const knownKeys=['repository','entity','branch','from','to','basis','q','sort','page','tm','state','tf','qf','ps','pr','batch'],unknownKey=Object.keys(q).find(k=>!knownKeys.includes(k)),dupKey=Object.keys(q).find(k=>Array.isArray(q[k]));
  if(sortUpgraded){$('notice').hidden=false;$('notice').textContent='排序口径已升级：原「创建时间从新到旧」已改为按最近代码提交时间排序，地址已规范为 sort=submitted。';}
   else if(retiredFilters.length){$('notice').hidden=false;$('notice').textContent='已精简：'+retiredFilters.join('、')+'筛选已随高级分析面板移除，请在 PR 详情查看相关字段；本次未按这些条件筛选。';}
+ else if(retiredRecordConditions.length){$('notice').hidden=false;$('notice').textContent='批次记录已并入工程效能页；地址中的「'+retiredRecordConditions.join('、')+'」条件由页面内控件控制，本次未随地址应用。';}
  else if(unknownKey||dupKey||(route.project==='triton'&&route.task!=='records'&&Object.keys(q).length)){$('notice').hidden=false;$('notice').textContent=unknownKey?'URL 包含不支持的参数「'+unknownKey+'」，已忽略。':(dupKey?'URL 参数「'+dupKey+'」重复出现，仅保留首个值。':'当前兼容视图不支持部分 URL 条件，请使用页面控件确认范围。');}
 }
 function applyRoute(route){

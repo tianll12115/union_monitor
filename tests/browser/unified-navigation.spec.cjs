@@ -53,9 +53,11 @@ test('the retired workbench collapses to the UBS overview', async ({ page }) => 
   await expect(page.locator('#ubs-view')).toBeVisible();
 });
 
-test('an unsupported task explains the reason instead of faking a view', async ({ page }) => {
+test('a retired Triton quality task collapses to the Triton engineering page', async ({ page }) => {
   await page.goto('./#projects/triton/quality');
-  await expect(page.locator('#project-task-view')).toBeVisible();
-  await expect(page.locator('#project-task-view')).toContainText('未提供');
-  await expect(page.locator('#triton-view')).toBeHidden();
+  await expect(page).toHaveURL(/#projects\/triton\/engineering/);
+  await expect(page.locator('#triton-view')).toBeVisible();
+  await expect(page.locator('#project-task-view')).toBeHidden();
+  await expect(page.locator('#notice')).toBeVisible();
+  await expect(page.locator('#notice')).toContainText('已并入');
 });

@@ -21,7 +21,7 @@ test('project UBS repository route opens the matching repository rather than the
 
 test('unsupported project task and foreign repository are explicit, without borrowing another project view', () => {
   const app = createApp();
-  for (const hash of ['#projects/triton/quality', '#projects/acme/overview', '#projects/ubs/overview?repository=github%3Aforeign%2Fubs-engine']) {
+  for (const hash of ['#projects/acme/overview', '#projects/ubs/overview?repository=github%3Aforeign%2Fubs-engine']) {
     app.run(`navigate(${JSON.stringify(hash)})`);
     assert.equal(app.element('workbench-view').hidden, true);
     assert.equal(app.element('triton-view').hidden, true);
@@ -29,6 +29,34 @@ test('unsupported project task and foreign repository are explicit, without borr
     assert.equal(app.element('project-task-view').hidden, false);
     assert.match(app.element('project-task-view').innerHTML, /未提供|不支持|未找到/);
   }
+});
+
+test('ADR-019: retired Triton method/quality tasks collapse to Triton engineering with a notice', () => {
+  const app = createApp();
+  for (const hash of ['#projects/triton/method', '#projects/triton/quality', '#projects/triton/collection']) {
+    app.run(`navigate(${JSON.stringify(hash)})`);
+    assert.equal(app.context.location.hash, '#projects/triton/engineering', `${hash} canonicalizes to triton engineering`);
+    assert.equal(app.element('triton-view').hidden, false, `${hash} opens the triton engineering view`);
+    assert.equal(app.element('ubs-view').hidden, true);
+    assert.match(app.element('notice').textContent, /已并入|已退役/);
+  }
+});
+
+test('ADR-019: triton records keeps supported conditions but explains retired sort/page', () => {
+  const app = createApp();
+  app.run("navigate('#projects/triton/records?sort=start&page=2&q=needle')");
+  assert.equal(app.context.location.hash, '#projects/triton/engineering?q=needle', 'supported search survives the collapse');
+  assert.equal(app.element('triton-view').hidden, false);
+  assert.match(app.element('notice').textContent, /sort/);
+  assert.match(app.element('notice').textContent, /page/);
+});
+
+test('ADR-019: a legacy UBS repo link preserves its search and scope conditions', () => {
+  const app = createApp();
+  app.run("navigate('#ubs/repo/ubs-engine?q=needle&state=merged')");
+  assert.equal(app.context.location.hash, '#projects/ubs/engineering?q=needle&state=merged&repository=ubs-engine', 'legacy conditions fold into the canonical URL');
+  assert.equal(app.element('query').value, 'needle');
+  assert.equal(app.run('currentRepository'), 'ubs-engine');
 });
 
 test('unknown project task and unsupported all-repository task never fall back to a different scope', () => {

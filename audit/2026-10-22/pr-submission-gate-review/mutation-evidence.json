@@ -15,28 +15,56 @@
       "fault": "web/core.js sortPRs: the `submitted`/`created` branch compares `a.created_ms`/`b.created_ms` instead of `submissionValue(a)`/`submissionValue(b)`.",
       "detection": "tests/submission_sort.test.cjs (Node, sortPRs vs the spec-6 opposite-clock sample)",
       "observed": "exit 1; deepStrictEqual order mismatch (created order instead of [104,103,102,101,105])",
-      "restored": true
+      "restored": true,
+      "replay": {
+        "command": "tests/submission_sort.test.cjs (Node, sortPRs vs the spec-6 opposite-clock sample)",
+        "patch": "unverified: the isolated-copy diff was not archived in this repository",
+        "output": "unverified: the raw red detection output was not archived (summary kept in observed)",
+        "junit_or_trace": "unverified: no reproducible JUnit/trace artifact link was archived",
+        "sha": "64f5750be0452c5ef0d00bb0091868d9f94bd892"
+      }
     },
     {
       "id": "MUT-002",
       "fault": "metrics.py latest_submission: candidate filter changed to `kind in ('create','push','retest')`, admitting retest/Jenkins-derived events.",
       "detection": "tests.test_metrics (SubmissionTimeTests)",
       "observed": "3 failures; order [101,104,103,102,105] != expected [104,103,102,101,105] (retest at 08:59 promoted)",
-      "restored": true
+      "restored": true,
+      "replay": {
+        "command": "tests.test_metrics (SubmissionTimeTests)",
+        "patch": "unverified: the isolated-copy diff was not archived in this repository",
+        "output": "unverified: the raw red detection output was not archived (summary kept in observed)",
+        "junit_or_trace": "unverified: no reproducible JUnit/trace artifact link was archived",
+        "sha": "64f5750be0452c5ef0d00bb0091868d9f94bd892"
+      }
     },
     {
       "id": "MUT-003",
       "fault": "web/app.js renderTable: page slice changed to `filtered.slice((page-1)*pageSize+1, page*pageSize)`, dropping one row per page.",
       "detection": "tests/browser/unified-records.spec.cjs [BASIC-004] full >=31-PR sequence across 15/30/50 pages",
       "observed": "1 failed (full-sequence length/order violated)",
-      "restored": true
+      "restored": true,
+      "replay": {
+        "command": "tests/browser/unified-records.spec.cjs [BASIC-004] full >=31-PR sequence across 15/30/50 pages",
+        "patch": "unverified: the isolated-copy diff was not archived in this repository",
+        "output": "unverified: the raw red detection output was not archived (summary kept in observed)",
+        "junit_or_trace": "unverified: no reproducible JUnit/trace artifact link was archived",
+        "sha": "64f5750be0452c5ef0d00bb0091868d9f94bd892"
+      }
     },
     {
       "id": "MUT-004",
       "fault": "web/app.js renderTable: PR row click binding removed (`r.onclick=null`), so opening a detail no longer fires.",
       "detection": "tests/browser/url-context.spec.cjs [BASIC-007] opening a detail carries its identity in the URL",
       "observed": "1 failed (detail never opened)",
-      "restored": true
+      "restored": true,
+      "replay": {
+        "command": "tests/browser/url-context.spec.cjs [BASIC-007] opening a detail carries its identity in the URL",
+        "patch": "unverified: the isolated-copy diff was not archived in this repository",
+        "output": "unverified: the raw red detection output was not archived (summary kept in observed)",
+        "junit_or_trace": "unverified: no reproducible JUnit/trace artifact link was archived",
+        "sha": "64f5750be0452c5ef0d00bb0091868d9f94bd892"
+      }
     },
     {
       "id": "MUT-005",
@@ -44,56 +72,112 @@
       "detection": "tests/browser/advanced-sample-filter.spec.cjs [BASIC-005] plain search",
       "observed": "1 failed (no-match expected empty state, got full rows)",
       "restored": true,
-      "note": "To make this redden a [BASIC-005]-named journey, the `[BASIC-005]` token was added to the 'plain search' test title (it previously covered only the state-filter journey, while the manifest label also promises number/title/author/SHA search and no-match empty state)."
+      "note": "To make this redden a [BASIC-005]-named journey, the `[BASIC-005]` token was added to the 'plain search' test title (it previously covered only the state-filter journey, while the manifest label also promises number/title/author/SHA search and no-match empty state).",
+      "replay": {
+        "command": "tests/browser/advanced-sample-filter.spec.cjs [BASIC-005] plain search",
+        "patch": "unverified: the isolated-copy diff was not archived in this repository",
+        "output": "unverified: the raw red detection output was not archived (summary kept in observed)",
+        "junit_or_trace": "unverified: no reproducible JUnit/trace artifact link was archived",
+        "sha": "64f5750be0452c5ef0d00bb0091868d9f94bd892"
+      }
     },
     {
       "id": "MUT-006",
       "fault": "web/app.js: close-detail URL sync removed (`#closeDetail` onclick and the dialog `close` event no longer call `syncRecordsUrl('replace')`), leaving the `pr=` identity in the URL after close.",
       "detection": "tests/browser/url-context.spec.cjs [BASIC-007] closing clears the pr= identity",
       "observed": "1 failed (URL retained pr=)",
-      "restored": true
+      "restored": true,
+      "replay": {
+        "command": "tests/browser/url-context.spec.cjs [BASIC-007] closing clears the pr= identity",
+        "patch": "unverified: the isolated-copy diff was not archived in this repository",
+        "output": "unverified: the raw red detection output was not archived (summary kept in observed)",
+        "junit_or_trace": "unverified: no reproducible JUnit/trace artifact link was archived",
+        "sha": "64f5750be0452c5ef0d00bb0091868d9f94bd892"
+      }
     },
     {
       "id": "MUT-007",
       "fault": "web/app.js exportPRs: export rows limited to the current page slice (`filtered.slice((page-1)*pageSize,page*pageSize)`).",
       "detection": "tests/browser/unified-export.spec.cjs [BASIC-010] full filtered set not page-truncated",
       "observed": "1 failed (export truncated to current page)",
-      "restored": true
+      "restored": true,
+      "replay": {
+        "command": "tests/browser/unified-export.spec.cjs [BASIC-010] full filtered set not page-truncated",
+        "patch": "unverified: the isolated-copy diff was not archived in this repository",
+        "output": "unverified: the raw red detection output was not archived (summary kept in observed)",
+        "junit_or_trace": "unverified: no reproducible JUnit/trace artifact link was archived",
+        "sha": "64f5750be0452c5ef0d00bb0091868d9f94bd892"
+      }
     },
     {
       "id": "MUT-008",
       "fault": "web/app.js load(): first-read failure text changed from 无法读取看板 to 读取成功 (swallows the failure and fabricates success).",
       "detection": "tests/browser/basic-load-recovery.spec.cjs [BASIC-009] first-read 503 shows real failure, no fake success",
       "observed": "1 failed (no visible failure state)",
-      "restored": true
+      "restored": true,
+      "replay": {
+        "command": "tests/browser/basic-load-recovery.spec.cjs [BASIC-009] first-read 503 shows real failure, no fake success",
+        "patch": "unverified: the isolated-copy diff was not archived in this repository",
+        "output": "unverified: the raw red detection output was not archived (summary kept in observed)",
+        "junit_or_trace": "unverified: no reproducible JUnit/trace artifact link was archived",
+        "sha": "64f5750be0452c5ef0d00bb0091868d9f94bd892"
+      }
     },
     {
       "id": "MUT-009",
       "fault": "(a) `test.only` in a spec; (b) a required BASIC id missing from every title; (c) browser step removed / echo-replaced / continue-on-error / reduced needs / manifest-verification removed in pr-gate.yml.",
       "detection": "(a) playwright.config.cjs forbidOnly:true; (b) scripts/verify_basic_junit.py; (c) tests.test_ci_gate.WorkflowYamlStructureTests",
       "observed": "(a) `playwright test` exit 1 pointing at `test.only`; (b) verify_basic_junit exit 1 `FAIL: BASIC-099 not executed`; (c) 7 WorkflowYamlStructureTests OK covering all five structural mutations",
-      "restored": true
+      "restored": true,
+      "replay": {
+        "command": "(a) playwright.config.cjs forbidOnly:true; (b) scripts/verify_basic_junit.py; (c) tests.test_ci_gate.WorkflowYamlStructureTests",
+        "patch": "unverified: the isolated-copy diff was not archived in this repository",
+        "output": "unverified: the raw red detection output was not archived (summary kept in observed)",
+        "junit_or_trace": "unverified: no reproducible JUnit/trace artifact link was archived",
+        "sha": "64f5750be0452c5ef0d00bb0091868d9f94bd892"
+      }
     },
     {
       "id": "MUT-010",
       "fault": "one of the four jobs failure/cancelled/skipped, a job missing, or malformed needs JSON while the aggregate still reports green.",
       "detection": "scripts/ci_gate.py CLI + tests.test_ci_gate.RequiredGateTests",
       "observed": "4 RequiredGateTests OK: every-required-success (exit 0), failure/cancel/skip-never-green, missing/unexpected-job rejected, bad-JSON rejected",
-      "restored": true
+      "restored": true,
+      "replay": {
+        "command": "scripts/ci_gate.py CLI + tests.test_ci_gate.RequiredGateTests",
+        "patch": "unverified: the isolated-copy diff was not archived in this repository",
+        "output": "unverified: the raw red detection output was not archived (summary kept in observed)",
+        "junit_or_trace": "unverified: no reproducible JUnit/trace artifact link was archived",
+        "sha": "64f5750be0452c5ef0d00bb0091868d9f94bd892"
+      }
     },
     {
       "id": "MUT-011",
       "fault": "web/style.css: `#reload{display:none}` added inside @media(max-width:560px), hiding the reload control at narrow widths.",
       "detection": "tests/browser/dashboard.spec.cjs [BASIC-011] no horizontal overflow and key controls reachable across 320-1440",
       "observed": "1 failed (#reload not visible at 320px)",
-      "restored": true
+      "restored": true,
+      "replay": {
+        "command": "tests/browser/dashboard.spec.cjs [BASIC-011] no horizontal overflow and key controls reachable across 320-1440",
+        "patch": "unverified: the isolated-copy diff was not archived in this repository",
+        "output": "unverified: the raw red detection output was not archived (summary kept in observed)",
+        "junit_or_trace": "unverified: no reproducible JUnit/trace artifact link was archived",
+        "sha": "64f5750be0452c5ef0d00bb0091868d9f94bd892"
+      }
     },
     {
       "id": "MUT-012",
       "fault": "web/triton-view.js: `showAllBtn.onclick` set to a no-op, so the attention <-> all toggle keeps the old reading.",
       "detection": "tests/browser/dashboard.spec.cjs [BASIC-008] Triton branch/window controls expose a real, changeable sample",
       "observed": "1 failed (group title/count did not change)",
-      "restored": true
+      "restored": true,
+      "replay": {
+        "command": "tests/browser/dashboard.spec.cjs [BASIC-008] Triton branch/window controls expose a real, changeable sample",
+        "patch": "unverified: the isolated-copy diff was not archived in this repository",
+        "output": "unverified: the raw red detection output was not archived (summary kept in observed)",
+        "junit_or_trace": "unverified: no reproducible JUnit/trace artifact link was archived",
+        "sha": "64f5750be0452c5ef0d00bb0091868d9f94bd892"
+      }
     }
   ],
   "recovery": {
@@ -104,6 +188,25 @@
     "basic_junit": "scripts/verify_basic_junit.py -> 12/12 required BASIC journeys passed, exit 0.",
     "unverified": "Remote GitHub branch protection (required_status_checks / required_pull_request_reviews) and remote Actions run are not observable from this environment while the owner account is suspended; those remain subject to the PR gate."
   },
-  "required_basic_ids": ["BASIC-001", "BASIC-002", "BASIC-003", "BASIC-004", "BASIC-005", "BASIC-006", "BASIC-007", "BASIC-008", "BASIC-009", "BASIC-010", "BASIC-011", "BASIC-012"],
-  "required_jobs": ["python-tests", "frontend-tests", "collector-contracts", "workflow-lint"]
+  "required_basic_ids": [
+    "BASIC-001",
+    "BASIC-002",
+    "BASIC-003",
+    "BASIC-004",
+    "BASIC-005",
+    "BASIC-006",
+    "BASIC-007",
+    "BASIC-008",
+    "BASIC-009",
+    "BASIC-010",
+    "BASIC-011",
+    "BASIC-012"
+  ],
+  "required_jobs": [
+    "python-tests",
+    "frontend-tests",
+    "collector-contracts",
+    "workflow-lint"
+  ],
+  "replay_policy": "ADR-024: each MUT binds its detection command, the applied-and-restored state, and the baseline SHA; the replayable patch, raw failure output and JUnit/trace link were not archived during the 2026-10-23 isolated-copy run and are therefore recorded as unverified rather than as natural-language success."
 }

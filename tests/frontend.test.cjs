@@ -84,6 +84,16 @@ test('detail CSV export is bound to the detail entity, not the global current re
   assert.ok(!exportSrc.includes('snapshot.meta.repository'),'exportBatches must not read the global snapshot');
 });
 
+test('ADR-010: detail CSV sidecar metadata binds the detail snapshot, not the global one',()=>{
+  const source=fs.readFileSync(path.join(__dirname,'../web/app.js'),'utf8');
+  assert.ok(source.includes("versionedMeta('PR 全部批次','PR #'+detailPR.number+' 全部已采集批次',detailPR.batches.length,'条',detailSnapshot)"),'the all-batch sidecar must bind detailSnapshot');
+  assert.ok(source.includes("versionedMeta('选中批次任务','PR #'+detailPR.number+' 选中批次 Trigger #'+b.number,tasks.length,'条',detailSnapshot)"),'the batch-task sidecar must bind detailSnapshot');
+  assert.ok(source.includes('const s=snap||snapshot'),'versionedMeta must prefer the passed snapshot over the global one');
+  assert.ok(source.includes('snapshot_fingerprint:s?.meta?.collected_at||null'),'the sidecar records the actual loaded snapshot fingerprint');
+  assert.ok(source.includes("report_version:'ubs-export-report-v1'"),'the report version is independent of the profile version');
+  assert.ok(source.includes("duration_unit:'ms'"),'duration columns are declared in ms to match the raw ms headers');
+});
+
 test('REQ-010/A06: a stalled Triton JSON body cannot block a healthy UBS domain',async()=>{
   const {createApp}=require('./helpers/app-harness.cjs');
   const runtime=createApp({

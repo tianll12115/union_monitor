@@ -19,6 +19,8 @@ class ExportTest(unittest.TestCase):
         self.server.shutdown();self.server.server_close();self.thread.join();self.tmp.cleanup()
     def post(self,name,origin=None):
         return urllib.request.urlopen(urllib.request.Request(self.origin+'/api/export',data=json.dumps({'name':name,'csv':'\ufeff"PR","标题"\r\n"1","测试"'}).encode(),headers={'Content-Type':'application/json','Origin':origin or self.origin}),timeout=5)
+    def post_sidecar(self,name,content):
+        return urllib.request.urlopen(urllib.request.Request(self.origin+'/api/export',data=json.dumps({'name':name,'content':content,'kind':'sidecar'}).encode(),headers={'Content-Type':'application/json','Origin':self.origin}),timeout=5)
     def test_csv_export_is_saved_and_readable(self):
         try:
             with self.post('ubs-engine-pr-summary.csv') as r:d=json.load(r)
@@ -27,6 +29,17 @@ class ExportTest(unittest.TestCase):
         raw=(Path(self.tmp.name)/d['url'].lstrip('/')).read_text('utf-8-sig')
         self.assertIn('"1","测试"',raw)
         with urllib.request.urlopen(self.origin+d['url']) as r:self.assertEqual(r.status,200)
+    def test_versioned_sidecar_is_saved_next_to_the_csv(self):
+        with self.post_sidecar('ubs-engine-pr-summary.export.json','{"report_version":"ubs-export-report-v1","duration_unit":"ms"}') as r:d=json.load(r)
+        raw=(Path(self.tmp.name)/d['url'].lstrip('/')).read_text('utf-8')
+        self.assertEqual(json.loads(raw)['report_version'],'ubs-export-report-v1')
+        self.assertEqual(json.loads(raw)['duration_unit'],'ms')
+        with urllib.request.urlopen(self.origin+d['url']) as r:
+            self.assertEqual(r.status,200)
+            self.assertIn('attachment',r.headers.get('Content-Disposition',''))
+    def test_sidecar_rejects_bad_extension(self):
+        with self.assertRaises(urllib.error.HTTPError) as caught:self.post_sidecar('../x.json','{}')
+        self.assertEqual(caught.exception.code,400);caught.exception.close()
     def test_path_traversal_and_external_origin_rejected(self):
         for name,origin in [('../outside.csv',None),('test.csv','https://example.com')]:
             with self.assertRaises(urllib.error.HTTPError) as caught:self.post(name,origin)

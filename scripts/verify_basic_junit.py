@@ -11,6 +11,7 @@ Pure standard library only.
 """
 import argparse
 import json
+import re
 import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path
@@ -18,6 +19,19 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MANIFEST = ROOT / "tests" / "browser" / "basic-journeys.json"
 DEFAULT_JUNIT = ROOT / "test-results" / "browser-junit.xml"
+
+# The manifest pins the fixed 12-journey checklist version (ADR-023).
+EXPECTED_SCHEMA_VERSION = 1
+EXPECTED_JOURNEY_COUNT = 12
+
+# A journey id is claimed only by the literal ``[BASIC-00X]`` token — exact,
+# not a substring, so a single name cannot smuggle all 12 ids at once.
+TOKEN_RE = re.compile(r"\[(BASIC-\d{3})\]")
+
+
+def covered_ids(name):
+    """Return the set of BASIC journey ids a testcase name claims via exact tokens."""
+    return set(TOKEN_RE.findall(name or ""))
 
 
 def load_required_ids(manifest_path):
@@ -31,14 +45,26 @@ def load_required_ids(manifest_path):
         data = json.loads(manifest.read_bytes().decode("utf-8-sig"))
     except (OSError, json.JSONDecodeError) as error:
         raise SystemExit(f"FAIL: cannot read manifest {manifest}: {error}")
-    required = data.get("required") if isinstance(data, dict) else None
+    if not isinstance(data, dict):
+        raise SystemExit(f"FAIL: manifest {manifest} must be a JSON object")
+    if data.get("schema_version") != EXPECTED_SCHEMA_VERSION:
+        raise SystemExit(
+            f"FAIL: manifest {manifest} schema_version {data.get('schema_version')!r} "
+            f"!= fixed {EXPECTED_SCHEMA_VERSION}")
+    required = data.get("required")
     if not isinstance(required, list) or not required:
         raise SystemExit(f"FAIL: manifest {manifest} has no non-empty 'required' list")
+    if len(required) != EXPECTED_JOURNEY_COUNT:
+        raise SystemExit(
+            f"FAIL: manifest {manifest} declares {len(required)} journeys, "
+            f"not the fixed {EXPECTED_JOURNEY_COUNT}")
     ids = []
     for entry in required:
         if not isinstance(entry, dict) or not entry.get("id"):
             raise SystemExit(f"FAIL: manifest {manifest} has invalid entry {entry!r}")
         ids.append(str(entry["id"]))
+    if len(set(ids)) != len(ids):
+        raise SystemExit(f"FAIL: manifest {manifest} has duplicate journey ids")
     return ids
 
 
@@ -59,17 +85,40 @@ def parse_testcases(junit_path):
 
 
 def check(required_ids, cases):
-    """Return (ok, per_id_results)."""
+    """Return (ok, per_id_results).
+
+    Each journey must be executed by its own independent testcase carrying the
+    literal ``[BASIC-00X]`` token. A single testcase that claims more than one
+    journey id is rejected (it cannot be an independent execution of any one
+    journey), and a journey claimed only by such a case is not credited.
+    """
+    required_set = set(required_ids)
+    claimed = [covered_ids(c.get("name") or "") for c in cases]
+
+    # A case claiming more than one journey id is a bypass.
+    excluded_ids = set()
+    for index, ids in enumerate(claimed):
+        extra = sorted(ids & required_set)
+        if len(extra) > 1:
+            excluded_ids.update(extra)
+
     results = []
     ok = True
     for req_id in required_ids:
-        matches = [c for c in cases if req_id in (c.get("name") or "")]
+        if req_id in excluded_ids:
+            results.append((req_id, "FAIL",
+                            "claimed only by a testcase that covers multiple journeys"))
+            ok = False
+            continue
+        matches = [i for i, ids in enumerate(claimed) if req_id in ids]
         if not matches:
-            results.append((req_id, "FAIL", "not executed (no testcase name contains the id)"))
+            results.append((req_id, "FAIL",
+                            "not executed (no testcase carries the [id] literal token)"))
             ok = False
             continue
         bad = []
-        for case in matches:
+        for index in matches:
+            case = cases[index]
             for child in case:
                 tag = child.tag.rsplit("}", 1)[-1]
                 if tag in ("skipped", "failure", "error"):

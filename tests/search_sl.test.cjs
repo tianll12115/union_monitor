@@ -35,10 +35,23 @@ test('P-004: searchPRs matches number/title/author/sha and ignores empty query',
 });
 
 test('P-004: app.js drives KPI/trend from analysisSet and only the list from search', () => {
-  assert.match(app, /const f=readFilters\(\),analysisSet=Metrics\.filterPRs\(snapshot\.prs,f\)/);
-  assert.match(app, /filtered=Metrics\.sortPRs\(Metrics\.searchPRs\(analysisSet,f\.query\),prSort\)/);
-  assert.match(app, /batchList=entity==='batches'\?buildBatchList\(analysisSet,f\.query\):\[\]/);
+  assert.match(app, /const f=readFilters\(\),analysisSet=Metrics\.filterPRs\(snapshot\.prs,\{state:''\}\),listSet=Metrics\.filterPRs\(analysisSet,f\)/);
+  assert.match(app, /filtered=Metrics\.sortPRs\(Metrics\.searchPRs\(listSet,f\.query\),prSort\)/);
+  assert.match(app, /batchList=entity==='batches'\?buildBatchList\(listSet,f\.query\):\[\]/);
   assert.match(app, /\$\('kpis'\)\.innerHTML=kpiHTML\(analysisSet\)/);
   assert.match(app, /drawTrend\(analysisSet\)/);
   assert.match(app, /const pct=analysisSet\.length\?s\.e2e\.n\/analysisSet\.length/);
+});
+
+test('ADR-017: the PR-state filter narrows the list L without changing the KPI source S', () => {
+  const prs = [
+    { number: 1, title: 'a', author: 'x', state: 'open', batches: [{ sha: 's1', eligible: true, e2e_ms: 500 }] },
+    { number: 2, title: 'b', author: 'y', state: 'merged', batches: [{ sha: 's2', eligible: true, e2e_ms: 900 }] },
+  ];
+  // S excludes the list-only state condition; L applies it on top of S.
+  const analysisSet = M.filterPRs(prs, { state: '' });
+  const listSet = M.filterPRs(analysisSet, { state: 'merged' });
+  assert.equal(analysisSet.length, 2, 'S keeps every PR regardless of the state filter');
+  assert.deepEqual(listSet.map(p => p.number), [2], 'L is narrowed by state only');
+  assert.equal(M.aggregate(analysisSet).e2e.n, M.aggregate(prs).e2e.n, 'KPI denominator unchanged by state');
 });

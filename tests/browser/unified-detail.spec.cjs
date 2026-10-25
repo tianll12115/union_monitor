@@ -163,6 +163,27 @@ test('selected-batch task export binds the selected batch tasks, never the whole
   await expect(dialog.locator('.export-notice')).toContainText('条数：2');
 });
 
+test('ADR-014: expanding another batch rebinds the selected-batch task export', async ({ page }) => {
+  await serveUbs(page, fixture());
+  await page.goto('./#ubs/repo/ubs-engine');
+  await page.locator('#entity').selectOption('prs');
+  await expect(page.locator('#prRows tr[data-pr="100"]')).toBeVisible();
+  await page.locator('#prRows tr[data-pr="100"]').click();
+  const dialog = page.locator('#detail');
+  await expect(dialog).toBeVisible();
+  // Default selection is the representative (batch 2).
+  await expect(dialog.locator('details[data-batch-url$="/key/2/"]')).toHaveAttribute('open', '');
+  // Expanding batch 1 swaps the single-select accordion to it.
+  await dialog.locator('details[data-batch-url$="/key/1/"] > summary').click();
+  await expect(dialog.locator('details[data-batch-url$="/key/1/"]')).toHaveAttribute('open', '');
+  await expect(dialog.locator('details[data-batch-url$="/key/2/"]')).not.toHaveAttribute('open', '');
+  const downloadEvent = page.waitForEvent('download');
+  await page.locator('#exportBatchTasks').click();
+  const csv = await readDownload(await downloadEvent);
+  const lines = csv.replace(/^\uFEFF/, '').trim().split(/\r?\n/);
+  expect(lines.length - 1).toBe(1, 'batch 1 carries only its trigger task, matching the expanded selection');
+});
+
 test('EC-012: the retired quality task collapses to the UBS overview', async ({ page }) => {
   await serveUbs(page, fixture());
   await page.goto('./#projects/ubs/quality');

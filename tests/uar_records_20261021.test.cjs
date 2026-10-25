@@ -179,3 +179,17 @@ test('UAR-006/UAR-007: the detail binds and round-trips the selected batch ident
   const parsed = a.run(`Router.parseRoute(${JSON.stringify(urlWithBatch)})`);
   assert.equal(parsed.query.batch, 'https://ci/trigger/1');
 });
+
+test('ADR-014: expanding another batch rebinds the selected batch for task export', () => {
+  const a = app();
+  a.run('snapshot=' + JSON.stringify(fixture()));
+  a.run(indexExpr());
+  a.run("currentRepository='ubs-engine';view='ubs-repo';entity='prs'");
+  a.run("openDetail(100,'https://ci/trigger/1',false)");
+  assert.equal(a.run('detailChoice.batch.url'), 'https://ci/trigger/1');
+  a.run('selectDetailBatch(detailPR.batches[1])');
+  assert.equal(a.run('detailChoice.batch.url'), 'https://ci/trigger/2', 'the expanded batch becomes the export target');
+  assert.equal(a.run('detailChoice.reason'), 'expanded');
+  assert.equal(a.run('recordsState().batch'), 'https://ci/trigger/2', 'the URL now selects the expanded batch');
+  assert.match(a.run("$('exportBatchTasks').title"), /Trigger #2/);
+});

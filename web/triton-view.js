@@ -705,6 +705,7 @@
     /* ---- 导出批次 CSV：G × 列表搜索后的完整唯一批次集合（字段与 triton-batches.csv 同集 16 项） ---- */
     async function exportBatches() {
       if (!root.Metrics || typeof root.Metrics.saveCsv !== 'function') return;
+      const session = active;
       exportBtn.disabled = true;
       let notice = container.querySelector('[data-role="exportNotice"]');
       if (!notice) {
@@ -715,17 +716,21 @@
         container.insertBefore(notice, container.firstChild);
       }
       notice.textContent = '正在保存 CSV…';
+      /* ADR-013: freeze the complete export — rows, scope and the qualification
+         sidecar — before the first await, so a filter/branch/time change during
+         the request cannot split the CSV from its audit metadata. */
+      const pool = displayedPool();
+      const rows = [csvFields, ...pool.map(b => csvFields.map(key =>
+        key === 'missing' ? (b.missing || []).join('; ') : key === 'approximate' ? (b.approximate ? 'True' : 'False') : key === 'start_at' ? (b.start_at || '时间未知') : b[key] ?? ''))];
+      const scope = { start_at: new Date(viewStart).toISOString(), end_at: new Date(viewEnd).toISOString(), branches: [...selectedBranches], query: searchInput.value };
+      const qualification = { schema_version: 1, metric: 'triton_commit_attempt_e2e', collected_at: D.collected_at,
+        window_start: D.window_start, window_end: D.window_end, analysis_scope: scope,
+        batches: pool.map(b => ({ id: b.id, pr: b.pr ?? null,
+          workflow_attempts: (b.workflows || []).map(w => ({ run_id: w.id, attempt: w.attempt || 1 })),
+          e2e_sample_eligible: core.sampleEligible(b), e2e_exclusion_reason: b.e2e_exclusion_reason || (b.pr == null ? 'unresolved_pr_batch_identity' : core.sampleEligible(b) ? null : 'non_sample_result') })) };
       try {
-        const pool = displayedPool();
-        const rows = [csvFields, ...pool.map(b => csvFields.map(key =>
-          key === 'missing' ? (b.missing || []).join('; ') : key === 'approximate' ? (b.approximate ? 'True' : 'False') : key === 'start_at' ? (b.start_at || '时间未知') : b[key] ?? ''))];
         const file = await root.Metrics.saveCsv(rows, 'triton-batches.csv');
-        const qualification = { schema_version: 1, metric: 'triton_commit_attempt_e2e', collected_at: D.collected_at,
-          window_start: D.window_start, window_end: D.window_end,
-          analysis_scope: { start_at: new Date(viewStart).toISOString(), end_at: new Date(viewEnd).toISOString(), branches: [...selectedBranches], query: searchInput.value },
-          batches: pool.map(b => ({ id: b.id, pr: b.pr ?? null,
-            workflow_attempts: (b.workflows || []).map(w => ({ run_id: w.id, attempt: w.attempt || 1 })),
-            e2e_sample_eligible: core.sampleEligible(b), e2e_exclusion_reason: b.e2e_exclusion_reason || (b.pr == null ? 'unresolved_pr_batch_identity' : core.sampleEligible(b) ? null : 'non_sample_result') })) };
+        if (active !== session) return;
         const metaUrl = root.URL.createObjectURL(new root.Blob([JSON.stringify(qualification, null, 2)], {type: 'application/json'}));
         const metaLink = root.document.createElement('a');
         metaLink.href = metaUrl;
@@ -736,9 +741,9 @@
           ? `CSV 已保存到本地：<a href="${esc(file.url)}" download="${esc(file.name)}">${esc(file.name)} ↓</a>；资格元数据已由浏览器下载。`
           : '已下载：' + esc(file.name) + ' 与 triton-qualifications-v1.json';
       } catch (err) {
-        notice.textContent = '导出失败：' + (err && err.message ? err.message : err);
+        if (active === session) notice.textContent = '导出失败：' + (err && err.message ? err.message : err);
       } finally {
-        exportBtn.disabled = false;
+        if (active === session) exportBtn.disabled = false;
       }
     }
 

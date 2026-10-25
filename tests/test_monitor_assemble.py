@@ -1,5 +1,6 @@
 """Tests for the release assembler and publishability rule (T-013)."""
 
+import hashlib
 import json
 import tempfile
 import unittest
@@ -144,17 +145,32 @@ class PublishabilityTests(unittest.TestCase):
 
 
 class AssembleCliTests(unittest.TestCase):
+    def _materialize_ubs(self, tmp: Path) -> tuple[Path, dict]:
+        """Write a real UBS snapshot and return (resource_root, report)."""
+        root = tmp / "tree"
+        rel = "data/projects/ubs/snapshots/synthetic-ubs-20261010.json"
+        path = root / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        content = b'{"prs":[]}'
+        path.write_bytes(content)
+        report = fresh_report("ubs")
+        report["snapshot_path"] = rel
+        report["snapshot_sha256"] = hashlib.sha256(content).hexdigest()
+        return root, report
+
     def test_assemble_cli_writes_a_manifest_with_publishable_flag(self):
         from monitor.__main__ import main
 
         with tempfile.TemporaryDirectory() as tmp:
+            root, report = self._materialize_ubs(Path(tmp))
             inputs = Path(tmp) / "inputs.json"
-            inputs.write_text(json.dumps({"projects": {"ubs": fresh_report("ubs"), "triton": None}}), encoding="utf-8")
+            inputs.write_text(json.dumps({"projects": {"ubs": report, "triton": None}}), encoding="utf-8")
             out = Path(tmp) / "release.json"
             code = main([
                 "assemble",
                 "--catalog", str(ROOT / "catalog.json"),
                 "--context", self._context_file(tmp),
+                "--resource-root", str(root),
                 "--inputs", str(inputs),
                 "--release-id", "rel-1",
                 "--published-at", "2026-10-10T00:30:00Z",
@@ -165,6 +181,31 @@ class AssembleCliTests(unittest.TestCase):
             self.assertEqual(manifest["release_id"], "rel-1")
             self.assertIn("publishable", manifest)
             self.assertTrue(manifest["publishable"])
+
+    def test_assemble_cli_rejects_fake_fresh_with_missing_snapshot(self):
+        # ADR-002: a report claiming fresh success without its snapshot resource
+        # must never reach a publishable manifest through the public CLI entry.
+        from monitor.__main__ import main
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "tree"
+            root.mkdir()
+            report = fresh_report("ubs")  # snapshot_path points at a file that does not exist
+            inputs = Path(tmp) / "inputs.json"
+            inputs.write_text(json.dumps({"projects": {"ubs": report, "triton": None}}), encoding="utf-8")
+            out = Path(tmp) / "release.json"
+            code = main([
+                "assemble",
+                "--catalog", str(ROOT / "catalog.json"),
+                "--context", self._context_file(tmp),
+                "--resource-root", str(root),
+                "--inputs", str(inputs),
+                "--release-id", "rel-1",
+                "--published-at", "2026-10-10T00:30:00Z",
+                "--out", str(out),
+            ])
+            self.assertEqual(code, 1)
+            self.assertFalse(out.exists(), "no manifest may be written for an unverified release")
 
     def _context_file(self, tmp):
         path = Path(tmp) / "context.json"

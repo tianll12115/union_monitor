@@ -4,6 +4,15 @@
   "recorded_at": "2026-10-22T02:40:12Z",
   "source_revision": "3096c69",
   "publication_status": "blocked_account_suspended",
+  "tracking_migration": {
+    "schema_version": 1,
+    "historical_repository": "tianli-Backkom/union_monitor",
+    "current_repository": "tianll12115/union_monitor",
+    "mode": "local_ledger",
+    "decision": "The 77-requirement / 159-AC / 34-group mapping is preserved as historical publication evidence only. The new repository tracks requirements in the local machine ledger and does not recreate the old-repo GitHub Issues; it does not treat the old account's suspension as a current new-repository blocker.",
+    "issue_migration": "not_migrated",
+    "readback": "New-repo requirement tracking is the local ledger (not GitHub Issues); no issue URL in this manifest points to the new repository."
+  },
   "blocker": {
     "service": "GitHub REST",
     "http_status": 403,

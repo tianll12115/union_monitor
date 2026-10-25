@@ -264,7 +264,7 @@ class SyntheticTreeTests(unittest.TestCase):
     def test_tampered_sort_tiebreak_exit_one(self):
         root = self.build_tree()
         self.tamper(root, 'core.js',
-                    "const s=numDesc(submissionValue(a),submissionValue(b));if(s)return s;return prIdentityTie(a,b);",
+                    "if(order==='submitted'||order==='created'){const s=numDesc(submissionValue(a,cutoffMs),submissionValue(b,cutoffMs));if(s)return s;return prIdentityTie(a,b);}",
                     "return prIdentityTie(a,b);")
         code, report = self.run_tool(root)
         self.assertEqual(code, 1)

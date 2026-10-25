@@ -194,7 +194,7 @@ TRITON_VIEW_CONTRACTS = [
      ' : err);'),
     ('export_disable', 'exportBtn.disabled = true;'),
     ('export_recover',
-     '      } finally {\n        exportBtn.disabled = false;\n      }'),
+     '      } finally {\n        if (active === session) exportBtn.disabled = false;\n      }'),
     ('footer_collected_at', '采集于 ${fmtDate(D.collected_at)}'),
     ('window_span_note', 'rangeCountEl.textContent = spanText(viewEnd - viewStart);'),
     ('selected_range',

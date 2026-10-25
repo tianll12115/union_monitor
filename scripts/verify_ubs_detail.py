@@ -357,7 +357,8 @@ APP_CONTRACTS = [
      'detailSnapshot=null;detailRepo=null;detailChoice=null;tritonDetailBatch=null;if(!closingForNavigation)syncRecordsUrl(\'replace\');}});'),
     ('route_context_cleanup',
      "function closeDetailContext(){if($('detail').open){closingForNavigation=true;try{$('detail').close();}finally{closingForNavigation=false;}}"
-     'detailPR=null;detailRepo=null;detailSnapshot=null;detailChoice=null;tritonDetailBatch=null;}'),
+     'detailPR=null;detailRepo=null;detailSnapshot=null;detailChoice=null;tritonDetailBatch=null;'
+     'if(window.TritonView?.clearDetailBatch)window.TritonView.clearDetailBatch();}'),
     ('outside_click_close',
      "if(e.target===$('detail')){const r=$('detail')."
      'getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||'

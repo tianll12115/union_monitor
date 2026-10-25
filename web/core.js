@@ -15,28 +15,36 @@
   /* PSG-001: submission time = the latest authoritative code submission
      (create from PR.created_at / push from operate_logs). Retests, notes and
      plain comments never update it. New snapshots carry the derived field; old
-     snapshots are derived from raw events (legacy-observed). */
-  function submissionValue(p){
-    if(p==null)return null;
+     snapshots are derived from raw events (legacy-observed). ADR-021: a legacy
+     ``0`` sentinel and future times beyond the snapshot cutoff are "unknown",
+     and every consumer shares this one derivation (sort, display, export). */
+  function submissionDetail(p, cutoffMs){
+    const empty={ms:null,source:'',status:''};
+    if(p==null)return empty;
     if(p.submission_time_profile==='ubs-latest-code-submission-v1'){
       const v=p.latest_submission_ms;
-      return (typeof v==='number'&&Number.isFinite(v)&&v>=0)?v:null;
+      const ms=(typeof v==='number'&&Number.isFinite(v)&&v>0&&(cutoffMs==null||v<=cutoffMs))?v:null;
+      return {ms,source:p.latest_submission_source||'',status:p.submission_events_status||''};
     }
-    if(p.submission_events_status==='partial'||p.submission_events_status==='unknown')return null;
+    if(p.submission_events_status==='partial'||p.submission_events_status==='unknown')return {ms:null,source:'',status:p.submission_events_status};
     const logFailed=(p.issues||[]).some(s=>String(s).includes('操作日志采集失败'));
-    if(logFailed)return null;
-    let best=null;
+    let best=null,src='';
     for(const e of (p.events||[])){
-      const kind=e.kind,src=e.source||(kind==='create'?'PR.created_at':kind==='push'?'operate_logs':kind);
-      if(!((kind==='create'&&src==='PR.created_at')||(kind==='push'&&src==='operate_logs')))continue;
+      const kind=e.kind,s=e.source||(kind==='create'?'PR.created_at':kind==='push'?'operate_logs':kind);
+      if(!((kind==='create'&&s==='PR.created_at')||(kind==='push'&&s==='operate_logs')))continue;
       const v=e.time_ms;
-      if(typeof v==='number'&&Number.isInteger(v)&&v>=0&&(best==null||v>best))best=v;
+      if(typeof v==='number'&&Number.isInteger(v)&&v>0&&(cutoffMs==null||v<=cutoffMs)&&(best==null||v>best)){best=v;src=s;}
     }
-    return best;
+    if(logFailed)return {ms:null,source:'',status:'partial'};
+    if(best==null)return {ms:null,source:'',status:'unknown'};
+    return {ms:best,source:src,status:'legacy-observed'};
+  }
+  function submissionValue(p, cutoffMs){
+    return submissionDetail(p, cutoffMs).ms;
   }
   function numDesc(a,b){const an=(typeof a==='number'&&Number.isFinite(a))?a:null,bn=(typeof b==='number'&&Number.isFinite(b))?b:null;if(an==null&&bn==null)return 0;if(an==null)return 1;if(bn==null)return -1;return bn-an;}
   function prIdentityTie(a,b){const na=a.number==null?null:Number(a.number),nb=b.number==null?null:Number(b.number),d=(nb==null?-Infinity:nb)-(na==null?-Infinity:na);if(d)return d;const ra=String(a.repository||''),rb=String(b.repository||'');if(ra!==rb)return ra<rb?-1:1;const ua=String(a.url||''),ub=String(b.url||'');return ua<ub?-1:ua>ub?1:0;}
-  function sortPRs(prs,order='e2e'){const value=p=>metrics(p.batches);return [...prs].sort((a,b)=>{if(order==='batches'){const d=b.batches.length-a.batches.length;if(d)return d;const s=numDesc(submissionValue(a),submissionValue(b));if(s)return s;return prIdentityTie(a,b);}if(order==='submitted'||order==='created'){const s=numDesc(submissionValue(a),submissionValue(b));if(s)return s;return prIdentityTie(a,b);}const e=numDesc(value(a).e2e_ms,value(b).e2e_ms);if(e)return e;const s=numDesc(submissionValue(a),submissionValue(b));if(s)return s;return prIdentityTie(a,b);});}
+  function sortPRs(prs,order='e2e',cutoffMs=null){const value=p=>metrics(p.batches);return [...prs].sort((a,b)=>{if(order==='batches'){const d=b.batches.length-a.batches.length;if(d)return d;const s=numDesc(submissionValue(a,cutoffMs),submissionValue(b,cutoffMs));if(s)return s;return prIdentityTie(a,b);}if(order==='submitted'||order==='created'){const s=numDesc(submissionValue(a,cutoffMs),submissionValue(b,cutoffMs));if(s)return s;return prIdentityTie(a,b);}const e=numDesc(value(a).e2e_ms,value(b).e2e_ms);if(e)return e;const s=numDesc(submissionValue(a,cutoffMs),submissionValue(b,cutoffMs));if(s)return s;return prIdentityTie(a,b);});}
   function aggregate(prs){const values=prs.map(p=>metrics(p.batches)),out={e2e:stats(values.map(v=>v.e2e_ms))};for(const k of ['x86','arm','dt']){out[k]={};for(const f of ['queue','duration','total'])out[k][f]=stats(values.map(v=>v[k][f+'_ms']));}return out;}
   function filterPRs(prs,{state='',quality='',trigger=''}={}){return prs.filter(p=>!trigger||triggerCounts(p)[trigger]>0).filter(p=>!state||p.state===state).filter(p=>!quality||(quality==='complete'?p.batches.length>0&&p.batches.every(b=>b.eligible)&&!(p.issues||[]).length:!p.batches.length||(p.issues||[]).length||p.batches.some(b=>!b.eligible)));}
   function searchPRs(prs,query=''){const q=String(query||'').toLowerCase().trim();return q?prs.filter(p=>[p.number,p.title,p.author,...p.batches.map(b=>b.sha||'')].join(' ').toLowerCase().includes(q)):prs.slice();}
@@ -73,5 +81,5 @@
     return {mode:'download',name,...(metadata?{metadata}:{})};
   }
   function createReloadGate(){let gen=0;return{begin(){return ++gen;},isCurrent(g){return g===gen;}};}
-  const api={triggerCounts,failedWait,detailGroups,stats,statsWithP50,metrics,submissionValue,sortPRs,aggregate,filterPRs,searchPRs,repositoryRows,csv,exportMetadata,exportSummary,saveCsv,createReloadGate};if(typeof module!=='undefined')module.exports=api;else root.Metrics=api;
+  const api={triggerCounts,failedWait,detailGroups,stats,statsWithP50,metrics,submissionValue,submissionDetail,sortPRs,aggregate,filterPRs,searchPRs,repositoryRows,csv,exportMetadata,exportSummary,saveCsv,createReloadGate};if(typeof module!=='undefined')module.exports=api;else root.Metrics=api;
 })(typeof window!=='undefined'?window:globalThis);

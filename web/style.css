@@ -581,7 +581,9 @@ footer{display:flex;color:var(--text-3);font-family:var(--font-num);font-size:12
   .workflow{grid-template-columns:105px 1fr 62px}
   .jobs{margin-left:0}
   .selection-stats{align-items:stretch}
-  .selection-stat{width:50%;padding:6px 8px;border-left:0;border-bottom:1px solid var(--line)}
+  .selection-stat{width:50%;padding:6px 8px;border-left:0;border-bottom:1px solid var(--line);flex-wrap:wrap;align-items:flex-start}
+  .selection-stat span{width:100%;white-space:normal;overflow-wrap:break-word;line-height:1.35}
+  .selection-stat strong{white-space:normal;overflow-wrap:break-word}
   .selection-stat:nth-last-child(-n+2){border-bottom:0}
 }
 @media(max-width:560px){
@@ -595,6 +597,9 @@ footer{display:flex;color:var(--text-3);font-family:var(--font-num);font-size:12
   .attention{padding:var(--sp-5)}
   .attention-cards{grid-template-columns:1fr}
   .exception-row{padding:15px var(--sp-4)}
+  .selection-stat{width:100%;padding:7px 2px}
+  .selection-stat:not(:last-child){border-bottom:1px solid var(--line)}
+  .selection-stat:last-child{border-bottom:0}
 }
 
 /* ---------- 29. Reduced motion ---------- */

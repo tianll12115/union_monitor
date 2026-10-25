@@ -183,7 +183,9 @@ function applyRoute(route){
     const p=window.tritonPayload;
     if(p&&Array.isArray(p.batches)){
       const prs=new Set(p.batches.map(b=>b.pr).filter(pr=>pr!=null)).size;
-      $('footerMeta').textContent=`${p.batches.length} BATCHES · ${prs} PR · 快照范围 · 采集于 ${date(Date.parse(p.collected_at))}`;
+      let foot=`${p.batches.length} BATCHES · ${prs} PR · 快照范围 · 采集于 ${date(Date.parse(p.collected_at))}`;
+      if(p.discovery&&p.discovery.boundary_note)foot+=' · '+p.discovery.boundary_note;
+      $('footerMeta').textContent=foot;
     }else if(tritonStatus==='failed')$('footerMeta').textContent='TRITON 数据读取失败';
     else $('footerMeta').textContent='';
   }else if(cross&&!repositoryIndex)$('footerMeta').textContent='';

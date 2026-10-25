@@ -559,6 +559,20 @@ class SummaryValidityTests(unittest.TestCase):
         self.assertEqual(payload["summary"]["valid"], 0)
         self.assertIsNone(payload["summary"]["p90"])
 
+    def test_payload_publishes_rerun_discovery_boundary_instead_of_claiming_fullness(self):
+        # ADR-018: without the lookback boundary the snapshot would silently claim
+        # completeness; with fetch_start it must publish the exact reverifiable scope.
+        payload = build_payload([], "2026-09-22T00:00:00Z", "2026-09-25T00:00:00Z",
+                                "2026-09-25T00:00:00Z", fetch_start="2026-09-08T00:00:00Z")
+        self.assertIn("discovery", payload)
+        self.assertEqual(payload["discovery"]["rerun_lookback_days"], 14)
+        self.assertEqual(payload["discovery"]["fetch_window_start"], "2026-09-08T00:00:00Z")
+        self.assertIn("不宣称全量", payload["discovery"]["boundary_note"])
+
+    def test_payload_omits_discovery_boundary_when_fetch_start_is_unknown(self):
+        payload = build_payload([], "2026-09-22T00:00:00Z", "2026-09-25T00:00:00Z", "2026-09-25T00:00:00Z")
+        self.assertNotIn("discovery", payload)
+
     def test_export_csv_distinguishes_zero_from_missing(self):
         payload = {"batches": [self.batch("success", 0), self.batch("success", None)]}
         tmp = Path(tempfile.mkdtemp(prefix="triton-csv-"))

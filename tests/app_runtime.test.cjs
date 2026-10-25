@@ -59,6 +59,14 @@ test('ADR-019: a legacy UBS repo link preserves its search and scope conditions'
   assert.equal(app.run('currentRepository'), 'ubs-engine');
 });
 
+test('ADR-018: Triton footer publishes the rerun discovery boundary, not a completeness claim', () => {
+  const app = createApp();
+  app.context.window.tritonPayload = { collected_at: '2026-10-22T00:00:00Z', batches: [], discovery: { boundary_note: 'run 列表按创建时间回溯 14 天，早于该边界的老 run 若新 attempt 发生在窗口内可能未被拉取，本快照不宣称全量' } };
+  app.run("navigate('#triton')");
+  assert.match(app.element('footerMeta').textContent, /不宣称全量/);
+  assert.match(app.element('footerMeta').textContent, /14 天/);
+});
+
 test('unknown project task and unsupported all-repository task never fall back to a different scope', () => {
   const app = createApp();
   for (const hash of ['#projects/triton/metrics', '#projects/ubs/overview?repository=ubs-engine&repository=ubs-comm']) {

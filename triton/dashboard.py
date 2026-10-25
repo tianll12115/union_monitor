@@ -613,7 +613,7 @@ def collect(hours=72, as_of=None):
             raise RuntimeError(f"PR association source requests failed for {len(source_failures)} runs; refusing to publish. See pr-association-errors.json")
 
     _write_json(EVIDENCE/"enriched-runs.json", enriched)
-    return build_payload(enriched, iso(start), iso(end), iso(datetime.now(UTC)), api.calls)
+    return build_payload(enriched, iso(start), iso(end), iso(datetime.now(UTC)), api.calls, fetch_start=iso(fetch_start))
 
 
 def valid_seconds(value):
@@ -663,12 +663,22 @@ def summary_of(batches, calls=0):
             "api_calls": calls}
 
 
-def build_payload(runs, window_start, window_end, collected_at, calls=0):
+def build_payload(runs, window_start, window_end, collected_at, calls=0, fetch_start=None):
     for row in runs:
         if row.get("conclusion") in ("skipped","neutral"): row["jobs_complete"]=True
     batches=build_batches(runs, window_end, window_start)
-    return {"repo":REPO,"window_start":window_start,"window_end":window_end,"collected_at":collected_at,
-            "batches":batches,"summary":summary_of(batches,calls)}
+    payload={"repo":REPO,"window_start":window_start,"window_end":window_end,"collected_at":collected_at,
+             "batches":batches,"summary":summary_of(batches,calls)}
+    # ADR-018: the run-list API filters by run *creation* time, so a run created
+    # more than RERUN_LOOKBACK before the window whose current attempt started
+    # inside the window is not discovered. Record the boundary explicitly so the
+    # snapshot never claims completeness it cannot verify.
+    if fetch_start:
+        payload["discovery"]={"rerun_lookback_days":RERUN_LOOKBACK.days,
+                              "fetch_window_start":fetch_start,
+                              "boundary_note":("run 列表按创建时间回溯 "+str(RERUN_LOOKBACK.days)
+                                               +" 天，早于该边界的老 run 若新 attempt 发生在窗口内可能未被拉取，本快照不宣称全量")}
+    return payload
 
 
 def export_csv(payload):

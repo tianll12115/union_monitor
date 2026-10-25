@@ -22,17 +22,19 @@ test('retired advanced panel is not rendered and has no hidden filters', async (
   await expect(page.locator('#qualityFilter')).toHaveCount(0);
 });
 
-test('[BASIC-005] state filter changes the analysis denominator and is clearable', async ({ page }) => {
+test('[BASIC-005] state filter narrows the list L without changing the KPI denominator S, and is clearable', async ({ page }) => {
   await readyRepo(page);
   await page.locator('#entity').selectOption('prs');
+  const total = Number(await page.locator('#prCount').innerText());
   await page.locator('#state').selectOption('merged');
   const bar = page.locator('#activeConditions');
   await expect(bar).toBeVisible();
   await expect(bar).toContainText('PR 状态＝已合入');
   await expect(bar).toContainText('有效分母');
   const denom = await denominatorText(page);
-  const count = await page.locator('#prCount').innerText();
-  expect(denom).toContain(count);
+  const merged = Number(await page.locator('#prCount').innerText());
+  expect(denom).toContain(String(total)); // ADR-017: S denominator keeps the full set
+  expect(merged).toBeLessThan(total);     // ADR-017: L is narrowed by the state filter
   await page.locator('#clearConditions').click();
   await expect(bar).toBeHidden();
   expect(await page.locator('#state').inputValue()).toBe('');

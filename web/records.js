@@ -27,19 +27,41 @@
     return '';
   }
 
-  /* A finite number participates in sorting (including a legitimate 0);
-     null/undefined/non-finite is "unknown" and sorts last. ISO/date strings are
-     normalised to epoch milliseconds first (UAR-003), so start_at columns never
-     fall into the unknown bucket merely because they carry a timestamp string. */
+  /* ADR-016: duration/queue evidence is a finite, NON-NEGATIVE number. A
+     legitimate 0 participates; negatives, booleans and non-finite values are
+     "unknown" and carry the reason why, so they never masquerade as a real
+     duration in display or sort. */
+  function duration(value) {
+    if (value === 0) return { value: 0, reason: null };
+    if (typeof value === 'boolean') return { value: null, reason: 'boolean' };
+    if (typeof value === 'number') {
+      if (!Number.isFinite(value)) return { value: null, reason: 'non-finite' };
+      if (value < 0) return { value: null, reason: 'negative' };
+      return { value: value, reason: null };
+    }
+    if (value == null || (typeof value === 'string' && value.trim() === '')) return { value: null, reason: null };
+    if (typeof value !== 'string') return { value: null, reason: 'invalid-type' };
+    const n = Number(value);
+    if (!Number.isFinite(n)) return { value: null, reason: 'non-numeric' };
+    if (n < 0) return { value: null, reason: 'negative' };
+    return { value: n, reason: null };
+  }
+
+  /* A finite, non-negative number participates in sorting (including a
+     legitimate 0); null/undefined/non-finite/negative/boolean is "unknown" and
+     sorts last. ISO/date strings are normalised to epoch milliseconds first
+     (UAR-003), so start_at columns never fall into the unknown bucket merely
+     because they carry a timestamp string. */
   function numericValue(value) {
-    if (typeof value === 'number') return Number.isFinite(value) ? value : null;
+    if (typeof value === 'boolean') return null;
+    if (typeof value === 'number') return Number.isFinite(value) && value >= 0 ? value : null;
     if (value == null || value === '') return null;
     if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}([T ]|$)/.test(value)) {
       const t = Date.parse(value);
       return Number.isFinite(t) ? t : null;
     }
-    const n = Number(value);
-    return Number.isFinite(n) ? n : null;
+    const n = typeof value === 'string' ? Number(value) : NaN;
+    return Number.isFinite(n) && n >= 0 ? n : null;
   }
 
   function sortRecords(records, key, dir) {
@@ -98,6 +120,9 @@
     const out = [];
     for (const pr of (snapshot && snapshot.prs) || []) {
       for (const b of (pr.batches) || []) {
+        const rawQueue = (b.trigger && b.trigger.queue_ms != null) ? b.trigger.queue_ms : (b.queue_ms != null ? b.queue_ms : null);
+        const d = duration(b.e2e_ms);
+        const q = duration(rawQueue);
         out.push({
           entity: 'batch',
           project_id: 'ubs',
@@ -111,8 +136,10 @@
           author: pr.author || '',
           sha: b.sha || '',
           status: b.status || 'unknown',
-          duration_ms: b.e2e_ms,
-          queue_ms: (b.trigger && b.trigger.queue_ms != null) ? b.trigger.queue_ms : (b.queue_ms != null ? b.queue_ms : null),
+          duration_ms: d.value,
+          duration_reason: d.reason,
+          queue_ms: q.value,
+          queue_reason: q.reason,
           start_at: b.request_ms,
           end_at: b.end_ms,
           source_url: b.url || '',
@@ -127,6 +154,8 @@
   function tritonBatchRecords(rows, repoId) {
     const repo = repoId || 'triton-ascend';
     return (rows || []).map(function (b) {
+      const d = duration(b.duration_seconds);
+      const q = duration(b.npu_queue_seconds);
       return {
         entity: 'batch',
         project_id: 'triton',
@@ -135,8 +164,10 @@
         pr: b.pr != null ? b.pr : null,
         title: b.title || '',
         status: b.status || 'unknown',
-        duration_ms: b.duration_seconds != null ? b.duration_seconds * 1000 : null,
-        queue_ms: b.npu_queue_seconds != null ? b.npu_queue_seconds * 1000 : null,
+        duration_ms: d.value != null ? d.value * 1000 : null,
+        duration_reason: d.reason,
+        queue_ms: q.value != null ? q.value * 1000 : null,
+        queue_reason: q.reason,
         start_at: b.start_at != null ? Date.parse(b.start_at) : null,
         end_at: b.end_at != null ? Date.parse(b.end_at) : null,
         source_url: b.action_url || b.pr_url || b.url || '',
@@ -158,6 +189,7 @@
     SORT_KEYS,
     identity,
     numericValue,
+    duration,
     sortRecords,
     paginate,
     mergePages,

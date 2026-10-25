@@ -126,6 +126,22 @@ test('UAR-008: a bare records URL rebuilds full state from defaults, not prior r
   assert.equal(a.run('page'), 1, 'page resets');
 });
 
+test('ADR-008: a bare engineering URL rebuilds defaults instead of inheriting prior filter/page', () => {
+  const a = app();
+  captureRoute(a);
+  a.run(indexExpr());
+  a.run("applyProjectRoute({project:'ubs',task:'engineering',query:{q:'needle',state:'merged',ps:'50',page:'3'}})");
+  assert.equal(a.element('query').value, 'needle');
+  assert.equal(a.element('state').value, 'merged');
+  assert.equal(a.run('pageSize'), 50);
+  assert.equal(a.run('page'), 3);
+  a.run("applyProjectRoute({project:'ubs',task:'engineering',query:{}})");
+  assert.equal(a.element('query').value, '', 'search resets');
+  assert.equal(a.element('state').value, '', 'state resets');
+  assert.equal(a.run('pageSize'), 15, 'page size resets');
+  assert.equal(a.run('page'), 1, 'page resets');
+});
+
 test('UAR-008: clearing the state filter rewrites the URL', () => {
   const a = app();
   a.element('state').value = 'merged';

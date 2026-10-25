@@ -35,6 +35,9 @@
     if (o.entryId != null) {
       const hit = list.find(batch => matches(batch, o.entryId));
       if (hit) return { batch: hit, reason: 'entry' };
+      /* ADR-009: an explicit entry id that no longer matches must be reported as
+         invalid instead of silently falling back to the representative batch. */
+      return { batch: null, reason: 'invalid-entry', entryId: o.entryId };
     }
     let rep = null;
     if (o.representativeUrl != null) rep = list.find(batch => batch.url === o.representativeUrl);

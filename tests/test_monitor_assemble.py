@@ -64,6 +64,7 @@ def baseline_release():
                 "snapshot_version": "synthetic-triton-20261009",
                 "snapshot_path": "data/projects/triton/snapshots/synthetic-triton-20261009.json",
                 "snapshot_sha256": "b" * 64,
+                "metric_profile": "triton-commit-attempt-legacy",
                 "collected_at": "2026-10-09T00:10:00Z",
                 "window": {"time_basis": "batch_started_at", "start_at": "2026-10-05T23:30:00Z", "end_at": "2026-10-08T23:30:00Z"},
             }
@@ -95,6 +96,9 @@ class AssembleTests(unittest.TestCase):
         self.assertEqual(triton["snapshot_sha256"], "b" * 64)
         self.assertEqual(triton["collected_at"], "2026-10-09T00:10:00Z")
         self.assertEqual(triton["window"]["end_at"], "2026-10-08T23:30:00Z")
+        # ADR-006: the fallback preserves the old profile, never re-labels it to
+        # the current catalog definition.
+        self.assertEqual(triton["metric_profile"], "triton-commit-attempt-legacy")
 
     def test_failed_project_without_baseline_is_unavailable(self):
         release = assemble_release(

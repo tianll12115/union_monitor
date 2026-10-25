@@ -11,20 +11,59 @@ task still reports failure.
 
 from __future__ import annotations
 
+import json
+
 from .assemble import assemble_release
 from .baseline import ReleaseStore
+from .metrics import validate_profile
 from .public_verify import sha256_bytes
 
 
-def is_readable_fallback(entry: dict, archive_files: dict[str, bytes]) -> bool:
-    """A fallback is usable only if the trusted archive holds its snapshot bytes
-    with a matching fingerprint (schema/file present) and a readable profile."""
+def parse_snapshot_profile(data: bytes) -> str | None:
+    """Extract the declared metric_profile from a readable JSON snapshot.
+
+    Returns ``None`` when the bytes are not UTF-8 JSON or not an object, so a
+    non-JSON blob is never re-interpreted with current semantics.
+    """
+    try:
+        doc = json.loads(data.decode("utf-8"))
+    except (ValueError, UnicodeDecodeError):
+        return None
+    if not isinstance(doc, dict):
+        return None
+    return doc.get("metric_profile")
+
+
+def is_readable_fallback(entry: dict, archive_files: dict[str, bytes],
+                         *, compatible_profiles: dict[str, str] | None = None) -> bool:
+    """A fallback is usable only when the trusted archive holds a genuinely
+    readable, compatible snapshot (ADR-006).
+
+    The archived bytes must exist and match their fingerprint, parse as a JSON
+    object, and declare a ``metric_profile`` that resolves to a known profile
+    and equals this entry's profile (or is explicitly mapped to it). Non-JSON
+    bytes or an obsolete/unknown profile is rejected as unreadable, and the
+    original profile is never silently re-labelled.
+    """
     rel = entry.get("snapshot_path")
     if not rel or rel not in archive_files:
         return False
-    if entry.get("snapshot_sha256") and sha256_bytes(archive_files[rel]) != entry["snapshot_sha256"]:
+    data = archive_files[rel]
+    if entry.get("snapshot_sha256") and sha256_bytes(data) != entry["snapshot_sha256"]:
         return False
-    return True
+    declared = parse_snapshot_profile(data)
+    if declared is None:
+        return False
+    current = entry.get("metric_profile")
+    # The declared profile must resolve to this entry's profile, either directly
+    # or through an explicit compatibility mapping, and that resolved profile
+    # must itself be a known profile (never re-interpreted with current semantics).
+    resolved = declared
+    if resolved != current:
+        resolved = (compatible_profiles or {}).get(resolved)
+    if resolved != current:
+        return False
+    return not validate_profile(resolved)
 
 
 def _to_unavailable(entry: dict, error: str) -> dict:

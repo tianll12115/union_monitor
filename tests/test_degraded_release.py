@@ -1,5 +1,6 @@
 """UDR-027: degraded release with trusted fallback and failure policies."""
 import hashlib
+import json
 import shutil
 import tempfile
 import unittest
@@ -9,7 +10,7 @@ from monitor.assemble import is_publishable
 from monitor.baseline import ReleaseStore
 from monitor.catalog import Catalog
 from monitor.context import RunContext
-from monitor.release_policy import degraded_release
+from monitor.release_policy import degraded_release, is_readable_fallback
 
 ROOT = Path(__file__).resolve().parents[1]
 CATALOG = Catalog.load(ROOT / "catalog.json")
@@ -53,6 +54,10 @@ def report(pid, *, status="success", samples=None, **overrides):
     return value
 
 
+UBS_SNAP = json.dumps({"schema_version": 1, "metric_profile": "ubs-pr-representative-v1", "prs": []}).encode("utf-8")
+TRITON_SNAP = json.dumps({"schema_version": 1, "metric_profile": "triton-commit-attempt-v1", "batches": []}).encode("utf-8")
+
+
 def baseline_release(release_id="rel-0", release_status="verified"):
     return {
         "release_id": release_id,
@@ -60,24 +65,24 @@ def baseline_release(release_id="rel-0", release_status="verified"):
         "projects": {
             "ubs": {"task_status": "success", "data_mode": "fresh", "snapshot_version": "ubs-0",
                      "snapshot_path": "data/projects/ubs/snapshots/ubs-0.json",
-                     "snapshot_sha256": sha(b"ubs0"), "metric_profile": "ubs-pr-representative-v1",
+                     "snapshot_sha256": sha(UBS_SNAP), "metric_profile": "ubs-pr-representative-v1",
                      "collected_at": "2026-09-10T00:10:00Z",
                      "window": {"time_basis": "pr_created_at", "start_at": "2026-09-08T23:30:00Z", "end_at": "2026-09-09T23:30:00Z"}},
             "triton": {"task_status": "success", "data_mode": "fresh", "snapshot_version": "triton-0",
                         "snapshot_path": "data/projects/triton/snapshots/triton-0.json",
-                        "snapshot_sha256": sha(b"triton0"), "metric_profile": "triton-commit-attempt-v1",
+                        "snapshot_sha256": sha(TRITON_SNAP), "metric_profile": "triton-commit-attempt-v1",
                         "collected_at": "2026-09-10T00:10:00Z",
                         "window": {"time_basis": "batch_started_at", "start_at": "2026-10-05T23:30:00Z", "end_at": "2026-10-08T23:30:00Z"}},
         },
         "resources": {
-            "data/projects/ubs/snapshots/ubs-0.json": {"sha256": sha(b"ubs0"), "size": 4, "project": "ubs"},
-            "data/projects/triton/snapshots/triton-0.json": {"sha256": sha(b"triton0"), "size": 7, "project": "triton"},
+            "data/projects/ubs/snapshots/ubs-0.json": {"sha256": sha(UBS_SNAP), "size": len(UBS_SNAP), "project": "ubs"},
+            "data/projects/triton/snapshots/triton-0.json": {"sha256": sha(TRITON_SNAP), "size": len(TRITON_SNAP), "project": "triton"},
         },
     }
 
 
 def baseline_files(manifest):
-    return {rel: b"ubs0" if "ubs" in rel else b"triton0" for rel in manifest["resources"]}
+    return {rel: (UBS_SNAP if "ubs" in rel else TRITON_SNAP) for rel in manifest["resources"]}
 
 
 class DegradedReleaseTests(unittest.TestCase):
@@ -195,6 +200,38 @@ class DegradedReleaseTests(unittest.TestCase):
         )
         self.assertIsNone(release)
         self.assertIn("non-verified", block["baseline_fault"])
+
+
+class FallbackReadabilityTests(unittest.TestCase):
+    """ADR-006: a fallback is usable only when its archived snapshot is actually
+    readable JSON with a known, compatible metric_profile; the old profile is
+    preserved, never re-labelled to the current definition."""
+
+    def test_known_profile_matching_entry_is_readable(self):
+        entry = {"snapshot_path": "data/projects/triton/snapshots/t.json",
+                 "snapshot_sha256": sha(TRITON_SNAP), "metric_profile": "triton-commit-attempt-v1"}
+        self.assertTrue(is_readable_fallback(entry, {entry["snapshot_path"]: TRITON_SNAP}))
+
+    def test_non_json_bytes_are_unreadable_even_with_matching_hash(self):
+        data = b"not json"
+        entry = {"snapshot_path": "data/projects/triton/snapshots/t.json",
+                 "snapshot_sha256": sha(data), "metric_profile": "triton-commit-attempt-v1"}
+        self.assertFalse(is_readable_fallback(entry, {entry["snapshot_path"]: data}))
+
+    def test_obsolete_unknown_profile_is_unreadable(self):
+        data = json.dumps({"metric_profile": "obsolete-unknown-profile"}).encode("utf-8")
+        entry = {"snapshot_path": "data/projects/triton/snapshots/t.json",
+                 "snapshot_sha256": sha(data), "metric_profile": "triton-commit-attempt-v1"}
+        self.assertFalse(is_readable_fallback(entry, {entry["snapshot_path"]: data}))
+
+    def test_explicit_compatibility_mapping_admits_old_profile(self):
+        data = json.dumps({"metric_profile": "triton-commit-attempt-v0"}).encode("utf-8")
+        entry = {"snapshot_path": "data/projects/triton/snapshots/t.json",
+                 "snapshot_sha256": sha(data), "metric_profile": "triton-commit-attempt-v1"}
+        self.assertFalse(is_readable_fallback(entry, {entry["snapshot_path"]: data}))
+        self.assertTrue(is_readable_fallback(
+            entry, {entry["snapshot_path"]: data},
+            compatible_profiles={"triton-commit-attempt-v0": "triton-commit-attempt-v1"}))
 
 
 if __name__ == "__main__":

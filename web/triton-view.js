@@ -39,6 +39,15 @@
   let active = null;
   let mounted = null;
   let savedState = null;
+  let detailBatchId = null;
+
+  /* ADR-012: read the live triton engineering query from the hash. */
+  function readQuery() {
+    if (!root.location || !root.Router || !root.Router.parseRoute) return {};
+    const route = root.Router.parseRoute(String(root.location.hash));
+    return (route && route.view === 'projects' && route.project === 'triton' && route.query) || {};
+  }
+  const toList = value => (Array.isArray(value) ? value : (value ? [value] : []));
 
   function deactivate() {
     if (active) {
@@ -206,12 +215,29 @@
     const kE2eP90 = el('[data-role="kE2eP90"]'), kE2eP50 = el('[data-role="kE2eP50"]'), kE2eN = el('[data-role="kE2eN"]');
     const kNpuP90 = el('[data-role="kNpuP90"]'), kNpuP50 = el('[data-role="kNpuP50"]'), kNpuN = el('[data-role="kNpuN"]');
 
-    const selectedBranches = new Set(prevState ? prevState.branches : []);
-    let filter = prevState && prevState.filter ? prevState.filter : 'all';
-    let npuFilter = prevState && prevState.npuFilter ? prevState.npuFilter : 'all';
-    let showAll = prevState ? !!prevState.showAll : false, unknownTime = prevState ? !!prevState.unknownTime : false, tipPinned = false, tipTimer = 0, navDrag = null, lastPinnedMark = null;
+    /* ADR-012: a deep link seeds the complete state from the URL when present;
+       otherwise the previous mounted/saved state is reused as before. */
+    const query = readQuery();
+    const hasUrlState = ['branch', 'q', 'filter', 'npu', 'showAll', 'unknown', 'from', 'to', 'batch'].some(k => query[k] != null);
+    const urlState = hasUrlState ? {
+      branches: toList(query.branch),
+      search: typeof query.q === 'string' ? query.q : '',
+      filter: ['all', 'slow', 'failure', 'running'].includes(query.filter) ? query.filter : null,
+      npuFilter: ['all', 'failure', 'running'].includes(query.npu) ? query.npu : null,
+      showAll: query.showAll === '1',
+      unknownTime: query.unknown === '1',
+      start: query.from != null ? Number(query.from) : null,
+      end: query.to != null ? Number(query.to) : null,
+    } : null;
+    const initial = urlState || prevState;
+    detailBatchId = query.batch != null ? String(query.batch) : null;
+
+    const selectedBranches = new Set(initial ? initial.branches : []);
+    let filter = initial && initial.filter ? initial.filter : 'all';
+    let npuFilter = initial && initial.npuFilter ? initial.npuFilter : 'all';
+    let showAll = initial ? !!initial.showAll : false, unknownTime = initial ? !!initial.unknownTime : false, tipPinned = false, tipTimer = 0, navDrag = null, lastPinnedMark = null;
     let viewStart, viewEnd;
-    const recovered = prevState ? core.recoverWindow(prevState.start, prevState.end, domainStart, domainEnd) : null;
+    const recovered = initial ? core.recoverWindow(initial.start, initial.end, domainStart, domainEnd) : null;
     if (recovered) {
       viewStart = recovered.start;
       viewEnd = recovered.end;
@@ -256,8 +282,35 @@
       return `${s.batches} BATCHES · ${s.prs} PR · 当前筛选范围 · 采集于 ${fmtDate(D.collected_at)}`;
     };
 
-    if (prevState) {
-      if (prevState.search) searchInput.value = prevState.search;
+    /* ADR-012: every state change is mirrored into the hash so a copied link
+       reconstructs branches, the time window, search, chart filters and the
+       open detail. replaceState keeps the filter tweaks out of the history. */
+    const syncUrl = () => {
+      if (!root.history || !root.Router || !root.location) return;
+      const q = {};
+      const branches = [...selectedBranches].sort();
+      if (branches.length) q.branch = branches;
+      if (searchInput.value) q.q = searchInput.value;
+      if (filter !== 'all') q.filter = filter;
+      if (npuFilter !== 'all') q.npu = npuFilter;
+      if (showAll) q.showAll = '1';
+      if (unknownTime) q.unknown = '1';
+      if (detailBatchId != null) q.batch = detailBatchId;
+      q.from = Math.round(viewStart);
+      q.to = Math.round(viewEnd);
+      const target = '#projects/triton/engineering' + root.Router.serializeQuery(q);
+      if (root.location.hash !== target) root.history.replaceState(null, '', target);
+    };
+
+    /* ADR-012: opening a batch from any entry also records it in the URL. */
+    const openDetail = b => {
+      detailBatchId = b && b.id != null ? String(b.id) : null;
+      syncUrl();
+      if (root.openTritonDetail) root.openTritonDetail(b);
+    };
+
+    if (initial) {
+      if (initial.search) searchInput.value = initial.search;
       all('[data-filter]').forEach(x => x.classList.toggle('active', x.dataset.filter === filter));
       all('[data-npu-filter]').forEach(x => x.classList.toggle('active', x.dataset.npuFilter === npuFilter));
       if (recovered && recovered.adjusted) {
@@ -461,7 +514,7 @@
       syncBranchBadge([...selectedBranches]);
     }
 
-    function updateGlobal() { updateSummary(); redrawAll(); renderRows(); }
+    function updateGlobal() { updateSummary(); redrawAll(); renderRows(); syncUrl(); }
 
     /* ---- tooltip card（pin 逻辑移植自原看板） ---- */
     function tipHtml(b) {
@@ -521,14 +574,14 @@
         mark.onmouseenter = e => { clearTimeout(tipTimer); placeTip(e, b, html); };
         mark.onmousemove = e => { if (!tipPinned) placeTip(e, b, html); };
         mark.onmouseleave = () => { if (!tipPinned) tipTimer = setTimeout(() => hideTip(mark), 180); };
-        mark.onclick = e => { e.stopPropagation(); hideTip(); if (mark.dataset.kind !== 'npu' && root.openTritonDetail) root.openTritonDetail(b); else { tipPinned = true; lastPinnedMark = mark; placeTip(e, b, html); } };
+        mark.onclick = e => { e.stopPropagation(); hideTip(); if (mark.dataset.kind !== 'npu' && root.openTritonDetail) openDetail(b); else { tipPinned = true; lastPinnedMark = mark; placeTip(e, b, html); } };
         /* REQ-029 AC01: SVG marks carry no native button activation, so
            Enter/Space open the same unified detail from the keyboard. */
         mark.onkeydown = e => {
           if (e.key !== 'Enter' && e.key !== ' ') return;
           e.preventDefault();
           hideTip();
-          if (mark.dataset.kind !== 'npu' && root.openTritonDetail) { root.openTritonDetail(b); return; }
+          if (mark.dataset.kind !== 'npu' && root.openTritonDetail) { openDetail(b); return; }
           tipPinned = true;
           lastPinnedMark = mark;
           const r = mark.getBoundingClientRect();
@@ -569,6 +622,7 @@
     }
 
     function renderRows() {
+      syncUrl();
       const summary = currentSummary();
       const unknownPool = unknownTimePool();
       unknownTimeBtn.textContent = `时间未知${unknownPool.length ? `(${unknownPool.length})` : ''}`;
@@ -618,7 +672,7 @@
         main.onclick = e => {
           if (e.target.closest('a')) return; /* REQ-028 AC02: activating a link navigates, it must not also open the detail */
           const b = D.batches.find(x => String(x.id) === row.dataset.batchId);
-          if (b && root.openTritonDetail) root.openTritonDetail(b);
+          if (b && root.openTritonDetail) openDetail(b);
           else setRowOpen(row, !row.classList.contains('open'));
         };
       });
@@ -694,14 +748,14 @@
       if (!btn) return;
       filter = btn.dataset.filter;
       all('[data-filter]').forEach(x => x.classList.toggle('active', x === btn));
-      draw();
+      draw(); syncUrl();
     };
     el('[data-role="npuFilters"]').onclick = e => {
       const btn = e.target.closest('[data-npu-filter]');
       if (!btn) return;
       npuFilter = btn.dataset.npuFilter;
       all('[data-npu-filter]').forEach(x => x.classList.toggle('active', x === btn));
-      drawNpu();
+      drawNpu(); syncUrl();
     };
     el('.range-control').onclick = e => {
       const btn = e.target.closest('[data-hours]');
@@ -794,9 +848,11 @@
         return { branches: [...selectedBranches], search: searchInput.value, filter, npuFilter, showAll, unknownTime, start: viewStart, end: viewEnd };
       },
       footerText,
+      syncUrl,
     };
     mounted = { payload: D, container };
   }
 
-  return { render, deactivate };
+  const syncActiveUrl = () => { if (active && active.syncUrl) active.syncUrl(); };
+  return { render, deactivate, setDetailBatch: id => { detailBatchId = id == null ? null : String(id); syncActiveUrl(); }, clearDetailBatch: () => { detailBatchId = null; syncActiveUrl(); } };
 });

@@ -213,6 +213,7 @@ input[type=search]:focus{border-color:var(--accent)}
 .swatch-dash{border-top:2px dashed var(--chart-p90)}
 .swatch-tick{width:2px;height:12px;border:0;background:var(--ink);margin-left:12px}
 .swatch-dot{width:8px;height:8px;border-radius:50%;background:var(--chart-mean);border:0;margin-left:10px}
+.swatch-median{border-top:2px solid var(--text-3);opacity:.7}
 
 /* ---------- 14. Charts (shared SVG vocabulary) ---------- */
 .trend{height:211px;padding:0 15px;position:relative}

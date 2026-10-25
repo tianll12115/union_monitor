@@ -382,8 +382,8 @@ class SyntheticTreeTests(unittest.TestCase):
     def test_tampered_route_context_cleanup_exit_one(self):
         root = self.build_tree()
         self.tamper(root, 'app.js',
-                    'detailPR=null;detailRepo=null;detailSnapshot=null;detailChoice=null;tritonDetailBatch=null;}',
-                    'detailPR=null;detailSnapshot=null;}')
+                    'detailPR=null;detailRepo=null;detailSnapshot=null;detailChoice=null;tritonDetailBatch=null;if(window.TritonView?.clearDetailBatch)window.TritonView.clearDetailBatch();}',
+                    'detailPR=null;if(window.TritonView?.clearDetailBatch)window.TritonView.clearDetailBatch();}')
         code, report = self.run_tool(root)
         self.assertEqual(code, 1)
         self.assertIn('app.js:route_context_cleanup', report['source_contracts']['missing'])

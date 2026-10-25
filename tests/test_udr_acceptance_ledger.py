@@ -70,11 +70,24 @@ class LedgerHonestyTests(unittest.TestCase):
         self.assertIn("371/93", by_id["UDR-001"]["note"])
         self.assertIn("byte-for-byte", by_id["UDR-035"]["note"])
 
-    def test_all_new_release_modules_are_claimed_implemented_with_tests(self):
-        implemented = {r["id"] for r in self.requirements if r["status"] == "已实现"}
-        for module in ("UDR-024", "UDR-025", "UDR-026", "UDR-027", "UDR-028",
-                       "UDR-029", "UDR-030", "UDR-031", "UDR-034"):
-            self.assertIn(module, implemented, module)
+    def test_errata_separates_model_pass_from_production_evidence(self):
+        """ADR-003: historical module labels must not masquerade as real
+        production or recovery closure. The errata marks model-based claims
+        (test doubles) apart from production/frozen evidence, which stays
+        explicitly unverified when it is unavailable."""
+        errata = self.doc.get("errata")
+        self.assertIsNotNone(errata, "ledger must carry an ADR-003 errata")
+        entries = {e["id"]: e for e in errata["entries"]}
+        for req_id in ("UDR-024", "UDR-025", "UDR-027", "UDR-028",
+                       "UDR-030", "UDR-034", "UDR-038"):
+            with self.subTest(req=req_id):
+                self.assertIn(req_id, entries, req_id)
+                entry = entries[req_id]
+                self.assertEqual(entry["historical_status"], "已实现", req_id)
+                self.assertTrue(entry["model_evidence"].strip(), req_id)
+                self.assertIsNone(entry["production_or_frozen_evidence"], req_id)
+                self.assertIn("未验证", entry["verified_status"], req_id)
+        self.assertIn("not expand", errata["scope_policy"])
 
     def test_udr005_and_udr001_frozen_evidence_stay_honest(self):
         by_id = {r["id"]: r for r in self.requirements}

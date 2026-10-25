@@ -57,6 +57,9 @@ test('record search changes records while preserving analysis statistics',async(
 
 test('CSV download contains the selected records, independent of collapse',async({page})=>{
   await ready(page,'#triton');
+  // ADR-007: download reuses the displayed list. Entering "全部批次" makes the
+  // visible set the complete search pool, so the export equals the whole payload.
+  await page.getByRole('button',{name:'查看全部批次',exact:true}).click();
   const downloadEvent=page.waitForEvent('download');
   await page.getByRole('button',{name:'导出批次 CSV',exact:true}).click();
   const download=await downloadEvent;

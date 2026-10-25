@@ -46,6 +46,14 @@ test('P-007: an empty detail never fabricates a representative', () => {
   assert.equal(r.reason, 'empty');
 });
 
+test('ADR-009: an expired explicit entry id reports invalid-entry instead of silently falling back to representative', () => {
+  const batches = [batch('t/valid', 2, 2000)];
+  const r = D.defaultExpandedBatch(batches, { entryId: 't/expired', representativeUrl: 't/valid' });
+  assert.equal(r.batch, null);
+  assert.equal(r.reason, 'invalid-entry');
+  assert.equal(r.entryId, 't/expired');
+});
+
 test('P-007: taskTimeline normalises trigger + children into one ordered list', () => {
   const b = {
     trigger: { kind: 'trigger', number: 7, url: 't/7', queue_ms: 0, duration_ms: 1000, result: 'SUCCESS' },

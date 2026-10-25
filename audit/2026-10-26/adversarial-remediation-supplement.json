@@ -1,0 +1,184 @@
+{
+  "schema_version": 1,
+  "scope": "ADR-027..ADR-046 supplementary acceptance closure (2026-10-25 adversarial remediation)",
+  "policy": "Each entry records the existing test coverage that verifies the implemented part plus an explicit unverified gap where real browser/production/frozen evidence was not obtained this round. A 'verified' entry names a real, currently-existing test file; an 'unverified' gap is never relabeled as completed, per ADR-003's model-pass vs production-evidence separation.",
+  "supplements": [
+    {
+      "adr": "ADR-027",
+      "original_ac_ids": ["UDR-001-AC01", "UDR-001-AC02"],
+      "ac_ledger": [
+        {"ac": "ADR-027-AC01", "status": "partial", "verified_via": ["tests/test_triton_audit_gates.py", "tests/triton_audit_gates.test.cjs"], "unverified": "backend+Node unified qualification rule keeps unknown-PR original value and NPU independent, but the real page/threshold/export consumers' per-identity consistency was not browser-closed this round"},
+        {"ac": "ADR-027-AC02", "status": "unverified", "verified_via": ["tests/test_metric_profile_compat.py", "tests/eligibility.test.cjs"], "unverified": "finite non-negative and legal-zero regression present; the dedicated 371/93 frozen input is unavailable so the frozen-replay acceptance is not closed"},
+        {"ac": "ADR-027-AC03", "status": "unverified", "unverified": "real-entry per-AC evidence only partially captured; missing production/frozen evidence stays unverified"}
+      ]
+    },
+    {
+      "adr": "ADR-028",
+      "original_ac_ids": ["UDR-006-AC01"],
+      "ac_ledger": [
+        {"ac": "ADR-028-AC01", "status": "partial", "verified_via": ["web/units.js", "tests/units.test.cjs", "tests/test_triton_quality.py", "tests/test_monitor_duration.py"], "unverified": "batch start/as-of and approximate-origin labelling are implemented and profile is no longer project-cancelled, but the one-expand locate-source and time-unknown entry need real-browser per-identity verification"},
+        {"ac": "ADR-028-AC02", "status": "unverified", "unverified": "real-entry per-AC evidence only partially captured; missing real-browser evidence stays unverified"}
+      ]
+    },
+    {
+      "adr": "ADR-029",
+      "original_ac_ids": ["UDR-007-AC01", "UDR-007-AC02"],
+      "ac_ledger": [
+        {"ac": "ADR-029-AC01", "status": "partial", "verified_via": ["tests/test_representative.py", "tests/test_ubs_semantics.py"], "unverified": "UBS longest-representative/task-binding and Triton qualification algorithm have oracle regressions, but no end-to-end per-identity comparison of every page consumer against an independent oracle"},
+        {"ac": "ADR-029-AC02", "status": "partial", "verified_via": ["tests/test_ubs_semantics.py", "tests/test_metric_profile_compat.py"], "unverified": "page/README express project differences and denominators and list-search does not recompute the representative, but full window/profile compatibility migration is not yet verified against real data"},
+        {"ac": "ADR-029-AC03", "status": "unverified", "unverified": "real-entry per-AC evidence only partially captured; missing oracle/production evidence stays unverified"}
+      ]
+    },
+    {
+      "adr": "ADR-030",
+      "original_ac_ids": ["UDR-008-AC02"],
+      "ac_ledger": [
+        {"ac": "ADR-030-AC01", "status": "partial", "verified_via": ["tests/test_triton_audit_gates.py", "tests/test_triton_quality.py", "tests/test_verify_deployment.py"], "unverified": "qualification-file/UBS resource and manifest public bytes are checked, but the full public bundle (CSV, HTML/JS/CSS) is not byte-compared against the expected build this round; Triton JSON is only normalized-object compared"},
+        {"ac": "ADR-030-AC02", "status": "unverified", "unverified": "real-entry per-AC evidence only partially captured; missing public-byte evidence stays unverified"}
+      ]
+    },
+    {
+      "adr": "ADR-031",
+      "original_ac_ids": ["UDR-011-AC01", "UDR-011-AC02"],
+      "ac_ledger": [
+        {"ac": "ADR-031-AC01", "status": "partial", "verified_via": ["tests/workbench.test.cjs", "tests/app_runtime.test.cjs"], "unverified": "page preserves original collection time but there is no explicit this-round-status-not-provided prompt when release-read failure is silently set to null; needs a missing-report browser injection"},
+        {"ac": "ADR-031-AC02", "status": "partial", "verified_via": ["tests/workbench.test.cjs", "tests/browser/collection-status.spec.cjs"], "unverified": "UBS expresses failure/partial via index status but Triton only expresses page-read status; the current page does not consume a trusted release-collection failure report"},
+        {"ac": "ADR-031-AC03", "status": "unverified", "unverified": "real-entry per-AC evidence only partially captured; missing real-browser evidence stays unverified"}
+      ]
+    },
+    {
+      "adr": "ADR-032",
+      "original_ac_ids": ["UDR-018-AC01", "UDR-018-AC02"],
+      "ac_ledger": [
+        {"ac": "ADR-032-AC01", "status": "partial", "verified_via": ["web/records.js", "tests/records.test.cjs", "tests/browser/unified-records.spec.cjs"], "unverified": "31-record probe proves 15/30/50 concatenation equals the full stable sequence via the read-only probe, but no native-select/real-date matrix was executed"},
+        {"ac": "ADR-032-AC02", "status": "partial", "verified_via": ["web/records.js", "tests/query_state.test.cjs", "tests/browser/unified-detail.spec.cjs"], "unverified": "entity/sort switch resets page=1 and keeps S; Triton canonical page lacks public sort/pagination controls and old records query is dropped, and UBS unconditionally inherits page on engineering route"},
+        {"ac": "ADR-032-AC03", "status": "unverified", "unverified": "real-entry per-AC evidence only partially captured; missing real-browser evidence stays unverified"}
+      ]
+    },
+    {
+      "adr": "ADR-033",
+      "original_ac_ids": ["UDR-021-AC01", "UDR-021-AC02"],
+      "ac_ledger": [
+        {"ac": "ADR-033-AC01", "status": "partial", "verified_via": ["tests/test_monitor_adapters.py", "tests/test_monitor_collect.py", "tests/test_monitor_adapter_integration.py"], "unverified": "GitHub default collect legal-empty success through a transport stub is present; UBS default runner lacks a corresponding real transport-layer success/empty-data acceptance (only structural validator tests)"},
+        {"ac": "ADR-033-AC02", "status": "partial", "verified_via": ["tests/test_monitor_adapters.py", "tests/test_monitor_collect.py"], "unverified": "generic-exception and Triton error propagation have boundary regressions, but UBS source-error tests replace the whole runner; all real default error paths are not closed"},
+        {"ac": "ADR-033-AC03", "status": "unverified", "unverified": "real-entry per-AC evidence only partially captured; missing real transport evidence stays unverified"}
+      ]
+    },
+    {
+      "adr": "ADR-034",
+      "original_ac_ids": ["UDR-022-AC01", "UDR-022-AC02"],
+      "ac_ledger": [
+        {"ac": "ADR-034-AC01", "status": "partial", "verified_via": ["tests/test_monitor_artifacts.py"], "unverified": "shadow upload isolates by project/run/attempt and download uses merge-multiple:false, and loader produces a failed report for a missing report; but the evidence is directory simulation and static workflow, not a controlled real artifact transfer or shadow-download chain"},
+        {"ac": "ADR-034-AC02", "status": "partial", "verified_via": ["tests/test_monitor_artifacts.py"], "unverified": "loader validates run/SHA/profile/window/ownership/hash and rejects duplicate/disabled/out-of-bound artifacts, but monitor/artifacts.py and monitor/report.py do not read context.catalog_sha256 so configuration-fingerprint binding is not proven"},
+        {"ac": "ADR-034-AC03", "status": "unverified", "unverified": "real-entry per-AC evidence only partially captured; missing controlled real-transfer evidence stays unverified"}
+      ]
+    },
+    {
+      "adr": "ADR-035",
+      "original_ac_ids": ["UDR-029-AC01", "UDR-029-AC02"],
+      "ac_ledger": [
+        {"ac": "ADR-035-AC01", "status": "partial", "verified_via": ["tests/test_public_release_verifier.py", "tests/test_release_bundle.py"], "unverified": "success receipt proves public full files match the candidate rather than mutual self-consistency, but the full runtime/CSV set is not included and Triton JSON uses normalized-object comparison; PublicVerifier is exercised by tests only"},
+        {"ac": "ADR-035-AC02", "status": "partial", "verified_via": ["tests/test_public_release_verifier.py"], "unverified": "byte-tamper/identity-difference/network-exhaustion fail non-zero with no success record; there is no trusted-baseline production promotion so the whole verified transaction cannot be closed"},
+        {"ac": "ADR-035-AC03", "status": "unverified", "unverified": "real-entry per-AC evidence only partially captured; missing production public-byte evidence stays unverified"}
+      ]
+    },
+    {
+      "adr": "ADR-036",
+      "original_ac_ids": ["UDR-032-AC01", "UDR-032-AC02"],
+      "ac_ledger": [
+        {"ac": "ADR-036-AC01", "status": "partial", "verified_via": ["tests/test_run_report.py", "monitor/status_view.py", "tests/browser/collection-status.spec.cjs"], "unverified": "current snapshot time is shown but README lacks unified run-report/release-version wiring and in-place version/failure/unknown display is incomplete (workbench/matrix not required per EC scope)"},
+        {"ac": "ADR-036-AC02", "status": "partial", "verified_via": ["tests/test_run_report.py", "monitor/run_report.py"], "unverified": "run_report rejects wrong-ownership/wrong-window at the model level and page reload only re-reads, but production is not bound to a real per-round report so the missing-report-no-false-trust loop is not fully proven"},
+        {"ac": "ADR-036-AC03", "status": "unverified", "unverified": "real-entry per-AC evidence only partially captured; missing production-bound report evidence stays unverified"}
+      ]
+    },
+    {
+      "adr": "ADR-037",
+      "original_ac_ids": ["UDR-036-AC02"],
+      "ac_ledger": [
+        {"ac": "ADR-037-AC01", "status": "partial", "verified_via": ["tests/test_ci_gate.py", "tests/test_pages_workflow.py"], "unverified": "new-repo main remote protection readback and required-status/PR-rule/0-approval config are saved and match policy, but the real red-PR reject experiment and a real run where baseline SHA four-gates and final summary are all success were not executed"},
+        {"ac": "ADR-037-AC02", "status": "unverified", "unverified": "real-entry per-AC evidence only partially captured; missing real-remote-gate evidence stays unverified"}
+      ]
+    },
+    {
+      "adr": "ADR-038",
+      "original_ac_ids": ["UAR-001-AC01", "UAR-001-AC02"],
+      "ac_ledger": [
+        {"ac": "ADR-038-AC01", "status": "partial", "verified_via": ["web/app.js", "tests/frontend.test.cjs", "tests/browser/unified-records.spec.cjs"], "unverified": "default entity=prs and one-row-per-PR renderTable are implemented, but the E02 36-row full-pagination run was not executed this round"},
+        {"ac": "ADR-038-AC02", "status": "partial", "verified_via": ["tests/frontend.test.cjs", "web/app.js"], "unverified": "direct old entry defaults to PR and single-repo avoids cross-repo same-number, but renderTable caches by number so composite source identity is not deduplicated/verified at that layer"},
+        {"ac": "ADR-038-AC03", "status": "unverified", "unverified": "real-entry per-AC evidence only partially captured; missing frozen+real-browser traversal evidence stays unverified"}
+      ]
+    },
+    {
+      "adr": "ADR-039",
+      "original_ac_ids": ["UAR-002-AC01", "UAR-002-AC02"],
+      "ac_ledger": [
+        {"ac": "ADR-039-AC01", "status": "partial", "verified_via": ["tests/test_representative.py", "tests/test_ubs_detail.py", "tests/browser/unified-detail.spec.cjs"], "unverified": "representative uses the longest qualifying E2E and detail keeps all events/batches with coverage boundary, but the real 9-trigger/45-subtask sample was not rechecked this round"},
+        {"ac": "ADR-039-AC02", "status": "partial", "verified_via": ["tests/test_representative.py", "tests/test_ubs_detail.py"], "unverified": "finite-non-negative-with-zero, tie trigger/URL rule and same-representative tasks are implemented and unknown stays null, but real page and full export cross-check is missing"},
+        {"ac": "ADR-039-AC03", "status": "unverified", "unverified": "real-entry per-AC evidence only partially captured; missing real-page/export evidence stays unverified"}
+      ]
+    },
+    {
+      "adr": "ADR-040",
+      "original_ac_ids": ["UAR-005-AC01", "UAR-005-AC02"],
+      "ac_ledger": [
+        {"ac": "ADR-040-AC01", "status": "partial", "verified_via": ["tests/search_sl.test.cjs", "tests/test_ubs_filtering.py", "web/app.js"], "unverified": "PR search covers number/title/author/batch.sha and batch search covers author/sha/number with trim/lowercase, but the real hw-sgl and 0524f587 counts were not measured"},
+        {"ac": "ADR-040-AC02", "status": "partial", "verified_via": ["tests/search_sl.test.cjs", "tests/test_ubs_filtering.py"], "unverified": "q only filters filtered without changing analysisSet and export uses filtered with a clear-empty action, but no full export/search consistency matrix against the real list"},
+        {"ac": "ADR-040-AC03", "status": "unverified", "unverified": "real-entry per-AC evidence only partially captured; missing real-query/export evidence stays unverified"}
+      ]
+    },
+    {
+      "adr": "ADR-041",
+      "original_ac_ids": ["UAR-013-AC01", "UAR-013-AC02"],
+      "ac_ledger": [
+        {"ac": "ADR-041-AC01", "status": "partial", "verified_via": ["tests/test_freshness.py", "tests/triton_core.test.cjs", "web/app.js"], "unverified": "UBS meta start/end and collected_at are used separately but the range title is date-only, Triton lacks a second-precision full-range title, and export cannot carry full time metadata; the frozen 17:03:40/17:17:34 sample was not replayed"},
+        {"ac": "ADR-041-AC02", "status": "partial", "verified_via": ["tests/test_published_health.py", "tests/test_freshness.py"], "unverified": "workflow/health-script schedule-clock matrix is not verified this round; the current page only shows read-state and snapshot time without a full in-place recent-failure-source/reason explanation"},
+        {"ac": "ADR-041-AC03", "status": "unverified", "unverified": "real-entry per-AC evidence only partially captured; missing frozen-replay evidence stays unverified"}
+      ]
+    },
+    {
+      "adr": "ADR-042",
+      "original_ac_ids": ["EC-002-AC01", "EC-002-AC02"],
+      "ac_ledger": [
+        {"ac": "ADR-042-AC01", "status": "partial", "verified_via": ["tests/test_ubs_semantics.py", "tests/test_ubs_detail.py", "tests/test_ubs_csv.py"], "unverified": "overview computes P50/P90 from per-PR representative values and failed repos stay with dash metrics, and 16 model tests pass; the nine-repo real fixture and per-identity status rollup still need per-identity measurement"},
+        {"ac": "ADR-042-AC02", "status": "partial", "verified_via": ["tests/router_project.test.cjs", "tests/shell_wiring.test.cjs", "tests/browser/dashboard.spec.cjs"], "unverified": "one-click repo drill-down and a back-to-overview control are wired, but explicit scroll-position restore and browser-back position restore are not verified"},
+        {"ac": "ADR-042-AC03", "status": "unverified", "unverified": "real-entry per-AC evidence only partially captured; missing nine-repo real-fixture evidence stays unverified"}
+      ]
+    },
+    {
+      "adr": "ADR-043",
+      "original_ac_ids": ["EC-004-AC01", "EC-004-AC02"],
+      "ac_ledger": [
+        {"ac": "ADR-043-AC01", "status": "partial", "verified_via": ["tests/shell_wiring.test.cjs", "tests/workbench_view.test.cjs"], "unverified": "UBS one K1 card and Triton two cards are implemented and model-verified; the full page-content inventory needs a browser pass"},
+        {"ac": "ADR-043-AC02", "status": "partial", "verified_via": ["tests/workbench_view.test.cjs", "tests/browser/dashboard.spec.cjs"], "unverified": "PR count is marked as observed range and queue/execution charts with detail-source links are wired, but UBS failure/in-progress quick-locate is missing so the 2-click locate path is not fully closed"},
+        {"ac": "ADR-043-AC03", "status": "unverified", "unverified": "real-entry per-AC evidence only partially captured; missing full browser inventory evidence stays unverified"}
+      ]
+    },
+    {
+      "adr": "ADR-044",
+      "original_ac_ids": ["EC-005-AC01"],
+      "ac_ledger": [
+        {"ac": "ADR-044-AC01", "status": "partial", "verified_via": ["tests/test_representative.py", "tests/test_ubs_semantics.py"], "unverified": "independent model fixed-sample yields P50=25000ms/P90=29000ms and E2E 2/3 with failed-longest still representative, and 16 model tests pass; the UBS full-page fixed input and old-CSV compatibility joint regression is not yet done"},
+        {"ac": "ADR-044-AC02", "status": "unverified", "unverified": "real-entry per-AC evidence only partially captured; missing full-page/old-CSV joint evidence stays unverified"}
+      ]
+    },
+    {
+      "adr": "ADR-045",
+      "original_ac_ids": ["EC-008-AC01", "EC-008-AC02", "EC-008-AC03"],
+      "ac_ledger": [
+        {"ac": "ADR-045-AC01", "status": "partial", "verified_via": ["tests/workbench.test.cjs", "tests/browser/dashboard.spec.cjs"], "unverified": "main-card n/N, collection time, status counts and detail issues are readable, but UBS single-repo cancellation count is not in coverage and exclusion reasons are scattered across detail; a one-expand full keyboardable classification is not proven"},
+        {"ac": "ADR-045-AC02", "status": "partial", "verified_via": ["tests/browser/basic-load-recovery.spec.cjs", "tests/browser/error-guard.cjs"], "unverified": "load-failure keeps old snapshot and a hint, and dual-community failure journeys are registered, but actual time-identity/missing/bad-window results lack complete browser evidence"},
+        {"ac": "ADR-045-AC03", "status": "partial", "verified_via": ["web/triton-view.js", "tests/browser/dashboard.spec.cjs"], "unverified": "Triton time-unknown entry is reachable and excluded from the page set, but the unknown pool does not yet follow the current branch/search so it may show other-branch records; UBS has no such entry"},
+        {"ac": "ADR-045-AC04", "status": "unverified", "unverified": "real-entry per-AC evidence only partially captured; missing full browser evidence stays unverified"}
+      ]
+    },
+    {
+      "adr": "ADR-046",
+      "original_ac_ids": ["PSG-005-AC01", "PSG-005-AC02"],
+      "ac_ledger": [
+        {"ac": "ADR-046-AC01", "status": "partial", "verified_via": ["tests/browser/error-guard.cjs", "tests/browser/basic-load-recovery.spec.cjs"], "unverified": "all browser specs use the common error-guard and key-resource response/pageerror are guarded, but console Failed-to-load-resource and aborted requests are globally ignored so the guard still has a blanket exemption instead of only the injected expectation"},
+        {"ac": "ADR-046-AC02", "status": "partial", "verified_via": ["tests/browser/basic-load-recovery.spec.cjs", "tests/browser/error-guard.cjs"], "unverified": "dual-community first-read 503, bad-JSON/timeout, old re-read and recovery journeys exist, but re-read only compares KPI n or UBS table innerText (not the saved snapshot ID/collection time) and empty-set/bad-window distinct visible state is not fully proven"},
+        {"ac": "ADR-046-AC03", "status": "unverified", "unverified": "real-entry per-AC evidence only partially captured; missing full-fault-injection browser evidence stays unverified"}
+      ]
+    }
+  ]
+}

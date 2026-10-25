@@ -25,9 +25,17 @@ class TritonWorkflowTests(unittest.TestCase):
         self.assertNotIn("push:", self.workflow)
 
     def test_permissions_match_daily_build(self):
+        # ADR-005: contents:read is the only top-level default; the collect/build
+        # job inherits read-only, and only the deploy job holds Pages/OIDC write.
+        top = self.workflow.split("concurrency:", 1)[0]
+        self.assertIn("contents: read", top)
+        self.assertNotIn("pages: write", top)
+        self.assertNotIn("id-token: write", top)
+        deploy = self.workflow.split("\n  deploy:", 1)[1].split("\n  verify:", 1)[0]
         for permission in ("contents: read", "pages: write", "id-token: write"):
-            self.assertEqual(self.workflow.count(permission), 1)
-            self.assertIn(permission, self.pages)
+            self.assertIn(permission, deploy)
+        self.assertIn("pages: write", self.pages)
+        self.assertIn("id-token: write", self.pages)
 
     def test_concurrency_protects_running_pending_replaced_by_platform_default(self):
         # REQ-039/P04: cancel-in-progress:false only protects the RUNNING

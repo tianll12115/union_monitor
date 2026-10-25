@@ -129,3 +129,57 @@ test('entities: Triton has no PR E2E profile, so no PR aggregate is fabricated',
   assert.equal(R.entityLabel('batch'), '批次');
   assert.equal(R.entityLabel('pr'), 'PR');
 });
+
+test('ADR-016: duration() takes finite non-negative numbers only, recording the reason', () => {
+  assert.deepEqual(R.duration(0), { value: 0, reason: null });
+  assert.deepEqual(R.duration(12.5), { value: 12.5, reason: null });
+  assert.deepEqual(R.duration(-1), { value: null, reason: 'negative' });
+  assert.deepEqual(R.duration(true), { value: null, reason: 'boolean' });
+  assert.deepEqual(R.duration(false), { value: null, reason: 'boolean' });
+  assert.deepEqual(R.duration(Number.POSITIVE_INFINITY), { value: null, reason: 'non-finite' });
+  assert.deepEqual(R.duration(null), { value: null, reason: null });
+  assert.deepEqual(R.duration(''), { value: null, reason: null });
+  assert.deepEqual(R.duration('25'), { value: 25, reason: null });
+  assert.deepEqual(R.duration('abc'), { value: null, reason: 'non-numeric' });
+  assert.deepEqual(R.duration('-5'), { value: null, reason: 'negative' });
+});
+
+test('ADR-016: negative/boolean queue evidence is unknown with a reason while 0 stays valid', () => {
+  const snapshot = {
+    meta: { repository: 'ubs-engine' },
+    prs: [{
+      number: 100, title: 'A', state: 'merged', created_ms: 1, batches: [
+        { url: 'https://ci/x/1', number: 1, e2e_ms: 800, trigger: { queue_ms: -1 }, request_ms: 1, end_ms: 2, status: 'success' },
+        { url: 'https://ci/x/2', number: 2, e2e_ms: 900, trigger: { queue_ms: true }, request_ms: 3, end_ms: 4, status: 'success' },
+        { url: 'https://ci/x/3', number: 3, e2e_ms: 100, trigger: { queue_ms: 0 }, request_ms: 5, end_ms: 6, status: 'success' },
+        { url: 'https://ci/x/4', number: 4, e2e_ms: 200, trigger: { queue_ms: null }, request_ms: 7, end_ms: 8, status: 'success' },
+      ],
+    }],
+  };
+  const rows = R.ubsBatchRecords(snapshot);
+  const byNum = Object.fromEntries(rows.map(r => [r.number, r]));
+  assert.equal(byNum[1].queue_ms, null);
+  assert.equal(byNum[1].queue_reason, 'negative');
+  assert.equal(byNum[2].queue_ms, null);
+  assert.equal(byNum[2].queue_reason, 'boolean');
+  assert.equal(byNum[3].queue_ms, 0);
+  assert.equal(byNum[3].queue_reason, null);
+  assert.equal(byNum[4].queue_ms, null);
+  assert.equal(byNum[4].queue_reason, null);
+  const sorted = R.sortRecords(rows, 'queue', 'desc');
+  assert.equal(sorted[0].number, 3, 'legitimate 0 schedules before unknown');
+  assert.ok(sorted.slice(1).every(r => r.queue_ms == null), 'invalid and missing evidence sort as unknown');
+});
+
+test('ADR-016: Triton boolean/negative seconds collapse to unknown too', () => {
+  const rows = R.tritonBatchRecords([
+    { id: 'run-1', duration_seconds: true, npu_queue_seconds: -3 },
+    { id: 'run-2', duration_seconds: 0, npu_queue_seconds: 0 },
+  ], 'triton-ascend');
+  assert.equal(rows[0].duration_ms, null);
+  assert.equal(rows[0].duration_reason, 'boolean');
+  assert.equal(rows[0].queue_ms, null);
+  assert.equal(rows[0].queue_reason, 'negative');
+  assert.equal(rows[1].duration_ms, 0);
+  assert.equal(rows[1].queue_ms, 0);
+});

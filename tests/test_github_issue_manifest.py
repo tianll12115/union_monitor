@@ -12,6 +12,7 @@ BACKLOG = ROOT / "docs/requirements/2026-10-22-github-issue-backlog.md"
 ID_PATTERN = r"(?:UDR|UAR|EC|PSG)-\d{3}"
 AC_PATTERN = ID_PATTERN + r"-AC\d{2}"
 REPOSITORY_URL = "https://github.com/tianli-Backkom/union_monitor"
+NEW_REPOSITORY_URL = "https://github.com/tianll12115/union_monitor"
 
 
 def validate_manifest(data):
@@ -68,6 +69,18 @@ def validate_manifest(data):
     for item_id in adapted:
         body = next(item["body"] for item in issues if item_id in item["source_ids"])
         assert "历史AC→当前验收映射" in body
+    # ADR-026: the manifest must declare the new repository's local-ledger
+    # tracking, and no issue URL may point to the new repository.
+    migration = data["tracking_migration"]
+    assert migration["schema_version"] == 1
+    assert migration["historical_repository"] == "tianli-Backkom/union_monitor"
+    assert migration["current_repository"] == "tianll12115/union_monitor"
+    assert migration["mode"] == "local_ledger"
+    assert migration["issue_migration"] == "not_migrated"
+    for item in issues:
+        if item.get("url"):
+            assert item["url"].startswith(REPOSITORY_URL + "/"), item["key"]
+            assert not item["url"].startswith(NEW_REPOSITORY_URL + "/"), item["key"]
     return True
 
 
@@ -80,6 +93,20 @@ class GitHubIssueManifestTests(unittest.TestCase):
 
     def test_manifest_preserves_all_requirements_and_acceptance(self):
         self.assertTrue(validate_manifest(self.data))
+
+    def test_tracking_migration_declares_local_ledger_not_new_issues(self):
+        migration = self.data["tracking_migration"]
+        self.assertEqual(migration["historical_repository"], "tianli-Backkom/union_monitor")
+        self.assertEqual(migration["current_repository"], "tianll12115/union_monitor")
+        self.assertEqual(migration["mode"], "local_ledger")
+        self.assertEqual(migration["issue_migration"], "not_migrated")
+        self.assertTrue(all(
+            not (item.get("url") or "").startswith(NEW_REPOSITORY_URL)
+            for item in self.data["issues"]), "new repo must not claim old-repo issues")
+
+    def test_old_repo_suspension_is_not_a_new_repo_blocker(self):
+        self.assertIn("does not treat the old account's suspension",
+                      self.data["tracking_migration"]["decision"])
 
     def test_missing_or_duplicate_requirement_is_rejected(self):
         for mutate in (

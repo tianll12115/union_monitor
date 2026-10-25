@@ -25,12 +25,17 @@ def run(row_id, attempt=1):
     return {"id": row_id, "run_attempt": attempt}
 
 
-def workflow(row_id, attempt=1):
-    return {"id": row_id, "attempt": attempt}
+def workflow(row_id, attempt=1, pr=None, jobs=None):
+    w = {"id": row_id, "attempt": attempt}
+    if pr is not None:
+        w["pr"] = pr
+        w["jobs"] = jobs if jobs is not None else []
+        w["jobs_complete"] = True
+    return w
 
 
-def batch(row_id, attempt, pr=None):
-    b = {"id": f"run:{row_id}:attempt:{attempt}", "workflows": [workflow(row_id, attempt)]}
+def batch(row_id, attempt, pr=None, jobs=None):
+    b = {"id": f"run:{row_id}:attempt:{attempt}", "workflows": [workflow(row_id, attempt, pr, jobs)]}
     if pr is not None:
         b["pr"] = pr
     return b
@@ -68,7 +73,7 @@ class EnumerationVerificationTests(unittest.TestCase):
             write_pr(pr_dir, 2, 101)
             report = verify_enumeration(runs, jobs_dir, payload, pr_dir=pr_dir)
             self.assertEqual(report["status"], "verified")
-            for category in ("workflow_attempt_enumeration", "job_enumeration", "pr_association"):
+            for category in ("workflow_attempt_enumeration", "job_enumeration", "pr_association", "pr_binding"):
                 self.assertEqual(report["categories"][category]["status"], "verified", category)
                 self.assertEqual(report["categories"][category]["differences"], 0, category)
                 self.assertEqual(report["categories"][category]["missing_evidence"], 0, category)
@@ -181,7 +186,7 @@ class EnumerationVerificationTests(unittest.TestCase):
             self.assertEqual(ev["pr_association_files"], 2)
             self.assertEqual(ev["published_batches"], 2)
             self.assertEqual(ev["published_prs"], 2)
-            self.assertEqual(set(doc["categories"]), {"workflow_attempt_enumeration", "job_enumeration", "pr_association"})
+            self.assertEqual(set(doc["categories"]), {"workflow_attempt_enumeration", "job_enumeration", "pr_association", "pr_binding"})
 
     def test_evidence_window_mismatch_is_recorded(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -192,6 +197,52 @@ class EnumerationVerificationTests(unittest.TestCase):
             payload = {"window_start": "C", "window_end": "D", "batches": [batch(1, 1)]}
             doc = build_coverage_evidence(runs_json, jobs_dir, payload)
             self.assertFalse(doc["evidence"]["window_matches_payload"])
+            # ADR-001: a raw-vs-published window difference blocks a verified verdict.
+            self.assertEqual(doc["status"], "differences_found")
+            self.assertIn("window_mismatch", doc)
+
+
+    def test_published_identity_absent_from_raw_is_a_difference(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            jobs_dir = Path(tmp) / "jobs"
+            jobs_dir.mkdir()
+            runs = [run(1, 1)]
+            write_job(jobs_dir, 1, 1)
+            payload = {"batches": [batch(1, 1), batch(2, 1)]}  # run 2 published but never enumerated
+            report = verify_enumeration(runs, jobs_dir, payload)
+            cat = report["categories"]["workflow_attempt_enumeration"]
+            self.assertEqual(cat["status"], "differences_found")
+            self.assertIn("run 2 attempt 1", "; ".join(cat["difference_details"]))
+            self.assertNotEqual(report["status"], "verified")
+
+    def test_raw_job_count_mismatch_with_published_is_a_difference(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            jobs_dir = Path(tmp) / "jobs"
+            jobs_dir.mkdir()
+            runs = [run(1, 1)]
+            write_job(jobs_dir, 1, 1, rows=[{"name": f"job-{i}"} for i in range(10)])
+            payload = {"batches": [batch(1, 1, pr=100, jobs=[])]}  # published with zero jobs
+            report = verify_enumeration(runs, jobs_dir, payload)
+            cat = report["categories"]["job_enumeration"]
+            self.assertEqual(cat["status"], "differences_found")
+            self.assertIn("raw job count 10 != published job count 0", " ".join(cat["difference_details"]))
+            self.assertNotEqual(report["status"], "verified")
+
+    def test_run_to_pr_binding_mismatch_is_a_difference(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            jobs_dir = Path(tmp) / "jobs"
+            jobs_dir.mkdir()
+            pr_dir = Path(tmp) / "pr"
+            pr_dir.mkdir()
+            runs = [run(999, 1)]
+            write_job(jobs_dir, 999, 1)
+            write_pr(pr_dir, 999, 7)  # raw evidence binds run 999 to PR 7
+            payload = {"batches": [batch(999, 1, pr=8)]}  # published binds run 999 to PR 8
+            report = verify_enumeration(runs, jobs_dir, payload, pr_dir=pr_dir)
+            cat = report["categories"]["pr_binding"]
+            self.assertEqual(cat["status"], "differences_found")
+            self.assertIn("raw association binds run 999 to PR 7 but published binds it to PR 8", " ".join(cat["difference_details"]))
+            self.assertNotEqual(report["status"], "verified")
 
 
 if __name__ == "__main__":

@@ -71,3 +71,34 @@ test('submitted sort places unknown last and ties by PR number descending',()=>{
   ],'submitted').map(p=>p.number);
   assert.deepEqual(order,[5,1,9]);
 });
+
+test('ADR-021: a push beyond the snapshot cutoff is excluded, never sorted front',()=>{
+  const cutoff=ms('2026-10-22T09:00:00+08:00');
+  const p={number:1,repository:'r',url:'u/1',events:[ev('push','2026-10-22T09:30:00+08:00','operate_logs')]};
+  assert.equal(M.submissionValue(p,cutoff),null);
+});
+
+test('ADR-021: legacy latest_submission_ms=0 is unknown, not epoch zero',()=>{
+  const p={number:1,repository:'r',url:'u/1',submission_time_profile:'ubs-latest-code-submission-v1',latest_submission_ms:0};
+  assert.equal(M.submissionValue(p),null);
+  assert.equal(M.submissionDetail(p).ms,null);
+});
+
+test('ADR-021: legacy derivation falls back to the in-window create event when a push is future',()=>{
+  const cutoff=ms('2026-10-22T09:00:00+08:00');
+  const p={number:1,repository:'r',url:'u/1',events:[
+    ev('create','2026-10-22T08:00:00+08:00','PR.created_at'),
+    ev('push','2026-10-22T09:30:00+08:00','operate_logs')]};
+  assert.equal(M.submissionValue(p,cutoff),ms('2026-10-22T08:00:00+08:00'));
+});
+
+test('ADR-021: partial logging failure yields unknown ms, never the observed create time',()=>{
+  const cutoff=ms('2026-10-22T09:00:00+08:00');
+  const p={number:3,repository:'r',url:'u/3',
+    events:[ev('create','2026-10-22T08:00:00+08:00','PR.created_at')],
+    issues:['操作日志采集失败: timeout']};
+  const d=M.submissionDetail(p,cutoff);
+  assert.equal(d.ms,null);
+  assert.equal(d.status,'partial');
+  assert.equal(M.submissionValue(p,cutoff),null);
+});

@@ -15,26 +15,29 @@ async function total(page) {
 }
 
 // Independent oracle for the submission-time order — recomputed from the served
-// snapshot, never from the production sort function. Unknown (no create/push)
-// sorts last; ties by PR number desc.
-function oracleSubmission(p) {
+// snapshot, never from the production sort function. Unknown (no create/push,
+// a legacy ``0`` sentinel, or a time beyond the snapshot cutoff) sorts last;
+// ties by PR number desc. Mirrors Metrics.submissionDetail's cutoff semantics.
+function oracleSubmission(p, cutoffMs) {
   if (p.submission_time_profile === 'ubs-latest-code-submission-v1') {
     const v = p.latest_submission_ms;
-    return (typeof v === 'number' && Number.isFinite(v) && v >= 0) ? v : null;
+    return (typeof v === 'number' && Number.isFinite(v) && v > 0 && (cutoffMs == null || v <= cutoffMs)) ? v : null;
   }
   if (p.submission_events_status === 'partial' || p.submission_events_status === 'unknown') return null;
   if ((p.issues || []).some(s => String(s).includes('操作日志采集失败'))) return null;
   let best = null;
   for (const e of (p.events || [])) {
-    if (e.kind !== 'create' && e.kind !== 'push') continue;
+    const kind = e.kind;
+    const src = e.source || (kind === 'create' ? 'PR.created_at' : kind === 'push' ? 'operate_logs' : kind);
+    if (!((kind === 'create' && src === 'PR.created_at') || (kind === 'push' && src === 'operate_logs'))) continue;
     const v = e.time_ms;
-    if (typeof v === 'number' && Number.isInteger(v) && v >= 0 && (best === null || v > best)) best = v;
+    if (typeof v === 'number' && Number.isInteger(v) && v > 0 && (cutoffMs == null || v <= cutoffMs) && (best === null || v > best)) best = v;
   }
   return best;
 }
 
-function expectedSubmittedOrder(prs) {
-  const values = prs.map(p => ({ p, s: oracleSubmission(p) }));
+function expectedSubmittedOrder(prs, cutoffMs) {
+  const values = prs.map(p => ({ p, s: oracleSubmission(p, cutoffMs) }));
   values.sort((a, b) => {
     const as = a.s, bs = b.s;
     if (as === null && bs === null) return b.p.number - a.p.number;
@@ -51,7 +54,7 @@ test('[BASIC-004] the full >=31-PR submitted sequence survives 15/30/50 paginati
   const payload = await page.evaluate(async () => await (await fetch('data/repos/ubs-engine.json')).json());
   const prs = payload.prs;
   expect(prs.length).toBeGreaterThanOrEqual(31);
-  const expected = expectedSubmittedOrder(prs);
+  const expected = expectedSubmittedOrder(prs, payload.meta && payload.meta.end_ms);
 
   await page.locator('#sort').selectOption('submitted');
   await expect(page.locator('#prRows tr[data-pr]').first()).toBeVisible();
@@ -124,7 +127,7 @@ test('triton records collapse into the merged charts + list view', async ({ page
   await page.goto('./#projects/triton/records');
   await expect(page.locator('#reload')).toBeEnabled();
   await expect(page.locator('#triton-view')).toBeVisible();
-  await expect.poll(() => page.evaluate(() => location.hash)).toBe('#projects/triton/engineering');
+  await expect.poll(() => page.evaluate(() => location.hash)).toMatch(/^#projects\/triton\/engineering/);
   // Two diagnostic charts and exactly one records list share the page.
   await expect(page.locator('#triton-view [data-role="chart"]')).toBeVisible();
   await expect(page.locator('#triton-view [data-role="npuChart"]')).toBeVisible();

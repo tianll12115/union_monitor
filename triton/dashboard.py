@@ -536,6 +536,79 @@ def augment_base_branches(runs, fetch_missing=False, api=None):
     return runs
 
 
+def _load_previous_unresolved(evidence):
+    """Load runs a previous round left unresolved, if any persisted (ADR-004)."""
+    runs_file = evidence / "enriched-runs.json"
+    if not runs_file.exists():
+        return []
+    try:
+        previous = json.loads(runs_file.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return []
+    if not isinstance(previous, list):
+        return []
+    return [dict(r) for r in previous
+            if (r.get("pr_evidence") or {}).get("method") == "unresolved"]
+
+
+def recover_previous_identities(evidence, resolver):
+    """Append-only cross-version identity recovery (ADR-004).
+
+    Re-attempt association for runs a previous round left unresolved and append
+    each migration record (previous unknown state + newly recovered method) to
+    ``identity-migrations.json``. Prior records are preserved — nothing is
+    overwritten or dropped.
+    """
+    from .pr_identity import recover_identities
+    previous = _load_previous_unresolved(evidence)
+    if not previous:
+        return []
+    records = recover_identities(previous, resolver)
+    if not records:
+        return []
+    migrations_file = evidence / "identity-migrations.json"
+    migrations = []
+    if migrations_file.exists():
+        try:
+            migrations = json.loads(migrations_file.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            migrations = []
+    if not isinstance(migrations, list):
+        migrations = []
+    for record in records:
+        record["recovered_at"] = iso(datetime.now(UTC))
+        migrations.append(record)
+    _write_json(migrations_file, migrations)
+    return records
+
+
+def build_coverage_ledger(runs, payload, window_end):
+    """Bind this round's raw runs to a per-identity coverage ledger (ADR-004).
+
+    Every unique ``(run_id, attempt)`` identity is classified as ``public``
+    (present in the published payload), ``out_of_window`` (excluded because its
+    batch start falls before the display window) or ``other`` (documented
+    exclusion). The ledger carries a SHA-256 fingerprint of the raw identities
+    so a later round cannot silently re-derive an old balance. Unavailable
+    historical gaps (e.g. the frozen 887/885 replay) are never substituted here.
+    """
+    from .coverage_ledger import build_ledger
+    all_batches = build_batches(runs, window_end, None)
+    public = {(w["id"], int(w.get("attempt") or 1))
+              for b in payload.get("batches", []) for w in b.get("workflows", [])}
+    published = {(w["id"], int(w.get("attempt") or 1))
+                 for b in all_batches for w in b.get("workflows", [])}
+    out_of_window = {ident: "batch start falls before the display window"
+                     for ident in sorted(published - public)}
+    ledger = build_ledger(runs, public=public, out_of_window=out_of_window)
+    fingerprint = hashlib.sha256(
+        json.dumps(sorted((r.get("id"), int(r.get("run_attempt") or 1)) for r in runs),
+                   sort_keys=True).encode("utf-8")
+    ).hexdigest()
+    ledger["raw_fingerprint"] = fingerprint
+    return ledger
+
+
 def collect(hours=72, as_of=None):
     api=GitHub(); end=dt(as_of) if as_of else datetime.now(UTC).replace(microsecond=0); start=end-timedelta(hours=hours)
     EVIDENCE.mkdir(parents=True, exist_ok=True)
@@ -563,6 +636,9 @@ def collect(hours=72, as_of=None):
     # PRs from forks can have empty run.pull_requests and commit/pulls responses.
     from .pr_identity import PRResolver, association_error_kind
     resolver=PRResolver(api,EVIDENCE/"pr-associations")
+    # ADR-004: recover identities a previous round left unresolved, appending
+    # migration evidence instead of overwriting the previous round's records.
+    recover_previous_identities(EVIDENCE, resolver)
     enriched=[]
     association_errors=[]
     for index,r in enumerate(runs,1):
@@ -613,7 +689,11 @@ def collect(hours=72, as_of=None):
             raise RuntimeError(f"PR association source requests failed for {len(source_failures)} runs; refusing to publish. See pr-association-errors.json")
 
     _write_json(EVIDENCE/"enriched-runs.json", enriched)
-    return build_payload(enriched, iso(start), iso(end), iso(datetime.now(UTC)), api.calls)
+    payload = build_payload(enriched, iso(start), iso(end), iso(datetime.now(UTC)), api.calls, fetch_start=iso(fetch_start))
+    # ADR-004: bind a per-identity coverage ledger to this round's raw runs.
+    _write_json(EVIDENCE/"coverage-ledger.json",
+                build_coverage_ledger(enriched, payload, iso(end)))
+    return payload
 
 
 def valid_seconds(value):
@@ -663,12 +743,22 @@ def summary_of(batches, calls=0):
             "api_calls": calls}
 
 
-def build_payload(runs, window_start, window_end, collected_at, calls=0):
+def build_payload(runs, window_start, window_end, collected_at, calls=0, fetch_start=None):
     for row in runs:
         if row.get("conclusion") in ("skipped","neutral"): row["jobs_complete"]=True
     batches=build_batches(runs, window_end, window_start)
-    return {"repo":REPO,"window_start":window_start,"window_end":window_end,"collected_at":collected_at,
-            "batches":batches,"summary":summary_of(batches,calls)}
+    payload={"repo":REPO,"window_start":window_start,"window_end":window_end,"collected_at":collected_at,
+             "batches":batches,"summary":summary_of(batches,calls)}
+    # ADR-018: the run-list API filters by run *creation* time, so a run created
+    # more than RERUN_LOOKBACK before the window whose current attempt started
+    # inside the window is not discovered. Record the boundary explicitly so the
+    # snapshot never claims completeness it cannot verify.
+    if fetch_start:
+        payload["discovery"]={"rerun_lookback_days":RERUN_LOOKBACK.days,
+                              "fetch_window_start":fetch_start,
+                              "boundary_note":("run 列表按创建时间回溯 "+str(RERUN_LOOKBACK.days)
+                                               +" 天，早于该边界的老 run 若新 attempt 发生在窗口内可能未被拉取，本快照不宣称全量")}
+    return payload
 
 
 def export_csv(payload):

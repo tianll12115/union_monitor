@@ -126,6 +126,22 @@ test('UAR-008: a bare records URL rebuilds full state from defaults, not prior r
   assert.equal(a.run('page'), 1, 'page resets');
 });
 
+test('ADR-008: a bare engineering URL rebuilds defaults instead of inheriting prior filter/page', () => {
+  const a = app();
+  captureRoute(a);
+  a.run(indexExpr());
+  a.run("applyProjectRoute({project:'ubs',task:'engineering',query:{q:'needle',state:'merged',ps:'50',page:'3'}})");
+  assert.equal(a.element('query').value, 'needle');
+  assert.equal(a.element('state').value, 'merged');
+  assert.equal(a.run('pageSize'), 50);
+  assert.equal(a.run('page'), 3);
+  a.run("applyProjectRoute({project:'ubs',task:'engineering',query:{}})");
+  assert.equal(a.element('query').value, '', 'search resets');
+  assert.equal(a.element('state').value, '', 'state resets');
+  assert.equal(a.run('pageSize'), 15, 'page size resets');
+  assert.equal(a.run('page'), 1, 'page resets');
+});
+
 test('UAR-008: clearing the state filter rewrites the URL', () => {
   const a = app();
   a.element('state').value = 'merged';
@@ -162,4 +178,18 @@ test('UAR-006/UAR-007: the detail binds and round-trips the selected batch ident
   assert.ok(urlWithBatch.includes('pr=100'), 'URL carries pr');
   const parsed = a.run(`Router.parseRoute(${JSON.stringify(urlWithBatch)})`);
   assert.equal(parsed.query.batch, 'https://ci/trigger/1');
+});
+
+test('ADR-014: expanding another batch rebinds the selected batch for task export', () => {
+  const a = app();
+  a.run('snapshot=' + JSON.stringify(fixture()));
+  a.run(indexExpr());
+  a.run("currentRepository='ubs-engine';view='ubs-repo';entity='prs'");
+  a.run("openDetail(100,'https://ci/trigger/1',false)");
+  assert.equal(a.run('detailChoice.batch.url'), 'https://ci/trigger/1');
+  a.run('selectDetailBatch(detailPR.batches[1])');
+  assert.equal(a.run('detailChoice.batch.url'), 'https://ci/trigger/2', 'the expanded batch becomes the export target');
+  assert.equal(a.run('detailChoice.reason'), 'expanded');
+  assert.equal(a.run('recordsState().batch'), 'https://ci/trigger/2', 'the URL now selects the expanded batch');
+  assert.match(a.run("$('exportBatchTasks').title"), /Trigger #2/);
 });

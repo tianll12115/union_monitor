@@ -41,7 +41,9 @@ def _fallback_entry(project: dict, task_status: str, base: dict | None, error: s
             "snapshot_path": base.get("snapshot_path"),
             "snapshot_sha256": base.get("snapshot_sha256"),
             "source_release_id": base.get("release_id"),
-            "metric_profile": project["metric_profile"],
+            # ADR-006: preserve the old snapshot's profile, never re-label it to
+            # the current catalog definition.
+            "metric_profile": base.get("metric_profile") or project["metric_profile"],
             "window": base.get("window"),
             "collected_at": base.get("collected_at"),
             "artifact": base.get("artifact"),

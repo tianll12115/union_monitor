@@ -18,6 +18,7 @@ from .context import RunContext, iso_utc
 from .plan import plan
 from .report import validate_report
 from .assemble import assemble_release
+from .bundle import extra_project_ids, fresh_snapshot_checks
 from .collect import collect_project
 from .verify import verify_deployment, mark_verified
 from .rollback import rollback
@@ -87,6 +88,28 @@ def cmd_assemble(args: argparse.Namespace) -> int:
     inputs = _load_json(args.inputs)
     reports = inputs.get("projects") if isinstance(inputs.get("projects"), dict) else inputs
     baseline = _load_json(args.baseline) if args.baseline else None
+    # ADR-002: the public assemble entry independently verifies real bytes,
+    # ownership, context and the complete resource closure before assembling —
+    # a report's self-declared success/passed/version/hash is never trusted.
+    resource_root = args.resource_root or context.artifact_root
+    if not resource_root:
+        print("assemble: no resource root (--resource-root or context artifact_root); refusing to publish unverified resources", file=sys.stderr)
+        return 1
+    problems = []
+    for pid in extra_project_ids(reports, catalog):
+        problems.append(f"report for unknown or disabled project {pid!r}")
+    for pid in catalog.enabled_project_ids():
+        report = reports.get(pid)
+        if report is None:
+            # A project without a report is handled as fallback/unavailable by
+            # assemble_release; it is not a fake-fresh resource attack.
+            continue
+        problems.extend(f"{pid}: {error}" for error in validate_report(report, context, catalog))
+    problems.extend(fresh_snapshot_checks(reports, Path(resource_root)))
+    if problems:
+        for problem in problems:
+            print(f"assemble: {problem}", file=sys.stderr)
+        return 1
     release = assemble_release(
         catalog,
         context,
@@ -163,6 +186,7 @@ def build_parser() -> argparse.ArgumentParser:
     asm_p.add_argument("--inputs", required=True, help="JSON mapping project_id -> collection report")
     asm_p.add_argument("--baseline", default=None, help="optional prior verified release manifest")
     asm_p.add_argument("--baseline-release-id", default=None)
+    asm_p.add_argument("--resource-root", default=None, help="directory holding project snapshot data (defaults to context artifact_root)")
     asm_p.add_argument("--release-id", required=True)
     asm_p.add_argument("--published-at", required=True)
     asm_p.add_argument("--out", required=True)

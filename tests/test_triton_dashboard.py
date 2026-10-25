@@ -515,6 +515,81 @@ class AttemptEnumerationTests(unittest.TestCase):
         self.assertIn("无本次 attempt 起点证据", " ".join(rerun2["missing"]))
 
 
+class CoverageLedgerMigrationTests(unittest.TestCase):
+    """ADR-004: the real collect() entry saves a per-identity coverage ledger and
+    append-only identity migration evidence; unavailable history stays unverified."""
+
+    def test_collect_writes_coverage_ledger_bound_to_raw_fingerprint(self):
+        run_row = {"id": 1, "name": "Integration Tests", "head_sha": "abc", "event": "pull_request",
+                   "created_at": "2026-10-08T00:00:00Z", "run_started_at": "2026-10-08T06:00:00Z",
+                   "updated_at": "2026-10-08T06:10:00Z", "status": "completed", "conclusion": "success",
+                   "run_attempt": 1, "html_url": "https://github.com/example/actions/runs/1",
+                   "actor": {"login": "dev"}, "head_branch": "feature"}
+        tmp = Path(tempfile.mkdtemp(prefix="triton-ledger-"))
+        self.addCleanup(shutil.rmtree, tmp, ignore_errors=True)
+
+        def fake_get(self, url):
+            if url.endswith("per_page=1"):
+                return {"total_count": 1, "workflow_runs": [run_row]}, {}
+            if "/jobs" in url:
+                return {"total_count": 0, "jobs": []}, {}
+            return {"workflow_runs": [run_row]}, {}
+
+        pr_fields = {"pr": 42, "pr_url": "https://github.com/example/pull/42",
+                     "pr_title": "Ledger", "base_branch": "main", "head_sha": "abc",
+                     "pr_evidence": {"method": "run.pull_requests.head.sha", "run_id": 1,
+                                     "pr": 42, "resolved_head_sha": "abc"}}
+        with patch.object(GitHub, "get", fake_get), \
+                patch("triton.pr_identity.PRResolver.resolve", return_value=pr_fields), \
+                patch("triton.dashboard.EVIDENCE", tmp):
+            collect(hours=72, as_of="2026-10-09T00:00:00Z")
+
+        ledger = json.loads((tmp / "coverage-ledger.json").read_text(encoding="utf-8"))
+        self.assertEqual(ledger["raw_count"], 1)
+        self.assertEqual(ledger["unique_count"], 1)
+        self.assertEqual(ledger["public_count"], 1)
+        self.assertEqual(ledger["out_of_window_count"], 0)
+        self.assertEqual(ledger["unaccounted_count"], 0)
+        self.assertTrue(ledger["balanced"])
+        self.assertTrue(ledger["verified"])
+        self.assertTrue(ledger["raw_fingerprint"])
+        self.assertEqual(ledger["entries"][0]["classification"], "public")
+
+    def test_collect_recovers_previous_unresolved_append_only(self):
+        tmp = Path(tempfile.mkdtemp(prefix="triton-migrate-"))
+        self.addCleanup(shutil.rmtree, tmp, ignore_errors=True)
+        # A previous round left run 99 unresolved; this round must re-attempt and
+        # append the migration record rather than overwrite anything.
+        previous = [{"id": 99, "run_attempt": 1, "head_sha": "def", "head_branch": "feature",
+                     "pr": None, "pr_evidence": {"method": "unresolved", "run_id": 99,
+                                                 "error": "ambiguous candidates"}}]
+        (tmp / "enriched-runs.json").write_text(json.dumps(previous), encoding="utf-8")
+
+        def fake_get(self, url):
+            if url.endswith("per_page=1"):
+                return {"total_count": 0, "workflow_runs": []}, {}
+            return {"workflow_runs": []}, {}
+
+        recovered = {"pr": 99, "pr_url": "https://github.com/example/pull/99",
+                     "pr_title": "Recovered", "base_branch": "main", "head_sha": "def",
+                     "pr_evidence": {"method": "source_repository+branch+head_sha", "run_id": 99,
+                                     "pr": 99, "resolved_head_sha": "def"}}
+        with patch.object(GitHub, "get", fake_get), \
+                patch("triton.pr_identity.PRResolver.resolve", return_value=recovered), \
+                patch("triton.dashboard.EVIDENCE", tmp):
+            collect(hours=72, as_of="2026-10-09T00:00:00Z")
+
+        migrations = json.loads((tmp / "identity-migrations.json").read_text(encoding="utf-8"))
+        self.assertEqual(len(migrations), 1)
+        record = migrations[0]
+        self.assertEqual(record["run_id"], 99)
+        self.assertEqual(record["previous"]["method"], "unresolved")
+        self.assertEqual(record["previous"]["error"], "ambiguous candidates")
+        self.assertEqual(record["recovered_method"], "source_repository+branch+head_sha")
+        self.assertEqual(record["pr"], 99)
+        self.assertIn("recovered_at", record)
+
+
 class SummaryValidityTests(unittest.TestCase):
     """REQ-017: missing and invalid durations never pollute counts or percentiles."""
 
@@ -558,6 +633,20 @@ class SummaryValidityTests(unittest.TestCase):
         self.assertIsNone(payload["batches"][0]["duration_seconds"])
         self.assertEqual(payload["summary"]["valid"], 0)
         self.assertIsNone(payload["summary"]["p90"])
+
+    def test_payload_publishes_rerun_discovery_boundary_instead_of_claiming_fullness(self):
+        # ADR-018: without the lookback boundary the snapshot would silently claim
+        # completeness; with fetch_start it must publish the exact reverifiable scope.
+        payload = build_payload([], "2026-09-22T00:00:00Z", "2026-09-25T00:00:00Z",
+                                "2026-09-25T00:00:00Z", fetch_start="2026-09-08T00:00:00Z")
+        self.assertIn("discovery", payload)
+        self.assertEqual(payload["discovery"]["rerun_lookback_days"], 14)
+        self.assertEqual(payload["discovery"]["fetch_window_start"], "2026-09-08T00:00:00Z")
+        self.assertIn("不宣称全量", payload["discovery"]["boundary_note"])
+
+    def test_payload_omits_discovery_boundary_when_fetch_start_is_unknown(self):
+        payload = build_payload([], "2026-09-22T00:00:00Z", "2026-09-25T00:00:00Z", "2026-09-25T00:00:00Z")
+        self.assertNotIn("discovery", payload)
 
     def test_export_csv_distinguishes_zero_from_missing(self):
         payload = {"batches": [self.batch("success", 0), self.batch("success", None)]}

@@ -213,6 +213,7 @@ input[type=search]:focus{border-color:var(--accent)}
 .swatch-dash{border-top:2px dashed var(--chart-p90)}
 .swatch-tick{width:2px;height:12px;border:0;background:var(--ink);margin-left:12px}
 .swatch-dot{width:8px;height:8px;border-radius:50%;background:var(--chart-mean);border:0;margin-left:10px}
+.swatch-median{border-top:2px solid var(--text-3);opacity:.7}
 
 /* ---------- 14. Charts (shared SVG vocabulary) ---------- */
 .trend{height:211px;padding:0 15px;position:relative}
@@ -581,7 +582,9 @@ footer{display:flex;color:var(--text-3);font-family:var(--font-num);font-size:12
   .workflow{grid-template-columns:105px 1fr 62px}
   .jobs{margin-left:0}
   .selection-stats{align-items:stretch}
-  .selection-stat{width:50%;padding:6px 8px;border-left:0;border-bottom:1px solid var(--line)}
+  .selection-stat{width:50%;padding:6px 8px;border-left:0;border-bottom:1px solid var(--line);flex-wrap:wrap;align-items:flex-start}
+  .selection-stat span{width:100%;white-space:normal;overflow-wrap:break-word;line-height:1.35}
+  .selection-stat strong{white-space:normal;overflow-wrap:break-word}
   .selection-stat:nth-last-child(-n+2){border-bottom:0}
 }
 @media(max-width:560px){
@@ -595,6 +598,9 @@ footer{display:flex;color:var(--text-3);font-family:var(--font-num);font-size:12
   .attention{padding:var(--sp-5)}
   .attention-cards{grid-template-columns:1fr}
   .exception-row{padding:15px var(--sp-4)}
+  .selection-stat{width:100%;padding:7px 2px}
+  .selection-stat:not(:last-child){border-bottom:1px solid var(--line)}
+  .selection-stat:last-child{border-bottom:0}
 }
 
 /* ---------- 29. Reduced motion ---------- */

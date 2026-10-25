@@ -75,17 +75,28 @@ test('deactivation closes the card and clears resources, while remount restores 
   assert.equal(h.documentListeners.size,1);assert.equal(h.intervals.size,1);
 });
 
-test('record export retains observations in the 16-column CSV and persists qualification metadata separately', async () => {
+test('record export matches the displayed attention list and persists qualification metadata separately', async () => {
   const h=viewHarness();h.view.render(sample(),h.container);
   await h.node('[data-role="exportBatches"]').onclick();
   assert.equal(h.downloads.length,2);
   assert.equal(h.downloads[0].rows[0].length,16);
-  assert.equal(h.downloads[0].rows.length,12);
+  // ADR-007: the download set equals the visible attention list (dedup by batch id),
+  // not the full search pool — header + failed-long + unresolved.
+  assert.equal(h.downloads[0].rows.length,3);
   assert.equal(h.downloads[1].name,'triton-qualifications-v1.json');
   const metadata=JSON.parse(await h.downloads[1].blob.text());
   assert.equal(metadata.schema_version,1);
-  assert.equal(metadata.batches.length,11);
+  assert.equal(metadata.batches.length,2);
   assert.equal(metadata.batches.find(batch=>batch.id==='unresolved').e2e_sample_eligible,false);
+});
+
+test('ADR-007: show-all export reuses the complete sorted search pool (list == download)', async () => {
+  const h=viewHarness();h.view.render(sample(),h.container);
+  h.node('[data-role="showAll"]').onclick();
+  await h.node('[data-role="exportBatches"]').onclick();
+  assert.equal(h.downloads[0].rows.length,12); // header + all 11 batches
+  const metadata=JSON.parse(await h.downloads[1].blob.text());
+  assert.equal(metadata.batches.length,11);
 });
 
 test('deactivation releases a navigator pointer that was still captured mid-drag', () => {

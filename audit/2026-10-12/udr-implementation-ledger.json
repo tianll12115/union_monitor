@@ -42,5 +42,19 @@
     {"id": "UDR-036", "status": "回归保持", "evidence": ["tests/test_ci_gate.py", "tests/test_pages_workflow.py"], "note": "PR quality gate and main protection kept; Pages/OIDC permission scope tightened."},
     {"id": "UDR-037", "status": "回归保持", "evidence": ["tests/test_readme_contract.py", "tests/test_unified_dashboard_design.py"], "note": "README and design doc contracts kept."},
     {"id": "UDR-038", "status": "已实现", "evidence": ["tests/test_audit_requirements_doc.py", "tests/test_udr_acceptance_ledger.py"], "note": "Spec structure validation and this per-AC acceptance ledger."}
-  ]
+  ],
+  "errata": {
+    "appended_at": "2026-10-26",
+    "appended_by": "ADR-003",
+    "scope_policy": "The '已实现' labels below are historical model-test claims recorded on 2026-10-12. ADR-003 keeps this record intact but separates model-pass (test doubles such as deploy_fn/verify_fn appending to a Python list) from real production/frozen evidence. A model pass or a green unit-test suite is never presented as production or recovery closure, and these historical module labels must not expand the current remediation scope.",
+    "entries": [
+      {"id": "UDR-024", "historical_status": "已实现", "model_evidence": "tests/test_unified_production_workflow.py exercises orchestrate.py with in-memory doubles, not a real production round.", "production_or_frozen_evidence": null, "verified_status": "模型通过-生产未验证"},
+      {"id": "UDR-025", "historical_status": "已实现", "model_evidence": "tests/test_release_concurrency.py exercises release_lock.py with in-memory locks; production keeps failure-blocked (no extra production collection).", "production_or_frozen_evidence": null, "verified_status": "模型通过-生产未验证"},
+      {"id": "UDR-027", "historical_status": "已实现", "model_evidence": "tests/test_degraded_release.py exercises release_policy.py with an in-memory ReleaseStore, not the published legacy Pages flow.", "production_or_frozen_evidence": null, "verified_status": "模型通过-生产未验证"},
+      {"id": "UDR-028", "historical_status": "已实现", "model_evidence": "tests/test_release_baseline.py exercises baseline.py against a temp directory archive, not the live verified archive.", "production_or_frozen_evidence": null, "verified_status": "模型通过-生产未验证"},
+      {"id": "UDR-030", "historical_status": "已实现", "model_evidence": "tests/test_release_rollback_integration.py passes deploy_fn=lambda r,f: deployed.append((r,f)) — a list in memory, not a real Pages re-deploy.", "production_or_frozen_evidence": null, "verified_status": "模型通过-生产未验证"},
+      {"id": "UDR-034", "historical_status": "已实现", "model_evidence": "tests/test_third_project_end_to_end.py exercises the shared chain against a synthetic catalog, not a production third project.", "production_or_frozen_evidence": null, "verified_status": "模型通过-生产未验证"},
+      {"id": "UDR-038", "historical_status": "已实现", "model_evidence": "tests/test_udr_acceptance_ledger.py historically only asserted that evidence files exist and forced the new release modules to stay '已实现'; file existence and a self-referential label are structural checks, not per-AC behavioral or production evidence.", "production_or_frozen_evidence": null, "verified_status": "结构通过-逐AC未验证"}
+    ]
+  }
 }

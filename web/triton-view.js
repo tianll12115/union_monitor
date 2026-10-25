@@ -39,6 +39,15 @@
   let active = null;
   let mounted = null;
   let savedState = null;
+  let detailBatchId = null;
+
+  /* ADR-012: read the live triton engineering query from the hash. */
+  function readQuery() {
+    if (!root.location || !root.Router || !root.Router.parseRoute) return {};
+    const route = root.Router.parseRoute(String(root.location.hash));
+    return (route && route.view === 'projects' && route.project === 'triton' && route.query) || {};
+  }
+  const toList = value => (Array.isArray(value) ? value : (value ? [value] : []));
 
   function deactivate() {
     if (active) {
@@ -206,12 +215,29 @@
     const kE2eP90 = el('[data-role="kE2eP90"]'), kE2eP50 = el('[data-role="kE2eP50"]'), kE2eN = el('[data-role="kE2eN"]');
     const kNpuP90 = el('[data-role="kNpuP90"]'), kNpuP50 = el('[data-role="kNpuP50"]'), kNpuN = el('[data-role="kNpuN"]');
 
-    const selectedBranches = new Set(prevState ? prevState.branches : []);
-    let filter = prevState && prevState.filter ? prevState.filter : 'all';
-    let npuFilter = prevState && prevState.npuFilter ? prevState.npuFilter : 'all';
-    let showAll = prevState ? !!prevState.showAll : false, unknownTime = prevState ? !!prevState.unknownTime : false, tipPinned = false, tipTimer = 0, navDrag = null, lastPinnedMark = null;
+    /* ADR-012: a deep link seeds the complete state from the URL when present;
+       otherwise the previous mounted/saved state is reused as before. */
+    const query = readQuery();
+    const hasUrlState = ['branch', 'q', 'filter', 'npu', 'showAll', 'unknown', 'from', 'to', 'batch'].some(k => query[k] != null);
+    const urlState = hasUrlState ? {
+      branches: toList(query.branch),
+      search: typeof query.q === 'string' ? query.q : '',
+      filter: ['all', 'slow', 'failure', 'running'].includes(query.filter) ? query.filter : null,
+      npuFilter: ['all', 'failure', 'running'].includes(query.npu) ? query.npu : null,
+      showAll: query.showAll === '1',
+      unknownTime: query.unknown === '1',
+      start: query.from != null ? Number(query.from) : null,
+      end: query.to != null ? Number(query.to) : null,
+    } : null;
+    const initial = urlState || prevState;
+    detailBatchId = query.batch != null ? String(query.batch) : null;
+
+    const selectedBranches = new Set(initial ? initial.branches : []);
+    let filter = initial && initial.filter ? initial.filter : 'all';
+    let npuFilter = initial && initial.npuFilter ? initial.npuFilter : 'all';
+    let showAll = initial ? !!initial.showAll : false, unknownTime = initial ? !!initial.unknownTime : false, tipPinned = false, tipTimer = 0, navDrag = null, lastPinnedMark = null;
     let viewStart, viewEnd;
-    const recovered = prevState ? core.recoverWindow(prevState.start, prevState.end, domainStart, domainEnd) : null;
+    const recovered = initial ? core.recoverWindow(initial.start, initial.end, domainStart, domainEnd) : null;
     if (recovered) {
       viewStart = recovered.start;
       viewEnd = recovered.end;
@@ -226,15 +252,65 @@
     /* EC-008-AC03: 起点未知但有来源身份（action_url 或 workflow）的批次不进入时间选区S，
        但可在同页"时间未知(n)"入口找到；不计入选区分位数，详情与导出标注时间未知。 */
     const unknownTimePool = () => D.batches.filter(b => !b.start_at && (b.action_url || (b.workflows && b.workflows.length)));
-    const exportPool = () => unknownTime ? unknownTimePool() : searchPool();
+    /* ADR-007: 列表与下载复用同一个排序后的 L —— 导出集合与当前可见列表严格一致，
+       不再让默认关注子集与"全部搜索结果"下载集合分叉（关注批次一行去重、理由合并）。 */
+    const attentionEntries = () => {
+      const summary = currentSummary();
+      const pool = searchPool();
+      const entries = new Map();
+      const addEntry = (batch, reason) => {
+        if (!entries.has(batch.id)) entries.set(batch.id, { batch, reasons: new Set() });
+        if (reason) entries.get(batch.id).reasons.add(reason);
+      };
+      for (const group of core.attentionGroups(pageSet(), summary.p90, searchInput.value)) {
+        for (const batch of group.rows) addEntry(batch, group.label);
+      }
+      for (const batch of pool) if ((batch.missing || []).length) addEntry(batch, '证据缺口');
+      return entries;
+    };
+    const displayedPool = () => {
+      if (unknownTime) return unknownTimePool().slice().sort((a, b) => +new Date(b.end_at || D.window_end) - +new Date(a.end_at || D.window_end));
+      const summary = currentSummary();
+      if (!summary.batches) return [];
+      const pool = searchPool();
+      if (showAll) return pool.slice().sort((a, b) => +new Date(b.start_at) - +new Date(a.start_at));
+      return [...attentionEntries().values()].map(entry => entry.batch);
+    };
     /* REQ-035 AC02: 页脚统计与摘要条共用同一 pageSet（G=分支×时间窗），标注当前筛选范围；采集时间来自 Triton 快照。 */
     const footerText = () => {
       const s = currentSummary();
       return `${s.batches} BATCHES · ${s.prs} PR · 当前筛选范围 · 采集于 ${fmtDate(D.collected_at)}`;
     };
 
-    if (prevState) {
-      if (prevState.search) searchInput.value = prevState.search;
+    /* ADR-012: every state change is mirrored into the hash so a copied link
+       reconstructs branches, the time window, search, chart filters and the
+       open detail. replaceState keeps the filter tweaks out of the history. */
+    const syncUrl = () => {
+      if (!root.history || !root.Router || !root.location) return;
+      const q = {};
+      const branches = [...selectedBranches].sort();
+      if (branches.length) q.branch = branches;
+      if (searchInput.value) q.q = searchInput.value;
+      if (filter !== 'all') q.filter = filter;
+      if (npuFilter !== 'all') q.npu = npuFilter;
+      if (showAll) q.showAll = '1';
+      if (unknownTime) q.unknown = '1';
+      if (detailBatchId != null) q.batch = detailBatchId;
+      q.from = Math.round(viewStart);
+      q.to = Math.round(viewEnd);
+      const target = '#projects/triton/engineering' + root.Router.serializeQuery(q);
+      if (root.location.hash !== target) root.history.replaceState(null, '', target);
+    };
+
+    /* ADR-012: opening a batch from any entry also records it in the URL. */
+    const openDetail = b => {
+      detailBatchId = b && b.id != null ? String(b.id) : null;
+      syncUrl();
+      if (root.openTritonDetail) root.openTritonDetail(b);
+    };
+
+    if (initial) {
+      if (initial.search) searchInput.value = initial.search;
       all('[data-filter]').forEach(x => x.classList.toggle('active', x.dataset.filter === filter));
       all('[data-npu-filter]').forEach(x => x.classList.toggle('active', x.dataset.npuFilter === npuFilter));
       if (recovered && recovered.adjusted) {
@@ -438,7 +514,7 @@
       syncBranchBadge([...selectedBranches]);
     }
 
-    function updateGlobal() { updateSummary(); redrawAll(); renderRows(); }
+    function updateGlobal() { updateSummary(); redrawAll(); renderRows(); syncUrl(); }
 
     /* ---- tooltip card（pin 逻辑移植自原看板） ---- */
     function tipHtml(b) {
@@ -498,14 +574,14 @@
         mark.onmouseenter = e => { clearTimeout(tipTimer); placeTip(e, b, html); };
         mark.onmousemove = e => { if (!tipPinned) placeTip(e, b, html); };
         mark.onmouseleave = () => { if (!tipPinned) tipTimer = setTimeout(() => hideTip(mark), 180); };
-        mark.onclick = e => { e.stopPropagation(); hideTip(); if (mark.dataset.kind !== 'npu' && root.openTritonDetail) root.openTritonDetail(b); else { tipPinned = true; lastPinnedMark = mark; placeTip(e, b, html); } };
+        mark.onclick = e => { e.stopPropagation(); hideTip(); if (mark.dataset.kind !== 'npu' && root.openTritonDetail) openDetail(b); else { tipPinned = true; lastPinnedMark = mark; placeTip(e, b, html); } };
         /* REQ-029 AC01: SVG marks carry no native button activation, so
            Enter/Space open the same unified detail from the keyboard. */
         mark.onkeydown = e => {
           if (e.key !== 'Enter' && e.key !== ' ') return;
           e.preventDefault();
           hideTip();
-          if (mark.dataset.kind !== 'npu' && root.openTritonDetail) { root.openTritonDetail(b); return; }
+          if (mark.dataset.kind !== 'npu' && root.openTritonDetail) { openDetail(b); return; }
           tipPinned = true;
           lastPinnedMark = mark;
           const r = mark.getBoundingClientRect();
@@ -546,6 +622,7 @@
     }
 
     function renderRows() {
+      syncUrl();
       const summary = currentSummary();
       const unknownPool = unknownTimePool();
       unknownTimeBtn.textContent = `时间未知${unknownPool.length ? `(${unknownPool.length})` : ''}`;
@@ -576,17 +653,11 @@
       const pool = searchPool();
       /* REQ-026 AC01: the grouping strategy, threshold and labels come from G
          (pageSet) and its valid-sample count; the search only filters the rows
-         inside each group and never changes the strategy. */
-      const groups = showAll
-        ? [{ key: 'all', label: '全部批次', rows: pool.slice().sort((a, b) => +new Date(b.start_at) - +new Date(a.start_at)) }]
-        : core.attentionGroups(pageSet(), summary.p90, searchInput.value);
-      const entries = new Map();
-      function addEntry(batch, reason) {
-        if (!entries.has(batch.id)) entries.set(batch.id, { batch, reasons: new Set() });
-        if (reason) entries.get(batch.id).reasons.add(reason);
-      }
-      for (const group of groups) for (const batch of group.rows) addEntry(batch, showAll ? null : group.label);
-      if (!showAll) for (const batch of pool) if ((batch.missing || []).length) addEntry(batch, '证据缺口');
+         inside each group and never changes the strategy. ADR-007: the list and
+         the CSV download share the same deduped, ordered batch set. */
+      const entries = showAll
+        ? new Map(pool.slice().sort((a, b) => +new Date(b.start_at) - +new Date(a.start_at)).map(batch => [batch.id, { batch, reasons: new Set() }]))
+        : attentionEntries();
       priorityNoteEl.textContent = core.attentionNote(summary.valid);
       attentionEl.innerHTML = `<div class="group-title">${showAll ? '全部批次' : '关注批次'}<span class="count">${entries.size}</span></div><div class="rows">${entries.size ? [...entries.values()].map(entry => rowHtml(entry.batch, showAll ? 'all' : 'priority', [...entry.reasons])).join('') : '<div class="empty">当前没有匹配批次</div>'}</div>`;
       bindRowClicks();
@@ -601,7 +672,7 @@
         main.onclick = e => {
           if (e.target.closest('a')) return; /* REQ-028 AC02: activating a link navigates, it must not also open the detail */
           const b = D.batches.find(x => String(x.id) === row.dataset.batchId);
-          if (b && root.openTritonDetail) root.openTritonDetail(b);
+          if (b && root.openTritonDetail) openDetail(b);
           else setRowOpen(row, !row.classList.contains('open'));
         };
       });
@@ -634,6 +705,7 @@
     /* ---- 导出批次 CSV：G × 列表搜索后的完整唯一批次集合（字段与 triton-batches.csv 同集 16 项） ---- */
     async function exportBatches() {
       if (!root.Metrics || typeof root.Metrics.saveCsv !== 'function') return;
+      const session = active;
       exportBtn.disabled = true;
       let notice = container.querySelector('[data-role="exportNotice"]');
       if (!notice) {
@@ -644,16 +716,21 @@
         container.insertBefore(notice, container.firstChild);
       }
       notice.textContent = '正在保存 CSV…';
+      /* ADR-013: freeze the complete export — rows, scope and the qualification
+         sidecar — before the first await, so a filter/branch/time change during
+         the request cannot split the CSV from its audit metadata. */
+      const pool = displayedPool();
+      const rows = [csvFields, ...pool.map(b => csvFields.map(key =>
+        key === 'missing' ? (b.missing || []).join('; ') : key === 'approximate' ? (b.approximate ? 'True' : 'False') : key === 'start_at' ? (b.start_at || '时间未知') : b[key] ?? ''))];
+      const scope = { start_at: new Date(viewStart).toISOString(), end_at: new Date(viewEnd).toISOString(), branches: [...selectedBranches], query: searchInput.value };
+      const qualification = { schema_version: 1, metric: 'triton_commit_attempt_e2e', collected_at: D.collected_at,
+        window_start: D.window_start, window_end: D.window_end, analysis_scope: scope,
+        batches: pool.map(b => ({ id: b.id, pr: b.pr ?? null,
+          workflow_attempts: (b.workflows || []).map(w => ({ run_id: w.id, attempt: w.attempt || 1 })),
+          e2e_sample_eligible: core.sampleEligible(b), e2e_exclusion_reason: b.e2e_exclusion_reason || (b.pr == null ? 'unresolved_pr_batch_identity' : core.sampleEligible(b) ? null : 'non_sample_result') })) };
       try {
-        const rows = [csvFields, ...exportPool().map(b => csvFields.map(key =>
-          key === 'missing' ? (b.missing || []).join('; ') : key === 'approximate' ? (b.approximate ? 'True' : 'False') : key === 'start_at' ? (b.start_at || '时间未知') : b[key] ?? ''))];
         const file = await root.Metrics.saveCsv(rows, 'triton-batches.csv');
-        const qualification = { schema_version: 1, metric: 'triton_commit_attempt_e2e', collected_at: D.collected_at,
-          window_start: D.window_start, window_end: D.window_end,
-          analysis_scope: { start_at: new Date(viewStart).toISOString(), end_at: new Date(viewEnd).toISOString(), branches: [...selectedBranches], query: searchInput.value },
-          batches: exportPool().map(b => ({ id: b.id, pr: b.pr ?? null,
-            workflow_attempts: (b.workflows || []).map(w => ({ run_id: w.id, attempt: w.attempt || 1 })),
-            e2e_sample_eligible: core.sampleEligible(b), e2e_exclusion_reason: b.e2e_exclusion_reason || (b.pr == null ? 'unresolved_pr_batch_identity' : core.sampleEligible(b) ? null : 'non_sample_result') })) };
+        if (active !== session) return;
         const metaUrl = root.URL.createObjectURL(new root.Blob([JSON.stringify(qualification, null, 2)], {type: 'application/json'}));
         const metaLink = root.document.createElement('a');
         metaLink.href = metaUrl;
@@ -664,9 +741,9 @@
           ? `CSV 已保存到本地：<a href="${esc(file.url)}" download="${esc(file.name)}">${esc(file.name)} ↓</a>；资格元数据已由浏览器下载。`
           : '已下载：' + esc(file.name) + ' 与 triton-qualifications-v1.json';
       } catch (err) {
-        notice.textContent = '导出失败：' + (err && err.message ? err.message : err);
+        if (active === session) notice.textContent = '导出失败：' + (err && err.message ? err.message : err);
       } finally {
-        exportBtn.disabled = false;
+        if (active === session) exportBtn.disabled = false;
       }
     }
 
@@ -676,14 +753,14 @@
       if (!btn) return;
       filter = btn.dataset.filter;
       all('[data-filter]').forEach(x => x.classList.toggle('active', x === btn));
-      draw();
+      draw(); syncUrl();
     };
     el('[data-role="npuFilters"]').onclick = e => {
       const btn = e.target.closest('[data-npu-filter]');
       if (!btn) return;
       npuFilter = btn.dataset.npuFilter;
       all('[data-npu-filter]').forEach(x => x.classList.toggle('active', x === btn));
-      drawNpu();
+      drawNpu(); syncUrl();
     };
     el('.range-control').onclick = e => {
       const btn = e.target.closest('[data-hours]');
@@ -776,9 +853,11 @@
         return { branches: [...selectedBranches], search: searchInput.value, filter, npuFilter, showAll, unknownTime, start: viewStart, end: viewEnd };
       },
       footerText,
+      syncUrl,
     };
     mounted = { payload: D, container };
   }
 
-  return { render, deactivate };
+  const syncActiveUrl = () => { if (active && active.syncUrl) active.syncUrl(); };
+  return { render, deactivate, setDetailBatch: id => { detailBatchId = id == null ? null : String(id); syncActiveUrl(); }, clearDetailBatch: () => { detailBatchId = null; syncActiveUrl(); } };
 });

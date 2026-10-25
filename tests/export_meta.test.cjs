@@ -64,3 +64,38 @@ test('P-010: saveCsv accepts optional metadata and returns it alongside the file
   assert.equal(result.metadata.format, 'ubs-core-export');
   assert.equal(result.metadata.count, 2);
 });
+
+test('ADR-010: saveCsv downloads a versioned sidecar next to the CSV', async () => {
+  const blobs = [], anchors = [];
+  const env = {
+    location: { hostname: 'example.com' },
+    Blob: class { constructor(parts, opts) { this.parts = parts; this.opts = opts; blobs.push(this); } },
+    URL: { createObjectURL() { return 'blob:x'; }, revokeObjectURL() {} },
+    document: { createElement() { const a = { href: '', download: '', click() {} }; anchors.push(a); return a; } },
+  };
+  const result = await M.saveCsv([['仓库']], 'a.csv', env, { entity: 'PR 列表', count: 2, report_version: 'ubs-export-report-v1', duration_unit: 'ms' });
+  assert.equal(result.mode, 'download');
+  assert.equal(blobs.length, 2);
+  assert.equal(anchors[0].download, 'a.csv');
+  assert.equal(anchors[1].download, 'a.export.json');
+  const sidecar = JSON.parse(blobs[1].parts[0]);
+  assert.equal(sidecar.report_version, 'ubs-export-report-v1');
+  assert.equal(sidecar.duration_unit, 'ms');
+  assert.equal(sidecar.format, 'ubs-core-export');
+});
+
+test('ADR-010: saveCsv posts the versioned sidecar as a second local save', async () => {
+  const posts = [];
+  const env = {
+    location: { hostname: 'localhost' },
+    fetch: async (url, opts) => { const body = JSON.parse(opts.body); posts.push(body); return { ok: true, json: async () => ({ url: '/exports/' + body.name, name: body.name }) }; },
+  };
+  const result = await M.saveCsv([['仓库']], 'a.csv', env, { entity: 'PR 列表', count: 2, report_version: 'ubs-export-report-v1' });
+  assert.equal(posts.length, 2);
+  assert.equal(posts[0].name, 'a.csv');
+  assert.equal(posts[1].kind, 'sidecar');
+  assert.equal(posts[1].name, 'a.export.json');
+  assert.equal(JSON.parse(posts[1].content).report_version, 'ubs-export-report-v1');
+  assert.equal(result.mode, 'saved');
+  assert.equal(result.sidecar_url, '/exports/a.export.json');
+});

@@ -41,17 +41,27 @@ test('formatRoute emits canonical hashes and round-trips through parseRoute', ()
 });
 
 test('legacyIntent maps every legacy hash to its canonical engineering/overview route', () => {
-  assert.deepEqual(R.legacyIntent('#ubs'), { view: 'projects', project: 'ubs', task: 'overview' });
-  assert.deepEqual(R.legacyIntent('#repositories'), { view: 'projects', project: 'ubs', task: 'overview' });
-  assert.deepEqual(R.legacyIntent('#ubs/repo/ubs-comm'), { view: 'projects', project: 'ubs', task: 'engineering', repository: 'ubs-comm' });
-  assert.deepEqual(R.legacyIntent('#ubs/repo/ubs-comm/quality'), { view: 'projects', project: 'ubs', task: 'engineering', repository: 'ubs-comm' });
-  assert.deepEqual(R.legacyIntent('#overview'), { view: 'projects', project: 'ubs', task: 'engineering', repository: 'ubs-engine' });
-  assert.deepEqual(R.legacyIntent('#prs'), { view: 'projects', project: 'ubs', task: 'engineering', repository: 'ubs-engine', entity: 'prs' });
-  assert.deepEqual(R.legacyIntent('#quality'), { view: 'projects', project: 'ubs', task: 'engineering', repository: 'ubs-engine' });
-  assert.deepEqual(R.legacyIntent('#triton'), { view: 'projects', project: 'triton', task: 'engineering' });
-  assert.deepEqual(R.legacyIntent('#method'), { view: 'projects', project: 'ubs', task: 'overview' });
-  assert.deepEqual(R.legacyIntent('#repo/ham'), { view: 'projects', project: 'ubs', task: 'engineering', repository: 'ham' });
-  assert.deepEqual(R.legacyIntent('#repo/ham/method'), { view: 'projects', project: 'ubs', task: 'engineering', repository: 'ham' });
+  assert.deepEqual(R.legacyIntent('#ubs'), { view: 'projects', project: 'ubs', task: 'overview', query: {} });
+  assert.deepEqual(R.legacyIntent('#repositories'), { view: 'projects', project: 'ubs', task: 'overview', query: {} });
+  assert.deepEqual(R.legacyIntent('#ubs/repo/ubs-comm'), { view: 'projects', project: 'ubs', task: 'engineering', query: { repository: 'ubs-comm' } });
+  assert.deepEqual(R.legacyIntent('#ubs/repo/ubs-comm/quality'), { view: 'projects', project: 'ubs', task: 'engineering', query: { repository: 'ubs-comm' } });
+  assert.deepEqual(R.legacyIntent('#overview'), { view: 'projects', project: 'ubs', task: 'engineering', query: { repository: 'ubs-engine' } });
+  assert.deepEqual(R.legacyIntent('#prs'), { view: 'projects', project: 'ubs', task: 'engineering', query: { repository: 'ubs-engine', entity: 'prs' } });
+  assert.deepEqual(R.legacyIntent('#quality'), { view: 'projects', project: 'ubs', task: 'engineering', query: { repository: 'ubs-engine' } });
+  assert.deepEqual(R.legacyIntent('#triton'), { view: 'projects', project: 'triton', task: 'engineering', query: {} });
+  assert.deepEqual(R.legacyIntent('#method'), { view: 'projects', project: 'ubs', task: 'overview', query: {} });
+  assert.deepEqual(R.legacyIntent('#repo/ham'), { view: 'projects', project: 'ubs', task: 'engineering', query: { repository: 'ham' } });
+  assert.deepEqual(R.legacyIntent('#repo/ham/method'), { view: 'projects', project: 'ubs', task: 'engineering', query: { repository: 'ham' } });
+});
+
+test('legacyIntent preserves supported legacy query conditions through the migration', () => {
+  assert.deepEqual(R.legacyIntent('#ubs/repo/ubs-comm?q=needle&sort=submitted&page=2'), {
+    view: 'projects', project: 'ubs', task: 'engineering',
+    query: { repository: 'ubs-comm', q: 'needle', sort: 'submitted', page: '2' },
+  });
+  assert.deepEqual(R.legacyIntent('#ubs?repository=all'), {
+    view: 'projects', project: 'ubs', task: 'overview', query: { repository: 'all' },
+  });
 });
 
 test('legacyIntent leaves the new scheme untouched and unknown hashes unmapped', () => {

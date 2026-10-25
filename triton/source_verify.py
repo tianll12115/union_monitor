@@ -92,22 +92,60 @@ def published_prs(payload):
     return {batch["pr"] for batch in payload.get("batches", []) if batch.get("pr") is not None}
 
 
+def published_workflow_jobs(payload):
+    """``{(run_id, attempt): (job_count, jobs_complete)}`` from published workflows.
+
+    A published workflow always carries its own job list and completeness flag;
+    an absent ``jobs`` list counts as zero published jobs so a raw list with
+    jobs cannot silently reconcile against an empty published list.
+    """
+    out = {}
+    for batch in payload.get("batches", []):
+        for workflow in batch.get("workflows", []) or []:
+            ident = (workflow.get("id"), int(workflow.get("attempt") or 1))
+            jobs = workflow.get("jobs")
+            count = len(jobs) if isinstance(jobs, list) else 0
+            out[ident] = (count, bool(workflow.get("jobs_complete", True)))
+    return out
+
+
+def published_run_prs(payload):
+    """``{run_id: pr}`` from published workflows that carry an associated PR."""
+    out = {}
+    for batch in payload.get("batches", []):
+        for workflow in batch.get("workflows", []) or []:
+            if workflow.get("id") is not None and workflow.get("pr") is not None:
+                out[workflow["id"]] = workflow["pr"]
+    return out
+
+
 def verify_enumeration(runs, jobs_dir, payload, *, pr_dir=None):
     """Reconcile the raw enumeration against the published payload.
 
     ``runs`` is the raw workflow-run list, ``jobs_dir`` the directory of
     ``{run_id}-{attempt}.json`` job lists and ``payload`` the published payload
     for the same window. ``pr_dir`` (optional) enables PR association closure.
+
+    ADR-001: the reconciliation is bidirectional — a published identity absent
+    from raw, a raw job count that differs from the published count, or a run→PR
+    raw association that contradicts the published binding are all differences
+    that block a ``verified`` verdict.
     """
     identities = raw_identities(runs)
+    raw_set = set(identities)
     job_files = load_job_files(jobs_dir)
     published = published_workflow_attempts(payload)
 
     workflow = SourceCategory("workflow_attempt_enumeration")
-    for ident in identities:
+    for ident in list(dict.fromkeys(identities + sorted(published))):
         workflow.record_applicable(ident)
-        if ident in published:
+        if ident in published and ident in raw_set:
             workflow.record_verified(ident)
+        elif ident in published:
+            workflow.record_difference(
+                ident,
+                f"run {ident[0]} attempt {ident[1]} published but absent from the raw enumeration",
+            )
         else:
             workflow.record_difference(
                 ident,
@@ -115,15 +153,35 @@ def verify_enumeration(runs, jobs_dir, payload, *, pr_dir=None):
             )
 
     jobs = SourceCategory("job_enumeration")
+    published_jobs = published_workflow_jobs(payload)
     for ident in identities:
         jobs.record_applicable(ident)
-        if ident in job_files:
-            rows = job_files[ident]
-            if isinstance(rows, list):
-                jobs.record_verified(ident)
+        if ident not in job_files:
+            # no job file at all -> missing evidence
+            continue
+        rows = job_files[ident]
+        if not isinstance(rows, list):
+            jobs.record_difference(ident, f"run {ident[0]} attempt {ident[1]} job evidence unreadable")
+            continue
+        pub = published_jobs.get(ident)
+        if pub is None:
+            # The workflow attempt is absent from published output; that absence is
+            # already a workflow difference, while the raw job evidence is intact.
+            jobs.record_verified(ident)
+        else:
+            count, complete = pub
+            if not complete:
+                jobs.record_difference(
+                    ident,
+                    f"run {ident[0]} attempt {ident[1]} published with jobs_complete=false",
+                )
+            elif count != len(rows):
+                jobs.record_difference(
+                    ident,
+                    f"run {ident[0]} attempt {ident[1]} raw job count {len(rows)} != published job count {count}",
+                )
             else:
-                jobs.record_difference(ident, f"run {ident[0]} attempt {ident[1]} job evidence unreadable")
-        # else: no job file at all -> missing evidence
+                jobs.record_verified(ident)
 
     categories = {"workflow_attempt_enumeration": workflow, "job_enumeration": jobs}
 
@@ -137,6 +195,26 @@ def verify_enumeration(runs, jobs_dir, payload, *, pr_dir=None):
                 pr_category.record_verified(pr)
             # else: no raw resolved association -> missing evidence
         categories["pr_association"] = pr_category
+
+        published_run_pr = published_run_prs(payload)
+        binding = SourceCategory("pr_binding")
+        for run_id, pr in sorted(associations.items()):
+            identity = ("run", run_id)
+            binding.record_applicable(identity)
+            pub = published_run_pr.get(run_id)
+            if pub is None:
+                binding.record_difference(
+                    identity,
+                    f"run {run_id} has raw PR {pr} association but is not published with a PR",
+                )
+            elif pub == pr:
+                binding.record_verified(identity)
+            else:
+                binding.record_difference(
+                    identity,
+                    f"raw association binds run {run_id} to PR {pr} but published binds it to PR {pub}",
+                )
+        categories["pr_binding"] = binding
 
     return source_report(categories)
 
@@ -154,23 +232,33 @@ def build_coverage_evidence(runs_json, jobs_dir, payload, *, pr_dir=None):
     identities = raw_identities(runs_json.get("runs", []))
     job_files = load_job_files(jobs_dir) if jobs_dir.is_dir() else {}
     in_window_job_files = len([k for k in job_files if k in set(identities)])
+    window_matches_payload = (
+        runs_json.get("window_start") == payload.get("window_start")
+        and runs_json.get("window_end") == payload.get("window_end")
+    )
     evidence = {
         "window_start": runs_json.get("window_start"),
         "window_end": runs_json.get("window_end"),
         "collected_at": runs_json.get("collected_at"),
         "payload_window_start": payload.get("window_start"),
         "payload_window_end": payload.get("window_end"),
-        "window_matches_payload": (
-            runs_json.get("window_start") == payload.get("window_start")
-            and runs_json.get("window_end") == payload.get("window_end")
-        ),
+        "window_matches_payload": window_matches_payload,
         "raw_run_count": len(runs_json.get("runs", [])),
         "job_evidence_files": in_window_job_files,
         "pr_association_files": len(list(pr_dir.glob("*.json"))) if (pr_dir and pr_dir.is_dir()) else 0,
         "published_batches": len(payload.get("batches", [])),
         "published_prs": len(published_prs(payload)),
     }
-    return {"status": report["status"], "evidence": evidence, "categories": report["categories"]}
+    # ADR-001: a raw-vs-published window difference must block a verified verdict —
+    # reconciling a January enumeration against a February payload cannot pass.
+    if not window_matches_payload:
+        report["status"] = "differences_found"
+        report["window_mismatch"] = (
+            f"raw window {runs_json.get('window_start')}..{runs_json.get('window_end')} "
+            f"!= payload window {payload.get('window_start')}..{payload.get('window_end')}"
+        )
+    return {"status": report["status"], "evidence": evidence, "categories": report["categories"],
+            **({"window_mismatch": report["window_mismatch"]} if "window_mismatch" in report else {})}
 
 
 def main(argv=None):

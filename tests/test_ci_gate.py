@@ -102,6 +102,37 @@ class WorkflowYamlStructureTests(unittest.TestCase):
         self._package = json.loads(self.PACKAGE_PATH.read_text("utf-8"))
 
     # -- helpers -----------------------------------------------------------
+    @classmethod
+    def _critical_run_steps(cls, workflow):
+        """Return (job_name, step) for every step that must execute a real check.
+
+        These steps are the actual command boundaries the gate depends on; a
+        conditional ``if`` on any of them is an execution-step bypass (ADR-022).
+        """
+        critical_runs = {
+            "python-tests": ("unittest discover",),
+            "frontend-tests": ("node --test tests/*.test.cjs",
+                               "scripts/devdata.py --offline",
+                               "verify_basic_junit.py",
+                               "npm run test:browser", "playwright test"),
+            "collector-contracts": ("unittest discover",),
+            "workflow-lint": ("actionlint",),
+            "quality-gate": ("scripts/ci_gate.py",),
+        }
+        found = []
+        jobs = workflow.get("jobs") or {}
+        for job_name, needles in critical_runs.items():
+            job = jobs.get(job_name)
+            if not isinstance(job, dict):
+                continue
+            for step in job.get("steps", []):
+                run = step.get("run")
+                if not (isinstance(run, str) and run.strip()):
+                    continue
+                if any(needle in run for needle in needles):
+                    found.append((job_name, step))
+        return found
+
     @staticmethod
     def _job_runs(job):
         runs = []
@@ -183,6 +214,13 @@ class WorkflowYamlStructureTests(unittest.TestCase):
             problems.append("frontend-tests must run the full browser suite "
                             "(npm run test:browser / playwright test)")
 
+        # ADR-022: an execution step must not be conditionally skipped. Any
+        # ``if`` on a step that carries a real check command is a bypass.
+        for job_name, step in cls._critical_run_steps(workflow):
+            if "if" in step:
+                problems.append(f"job {job_name!r} step {step.get('run')!r} must "
+                                f"execute unconditionally but declares if: {step['if']!r}")
+
         gate = jobs.get("quality-gate")
         if isinstance(gate, dict):
             needs = gate.get("needs")
@@ -234,6 +272,28 @@ class WorkflowYamlStructureTests(unittest.TestCase):
                 step["run"] = "echo skipped browser tests"
         problems = self._validate(workflow)
         self.assertTrue(problems, "echoed browser step must be rejected")
+
+    def test_mutation_conditional_skip_browser_step_is_rejected(self):
+        # ADR-022: `if: ${{ false }}` on the real browser step is a structural
+        # bypass that must be rejected, not accepted as a still-present step.
+        workflow = copy.deepcopy(self._workflow)
+        for step in workflow["jobs"]["frontend-tests"]["steps"]:
+            if step.get("run") == "npm run test:browser":
+                step["if"] = "${{ false }}"
+                break
+        problems = self._validate(workflow)
+        self.assertTrue(problems, "conditionally-skipped browser step must be rejected")
+        self.assertTrue(any("must execute unconditionally" in p for p in problems), problems)
+
+    def test_mutation_conditional_skip_collector_step_is_rejected(self):
+        workflow = copy.deepcopy(self._workflow)
+        steps = workflow["jobs"]["collector-contracts"]["steps"]
+        for step in steps:
+            if isinstance(step.get("run"), str) and "unittest discover" in step["run"]:
+                step["if"] = "false"
+                break
+        problems = self._validate(workflow)
+        self.assertTrue(problems, "conditionally-skipped collector step must be rejected")
 
     def test_mutation_continue_on_error_is_rejected(self):
         workflow = copy.deepcopy(self._workflow)

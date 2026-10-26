@@ -68,7 +68,7 @@ jobs:
           python -B -m coverage run --data-file=test-results/.coverage -m unittest discover -s tests -v
           python -m coverage lcov --data-file=test-results/.coverage -o test-results/python.lcov
           npx c8 --all --include='web/*.js' --reporter=lcovonly --reports-dir=test-results/node-coverage node --test tests/*.test.cjs
-          python scripts/verify_changed_coverage.py --base "$COVERAGE_BASE" --lcov test-results/python.lcov test-results/node-coverage/lcov.info
+          python scripts/verify_changed_coverage.py --base "$COVERAGE_BASE" --lcov test-results/python.lcov test-results/node-coverage/lcov.info test-results/browser-coverage/lcov.info
       - name: Verify all BASIC and Triton scatter journeys executed and passed
         run: python scripts/verify_basic_junit.py
       - name: Retain browser failure evidence

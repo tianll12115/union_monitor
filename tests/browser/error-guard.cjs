@@ -20,9 +20,34 @@
 // "currently allowed predicates" list is safe.
 
 const base = require('@playwright/test');
+const fs = require('node:fs');
+const path = require('node:path');
+const { toIstanbul, toLcov } = require('./coverage-collector.cjs');
 
 let allowedPredicates = [];
 let collected = [];
+let pendingCoverageEntries = [];
+let mergedBrowserCoverage = {};
+
+const REPO = path.join(__dirname, '..', '..');
+
+async function saveBrowserCoverage() {
+  const istanbul = await toIstanbul(pendingCoverageEntries);
+  pendingCoverageEntries = [];
+  for (const [key, fileData] of Object.entries(istanbul)) {
+    if (!mergedBrowserCoverage[key]) mergedBrowserCoverage[key] = { path: key, l: {} };
+    for (const [line, count] of Object.entries(fileData.l)) {
+      const n = Number(count) || 0;
+      mergedBrowserCoverage[key].l[line] = Math.max(
+        Number(mergedBrowserCoverage[key].l[line]) || 0,
+        n,
+      );
+    }
+  }
+  const outDir = process.env.COVERAGE_OUT_DIR || path.join(REPO, 'test-results', 'browser-coverage');
+  fs.mkdirSync(outDir, { recursive: true });
+  fs.writeFileSync(path.join(outDir, 'lcov.info'), toLcov(mergedBrowserCoverage));
+}
 
 function isKeyResource(url) {
   // Only the application's own critical assets count; external links opened in
@@ -74,7 +99,14 @@ const test = base.test.extend({
       }
     });
 
-    await use(page);
+    await page.coverage.startJSCoverage({ resetOnNavigation: false }).catch(() => {});
+    try {
+      await use(page);
+    } finally {
+      const cov = await page.coverage.stopJSCoverage().catch(() => []);
+      pendingCoverageEntries.push(...cov);
+      await saveBrowserCoverage();
+    }
 
     if (collected.length) {
       const summary = collected.map((entry) => JSON.stringify(entry)).join('\n');

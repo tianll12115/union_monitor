@@ -352,6 +352,62 @@ class RunWindowTests(unittest.TestCase):
 
 
 class CollectWindowTests(unittest.TestCase):
+    def test_live_collection_uses_finished_observation_and_declares_discovery_cutoff(self):
+        from triton.quality import validate
+        clock = [dt("2026-09-28T12:00:00Z")]
+
+        class Clock(datetime):
+            @classmethod
+            def now(cls, tz=None):
+                return clock[0]
+
+        row = {"id": 1, "name": "Integration Tests", "head_sha": "abc", "event": "pull_request",
+               "created_at": "2026-09-28T11:00:00Z", "updated_at": "2026-09-28T12:01:00Z",
+               "status": "completed", "conclusion": "success", "run_attempt": 1,
+               "html_url": "https://github.com/example/actions/runs/1"}
+
+        def fake_get(api, url):
+            clock[0] = dt("2026-09-28T12:08:00Z")
+            if "/jobs" in url:
+                return {"total_count": 0, "jobs": []}, {}
+            return {"total_count": 1, "workflow_runs": [row]}, {}
+
+        fields = {"pr": 42, "pr_url": "https://github.com/example/pull/42", "pr_title": "Race",
+                  "base_branch": "main", "head_sha": "abc",
+                  "pr_evidence": {"method": "synthetic", "run_id": 1, "pr": 42, "resolved_head_sha": "abc"}}
+        with tempfile.TemporaryDirectory() as temp, patch("triton.dashboard.datetime", Clock), \
+                patch.object(GitHub, "get", fake_get), \
+                patch("triton.pr_identity.PRResolver.resolve", return_value=fields), \
+                patch("triton.dashboard.EVIDENCE", Path(temp)):
+            payload = collect(hours=72)
+            raw = json.loads((Path(temp) / "enriched-runs.json").read_text())
+            meta = json.loads((Path(temp) / "runs.json").read_text())
+            self.assertTrue(validate(raw, payload)["passed"])
+            self.assertEqual(payload["window_end"], "2026-09-28T12:08:00Z")
+            self.assertEqual(payload["window_start"], "2026-09-25T12:08:00Z")
+            self.assertEqual(payload["discovery"]["fetch_window_end"], "2026-09-28T12:00:00Z")
+            self.assertIn("创建", payload["discovery"]["boundary_note"])
+            self.assertEqual(meta["window_end"], payload["window_end"])
+            self.assertEqual(meta["fetch_window_end"], payload["discovery"]["fetch_window_end"])
+            replay = build_payload(raw, meta["window_start"], meta["window_end"], meta["collected_at"],
+                                   fetch_start=meta["fetch_window_start"], fetch_end=meta["fetch_window_end"])
+            self.assertEqual(replay["batches"], payload["batches"])
+            fixed = collect(hours=72, as_of="2026-09-28T12:00:00Z")
+            self.assertEqual(fixed["window_end"], "2026-09-28T12:00:00Z")
+            self.assertIn("completion time beyond the as-of reference", ";".join(validate(raw, fixed)["errors"]))
+            raw[0]["updated_at"] = "2026-09-28T12:09:00Z"
+            self.assertIn("completion time beyond the as-of reference", ";".join(validate(raw, payload)["errors"]))
+            # The creation query can discover an older run whose new attempt
+            # starts during pagination; it belongs to the live observed window.
+            row.update(created_at="2026-09-21T00:00:00Z", run_attempt=2,
+                       run_started_at="2026-09-28T12:01:00Z", updated_at="2026-09-28T12:02:00Z")
+            clock[0] = dt("2026-09-28T12:00:00Z")
+            rerun = collect(hours=72)
+            self.assertEqual([b["kind"] for b in rerun["batches"]], ["rerun"])
+            self.assertEqual(rerun["batches"][0]["start_at"], "2026-09-28T12:01:00Z")
+            excluded = collect(hours=72, as_of="2026-09-28T12:00:00Z")
+            self.assertEqual(excluded["batches"], [])
+
     def test_collect_discovers_rerun_created_before_window(self):
         inside = {"id": 1, "name": "Integration Tests", "head_sha": "abc", "event": "pull_request",
                   "created_at": "2026-09-21T00:00:00Z", "run_started_at": "2026-09-26T10:00:00Z",

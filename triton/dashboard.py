@@ -611,6 +611,7 @@ def build_coverage_ledger(runs, payload, window_end):
 
 def collect(hours=72, as_of=None):
     api=GitHub(); end=dt(as_of) if as_of else datetime.now(UTC).replace(microsecond=0); start=end-timedelta(hours=hours)
+    fetch_end=end
     EVIDENCE.mkdir(parents=True, exist_ok=True)
     # Query the two native PR event types separately; recursively split intervals to avoid GitHub's 1,000-result cap.
     # A rerun may target a run first created before the window, so discovery reaches
@@ -630,7 +631,8 @@ def collect(hours=72, as_of=None):
     for event in ("pull_request","pull_request_target"):
         interval(fetch_start,end,event)
     unique={(r["id"], r.get("run_attempt") or 1):r for r in runs}
-    runs=[r for r in unique.values() if run_in_window(r,start,end)]
+    discovered_end=end if as_of else datetime.now(UTC).replace(microsecond=0)
+    runs=[r for r in unique.values() if run_in_window(r,start,discovered_end)]
     _write_json(EVIDENCE/"runs.json", {"collected_at":iso(datetime.now(UTC)),"window_start":iso(start),"fetch_window_start":iso(fetch_start),"window_end":iso(end),"runs":runs})
 
     # PRs from forks can have empty run.pull_requests and commit/pulls responses.
@@ -688,8 +690,17 @@ def collect(hours=72, as_of=None):
         if source_failures:
             raise RuntimeError(f"PR association source requests failed for {len(source_failures)} runs; refusing to publish. See pr-association-errors.json")
 
+    # REST pages are observed over time, not atomically at discovery start.
+    # Keep explicit historical cutoffs strict; live snapshots use the end of
+    # observation and disclose the earlier creation-time discovery boundary.
+    observed=datetime.now(UTC).replace(microsecond=0)
+    if as_of is None:
+        end=observed; start=end-timedelta(hours=hours)
+    _write_json(EVIDENCE/"runs.json", {"collected_at":iso(observed),"window_start":iso(start),
+                "fetch_window_start":iso(fetch_start),"fetch_window_end":iso(fetch_end),"window_end":iso(end),"runs":runs})
     _write_json(EVIDENCE/"enriched-runs.json", enriched)
-    payload = build_payload(enriched, iso(start), iso(end), iso(datetime.now(UTC)), api.calls, fetch_start=iso(fetch_start))
+    payload = build_payload(enriched, iso(start), iso(end), iso(observed), api.calls,
+                            fetch_start=iso(fetch_start), fetch_end=iso(fetch_end))
     # ADR-004: bind a per-identity coverage ledger to this round's raw runs.
     _write_json(EVIDENCE/"coverage-ledger.json",
                 build_coverage_ledger(enriched, payload, iso(end)))
@@ -743,7 +754,7 @@ def summary_of(batches, calls=0):
             "api_calls": calls}
 
 
-def build_payload(runs, window_start, window_end, collected_at, calls=0, fetch_start=None):
+def build_payload(runs, window_start, window_end, collected_at, calls=0, fetch_start=None, fetch_end=None):
     for row in runs:
         if row.get("conclusion") in ("skipped","neutral"): row["jobs_complete"]=True
     batches=build_batches(runs, window_end, window_start)
@@ -758,6 +769,10 @@ def build_payload(runs, window_start, window_end, collected_at, calls=0, fetch_s
                               "fetch_window_start":fetch_start,
                               "boundary_note":("run 列表按创建时间回溯 "+str(RERUN_LOOKBACK.days)
                                                +" 天，早于该边界的老 run 若新 attempt 发生在窗口内可能未被拉取，本快照不宣称全量")}
+        if fetch_end:
+            payload["discovery"]["fetch_window_end"]=fetch_end
+            payload["discovery"]["boundary_note"]+=("；创建时间发现截至 "+fetch_end+
+                "，之后新创建的 run 未纳入；状态为采集期间逐页观测，非原子时间快照")
     return payload
 
 
@@ -786,7 +801,8 @@ def main():
         runs=augment_base_branches(runs,fetch_missing=False)
         if args.refresh_focus:
             runs=augment_focus_jobs(runs,meta["window_end"]);_write_json(EVIDENCE/"enriched-runs.json",runs)
-        payload=build_payload(runs,meta["window_start"],meta["window_end"],meta["collected_at"])
+        payload=build_payload(runs,meta["window_start"],meta["window_end"],meta["collected_at"],
+                              fetch_start=meta.get("fetch_window_start"),fetch_end=meta.get("fetch_window_end"))
     else: payload=collect(args.hours,args.as_of)
     from .quality import fingerprint, validate, verify_artifacts
     report=validate(runs if args.from_evidence else json.loads((EVIDENCE/"enriched-runs.json").read_text(encoding="utf-8")),payload)

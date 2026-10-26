@@ -4,6 +4,16 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const { urlToRel, toLcov, toIstanbul } = require('./browser/coverage-collector.cjs');
 
+function hasCoverageDeps() {
+  try {
+    require.resolve('v8-to-istanbul');
+    require.resolve('istanbul-lib-coverage');
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 test('urlToRel maps root and /web/ script URLs to web/*.js and rejects non-scripts', () => {
   assert.equal(urlToRel('http://dashboard.test:18877/app.js'), 'web/app.js');
   assert.equal(urlToRel('http://dashboard.test:18877/web/core.js'), 'web/core.js');
@@ -28,7 +38,7 @@ test('toLcov returns empty text for no coverage', () => {
   assert.equal(toLcov({}), '');
 });
 
-test('toIstanbul converts V8 precise coverage into line coverage', async () => {
+test('toIstanbul converts V8 precise coverage into line coverage', { skip: !hasCoverageDeps() && 'v8-to-istanbul not installed' }, async () => {
   const source = 'const a = 1;\nconst b = a + 1;\n';
   const entry = {
     url: 'http://dashboard.test:18877/web/core.js',
@@ -46,7 +56,7 @@ test('toIstanbul converts V8 precise coverage into line coverage', async () => {
   assert.equal(out[paths[0]].l['2'], 1);
 });
 
-test('toIstanbul ignores non-script URLs and entries without source', async () => {
+test('toIstanbul ignores non-script URLs and entries without source', { skip: !hasCoverageDeps() && 'v8-to-istanbul not installed' }, async () => {
   const out = await toIstanbul([
     { url: 'http://x/index.html', source: 'x', functions: [] },
     { url: 'http://x/core.js', source: '', functions: [] },

@@ -8,8 +8,6 @@
 // uses), keeping the browser numbers consistent with the Node numbers.
 
 const path = require('node:path');
-const v8toIstanbul = require('v8-to-istanbul');
-const libCoverage = require('istanbul-lib-coverage');
 
 const REPO = path.join(__dirname, '..', '..');
 
@@ -33,6 +31,10 @@ async function convertEntry(entry) {
     return null;
   }
   try {
+    // Lazy-loaded: only the browser harness (run after `npm ci`) reaches here,
+    // so the pre-install `node --test` step can still require this module.
+    const v8toIstanbul = require('v8-to-istanbul');
+    const libCoverage = require('istanbul-lib-coverage');
     const abs = path.join(REPO, rel);
     const converter = v8toIstanbul(abs, 0, { source: entry.source });
     await converter.load();

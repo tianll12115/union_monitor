@@ -5,7 +5,8 @@
 ## 提交前验证
 
 - [ ] 已执行 `python -B scripts/run_checks.py`（完整 Python / Node UT）
-- [ ] 涉及交互时执行 `python -B scripts/run_checks.py --browser`
+- [ ] 已执行 `python -B scripts/run_checks.py --browser`（完整 Chromium、BASIC/Triton 必跑旅程）
+- [ ] 本次 `test-results/changed-coverage.json` 证明新增可执行代码行覆盖率严格大于 80%
 - [ ] 补充或更新测试，且对应代码已创建 commit
 - [ ] 未提交原始缓存、凭据、临时日志或生成快照
 

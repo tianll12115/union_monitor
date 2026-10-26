@@ -9,6 +9,7 @@ import json
 import tempfile
 import unittest
 import xml.etree.ElementTree as ET
+from unittest.mock import patch
 from pathlib import Path
 
 from scripts import verify_basic_junit as vj
@@ -26,6 +27,28 @@ def required_ids():
 
 
 class ExactTokenTests(unittest.TestCase):
+    def test_cli_rejects_report_omitting_the_entire_scatter_suite(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            report = Path(tmp) / 'junit.xml'
+            root = ET.Element('testsuite')
+            root.extend(case(f'[{i}] journey') for i in required_ids())
+            root.extend(case(f'unrelated-{i}') for i in range(4))
+            ET.ElementTree(root).write(report, encoding='utf-8')
+            with patch('builtins.print'):
+                self.assertEqual(vj.main(['--junit', str(report)]), 1)
+
+    def test_scatter_tokens_are_required_even_when_all_basic_journeys_pass(self):
+        self.assertEqual(vj.covered_ids('[TRITON-003] warm navigation'), {'TRITON-003'})
+        ids = required_ids() + list(vj.REQUIRED_SCATTER_IDS)
+        cases = [case(f'[{i}] journey') for i in required_ids()]
+        self.assertFalse(vj.check(ids, cases)[0])
+        for scatter_id in vj.REQUIRED_SCATTER_IDS:
+            cases.append(case(f'[{scatter_id}] scatter'))
+        self.assertTrue(vj.check(ids, cases)[0])
+        for status in ('skipped', 'failure', 'error'):
+            with self.subTest(status=status):
+                self.assertFalse(vj.check(ids, cases[:-1] + [case('[TRITON-004] scatter', status)])[0])
+
     def test_covered_ids_match_the_literal_token_only(self):
         self.assertEqual(vj.covered_ids("[BASIC-001] journey"), {"BASIC-001"})
         self.assertEqual(vj.covered_ids("BASIC-0010 no brackets"), set())

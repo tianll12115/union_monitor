@@ -61,12 +61,23 @@ class CheckTests(unittest.TestCase):
             with self.subTest(final=final), self.assertRaises(ValueError):
                 run_checks.pre_push([f'refs/heads/test {head} refs/heads/test {head}'])
 
+    @patch('scripts.run_checks.check')
+    @patch('scripts.run_checks.git_output')
+    def test_pre_push_requires_real_browser_checks(self, git, check):
+        head = 'a' * 40
+        git.side_effect = [head, 'codex/test', '', head, 'codex/test', '']
+        run_checks.pre_push([f'refs/heads/test {head} refs/heads/test {head}'])
+        check.assert_called_once_with(browser=True)
+
     def test_unit_commands_include_both_full_suites(self):
         commands = run_checks.commands(browser=False)
         self.assertTrue(any('discover' in c and 'tests' in c for c in commands))
         node = next(c for c in commands if '--test' in c)
         self.assertGreater(len(node), 30)
         self.assertTrue(all(p.endswith('.test.cjs') for p in node[2:]))
+        self.assertTrue(any('coverage' in c and 'run' in c for c in commands))
+        self.assertTrue(any('c8' in c and '--all' in c for c in commands))
+        self.assertTrue(any('scripts/verify_changed_coverage.py' in c for c in commands))
 
     def test_browser_checks_verify_required_journeys(self):
         commands = run_checks.commands(browser=True)
@@ -114,6 +125,7 @@ class SubmissionTests(unittest.TestCase):
         submit_pr.submit('title', 'body.md', 'destination')
         commands = [c.args[0] for c in run.call_args_list]
         self.assertIn('scripts/run_checks.py', commands[3])
+        self.assertIn('--browser', commands[3])
         self.assertEqual(commands[7], ['git', 'push', 'destination', f'{head}:refs/heads/codex/test'])
         self.assertEqual(commands[-1][-2:], ['--repo', 'https://github.com/tianll12115/union_monitor.git'])
 

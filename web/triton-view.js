@@ -83,14 +83,15 @@
   }
 
   function render(payload, container) {
+    const routeChanged = active && !active.matchesRoute();
     /* REQ-033 AC03 / REQ-035 AC03: 数据未变时跳过重挂载，但 applyRoute 已把徽标与页脚重置为默认，需按当前状态重新同步。 */
-    if (core.sameSessionMount(mounted, payload, container)) {
+    if (core.sameSessionMount(mounted, payload, container) && !routeChanged) {
       syncBranchBadge(active ? active.state().branches : []);
       const fm = document.getElementById('footerMeta');
       if (fm && active) fm.textContent = active.footerText();
       return;
     }
-    const prevState = active ? active.state() : savedState;
+    const prevState = routeChanged ? null : (active ? active.state() : savedState);
     if (active) { active.destroy(); active = null; }
     mounted = null;
     if (!container) return;
@@ -101,7 +102,7 @@
       container.innerHTML = '<div class="empty">暂无 Triton 门禁数据</div>';
       return;
     }
-    mount(payload, container, domainStart, domainEnd, prevState);
+    mount(payload, container, domainStart, domainEnd, prevState, routeChanged);
   }
 
   function skeleton() {
@@ -187,7 +188,7 @@
 <div class="tooltip" data-role="tip" tabindex="-1" role="dialog" aria-label="批次详情"></div>`;
   }
 
-  function mount(D, container, domainStart, domainEnd, prevState) {
+  function mount(D, container, domainStart, domainEnd, prevState, resetRoute) {
     container.innerHTML = skeleton();
     const el = selector => container.querySelector(selector);
     const all = selector => Array.from(container.querySelectorAll(selector));
@@ -219,7 +220,7 @@
        otherwise the previous mounted/saved state is reused as before. */
     const query = readQuery();
     const hasUrlState = ['branch', 'q', 'filter', 'npu', 'showAll', 'unknown', 'from', 'to', 'batch'].some(k => query[k] != null);
-    const urlState = hasUrlState ? {
+    const urlState = hasUrlState || resetRoute ? {
       branches: toList(query.branch),
       search: typeof query.q === 'string' ? query.q : '',
       filter: ['all', 'slow', 'failure', 'running'].includes(query.filter) ? query.filter : null,
@@ -285,8 +286,13 @@
     /* ADR-012: every state change is mirrored into the hash so a copied link
        reconstructs branches, the time window, search, chart filters and the
        open detail. replaceState keeps the filter tweaks out of the history. */
+    let sessionHash = root.location && root.location.hash;
+    const matchesRoute = () => !root.location || root.location.hash === sessionHash;
     const syncUrl = () => {
       if (!root.history || !root.Router || !root.location) return;
+      // A pending hash navigation owns its destination; old detail cleanup
+      // must not replace that destination with this session's filters.
+      if (!matchesRoute()) return;
       const q = {};
       const branches = [...selectedBranches].sort();
       if (branches.length) q.branch = branches;
@@ -300,6 +306,7 @@
       q.to = Math.round(viewEnd);
       const target = '#projects/triton/engineering' + root.Router.serializeQuery(q);
       if (root.location.hash !== target) root.history.replaceState(null, '', target);
+      sessionHash = target;
     };
 
     /* ADR-012: opening a batch from any entry also records it in the URL. */
@@ -310,7 +317,7 @@
     };
 
     if (initial) {
-      if (initial.search) searchInput.value = initial.search;
+      searchInput.value = initial.search || '';
       all('[data-filter]').forEach(x => x.classList.toggle('active', x.dataset.filter === filter));
       all('[data-npu-filter]').forEach(x => x.classList.toggle('active', x.dataset.npuFilter === npuFilter));
       if (recovered && recovered.adjusted) {
@@ -419,7 +426,7 @@
       if (stats.p90 != null) out += `<line class="p90-line" x1="${m.l}" x2="${W - m.r}" y1="${y(stats.p90)}" y2="${y(stats.p90)}"/>`;
       const bins = [];
       for (let a = viewStart; a < viewEnd; a += 6 * HOUR) {
-        const vals = rows.filter(b => +new Date(b.start_at) >= a && +new Date(b.start_at) < a + 6 * HOUR)
+        const vals = rows.filter(b => +new Date(b.start_at) >= a && +new Date(b.start_at) < a + 6 * HOUR && core.sampleEligible(b, 'npu'))
           .map(b => b.npu_queue_seconds).sort((p, q) => p - q);
         if (vals.length) {
           const mid = vals.length % 2 ? vals[(vals.length - 1) / 2] : (vals[vals.length / 2 - 1] + vals[vals.length / 2]) / 2;
@@ -854,6 +861,7 @@
       },
       footerText,
       syncUrl,
+      matchesRoute,
     };
     mounted = { payload: D, container };
   }

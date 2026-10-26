@@ -176,7 +176,7 @@ TRITON_VIEW_CONTRACTS = [
     ('destroy_doc_listener', "document.removeEventListener('click',"
      ' onDocClick);'),
     ('same_session_mount',
-     'if (core.sameSessionMount(mounted, payload, container)) {'),
+     'if (core.sameSessionMount(mounted, payload, container) && !routeChanged) {'),
     ('empty_no_data',
      "container.innerHTML = '<div class=\"empty\">暂无 Triton 门禁数据"
      "</div>';"),

@@ -23,10 +23,11 @@ DEFAULT_JUNIT = ROOT / "test-results" / "browser-junit.xml"
 # The manifest pins the fixed 12-journey checklist version (ADR-023).
 EXPECTED_SCHEMA_VERSION = 1
 EXPECTED_JOURNEY_COUNT = 12
+REQUIRED_SCATTER_IDS = tuple(f'TRITON-{i:03d}' for i in range(1, 5))
 
 # A journey id is claimed only by the literal ``[BASIC-00X]`` token — exact,
 # not a substring, so a single name cannot smuggle all 12 ids at once.
-TOKEN_RE = re.compile(r"\[(BASIC-\d{3})\]")
+TOKEN_RE = re.compile(r"\[((?:BASIC|TRITON)-\d{3})\]")
 
 
 def covered_ids(name):
@@ -142,7 +143,7 @@ def main(argv=None):
                         help="print the required BASIC ids and exit")
     args = parser.parse_args(argv)
 
-    required_ids = load_required_ids(args.manifest)
+    required_ids = load_required_ids(args.manifest) + list(REQUIRED_SCATTER_IDS)
 
     if args.list:
         for req_id in required_ids:

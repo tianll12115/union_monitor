@@ -32,7 +32,8 @@ function urlHarness(initialHash) {
     addEventListener() {}, removeEventListener() {}, setTimeout() { return 1; }, clearTimeout() {}, setInterval(f) { return f; }, clearInterval() {},
   };
   context.window = context;
-  vm.runInNewContext(fs.readFileSync(require.resolve('../web/triton-view.js'), 'utf8'), context);
+  vm.runInNewContext(fs.readFileSync(require.resolve('../web/triton-view.js'), 'utf8'), context,
+    {filename: require.resolve('../web/triton-view.js')});
   return { view: context.TritonView, container, node, location, opened };
 }
 
@@ -82,4 +83,37 @@ test('ADR-012: a batch deep link is preserved through the mount sync', () => {
   const h = urlHarness('#projects/triton/engineering?batch=batch-3');
   h.view.render(sample(), h.container);
   assert.match(h.location.hash, /batch=batch-3/);
+});
+
+test('warm hash navigation replaces an empty branch selection with the new URL state', () => {
+  const h = urlHarness('#projects/triton/engineering?branch=absent');
+  const data = sample();
+  h.view.render(data, h.container);
+  assert.equal(h.node('[data-role="kE2eN"]').textContent, 'n=0');
+  h.location.hash = '#projects/triton/engineering?branch=main&filter=failure';
+  h.view.render(data, h.container);
+  assert.match(h.node('[data-role="kE2eN"]').textContent, /^n=6/);
+  const chart = h.node('[data-role="chart"]').innerHTML;
+  assert.equal((chart.match(/class="mark-hit"/g) || []).length, 1);
+  assert.match(h.location.hash, /branch=main/);
+});
+
+test('warm navigation to a plain Triton URL resets omitted filters and search', () => {
+  const h = urlHarness('#projects/triton/engineering?branch=absent&q=old&filter=failure');
+  const data = sample();
+  h.view.render(data, h.container);
+  h.location.hash = '#projects/triton/engineering';
+  h.view.render(data, h.container);
+  assert.match(h.node('[data-role="kE2eN"]').textContent, /^n=6/);
+  assert.equal(h.node('[data-role="search"]').value, '');
+  assert.equal((h.node('[data-role="chart"]').innerHTML.match(/class="mark-hit"/g) || []).length, 6);
+});
+
+test('closing the old detail during navigation must not overwrite the destination hash', () => {
+  const h = urlHarness('#projects/triton/engineering?branch=absent');
+  h.view.render(sample(), h.container);
+  h.view.setDetailBatch('batch-1');
+  h.location.hash = '#projects/triton/engineering?branch=main';
+  h.view.clearDetailBatch();
+  assert.equal(h.location.hash, '#projects/triton/engineering?branch=main');
 });

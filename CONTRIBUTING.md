@@ -18,7 +18,7 @@ Linux / WSL 与 CI 最接近；Windows 可运行同一入口（Node 测试文件
 
 ```sh
 python -B scripts/run_checks.py            # 完整 Python / Node UT 和新增行覆盖率检查
-python -B scripts/run_checks.py --browser  # 追加完整 Chromium、12 个 BASIC 与 4 个 Triton 散点旅程核验
+python -B scripts/run_checks.py --browser  # 追加完整 Chromium、12 个 BASIC 与 5 个 Triton 散点旅程核验
 ```
 
 `--browser` 会把固定 fixture 写到 `data/`、`web/data/`，请在独立开发副本执行，勿在生产采集目录执行。

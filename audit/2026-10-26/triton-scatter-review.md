@@ -1,5 +1,7 @@
 # Triton 散点交互与数据准确性对抗审查
 
+> 后续现场复现：用户明确“详情弹窗空白”后，在其已打开的 Chrome 中确认正文布局宽度为 0 和滚动位置残留。根因、修复与新增门禁见[详情空白补充复盘](triton-dialog-blank.md)。下文保留首轮审查时的观察边界。
+
 审查日期：2026-10-26（北京时间）。起点为用户提供的 [线上地址](https://tianll12115.github.io/union_monitor/#projects/triton/engineering?from=1792690577000&to=1792949777000)。
 
 ## 事实与复现边界

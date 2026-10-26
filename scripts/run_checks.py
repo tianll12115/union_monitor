@@ -12,13 +12,23 @@ def commands(browser=False):
     result = [
         [sys.executable, '-c', 'import yaml'],
         [sys.executable, '-B', 'scripts/devdata.py', '--offline'],
-        [sys.executable, '-B', '-m', 'unittest', 'discover', '-s', 'tests', '-v'],
+        [sys.executable, '-B', '-m', 'coverage', 'run', '--data-file=.tmp/python-coverage/.coverage',
+         '-m', 'unittest', 'discover', '-s', 'tests', '-v'],
         ['node', '--test', *[str(p.relative_to(ROOT)).replace('\\', '/')
                             for p in sorted((ROOT / 'tests').glob('*.test.cjs'))]],
     ]
     if browser:
         result += [['npm', 'run', 'test:browser'],
                    [sys.executable, 'scripts/verify_basic_junit.py']]
+    result += [
+        [sys.executable, '-m', 'coverage', 'lcov', '--data-file=.tmp/python-coverage/.coverage',
+         '-o', 'test-results/python.lcov'],
+        ['npm', 'exec', '--', 'c8', '--all', '--include=web/*.js', '--reporter=lcovonly',
+         '--reports-dir=test-results/node-coverage', 'node', '--test',
+         *[str(p.relative_to(ROOT)).replace('\\', '/') for p in sorted((ROOT / 'tests').glob('*.test.cjs'))]],
+        [sys.executable, 'scripts/verify_changed_coverage.py', '--lcov',
+         'test-results/python.lcov', 'test-results/node-coverage/lcov.info'],
+    ]
     return result
 
 
@@ -52,7 +62,7 @@ def pre_push(records):
     if dirty:
         raise ValueError('Commit changes and resolve untracked files before pushing')
     verify_push_refs(records, head)
-    check()
+    check(browser=True)
     final_head = git_output('rev-parse', 'HEAD')
     final_branch = git_output('branch', '--show-current')
     dirty = git_output('status', '--porcelain')

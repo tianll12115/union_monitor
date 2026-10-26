@@ -114,7 +114,7 @@ class WorkflowYamlStructureTests(unittest.TestCase):
             "frontend-tests": ("node --test tests/*.test.cjs",
                                "scripts/devdata.py --offline",
                                "verify_basic_junit.py",
-                               "npm run test:browser", "playwright test"),
+                               "npm run test:browser", "playwright test", "verify_changed_coverage.py"),
             "collector-contracts": ("unittest discover",),
             "workflow-lint": ("actionlint",),
             "quality-gate": ("scripts/ci_gate.py",),
@@ -189,7 +189,7 @@ class WorkflowYamlStructureTests(unittest.TestCase):
             "python-tests": ("unittest discover",),
             "frontend-tests": ("node --test tests/*.test.cjs",
                                "scripts/devdata.py --offline",
-                               "verify_basic_junit.py"),
+                               "verify_basic_junit.py", "verify_changed_coverage.py", "coverage run", "npx c8"),
             "collector-contracts": ("unittest discover",),
             "workflow-lint": ("actionlint",),
         }
@@ -264,6 +264,17 @@ class WorkflowYamlStructureTests(unittest.TestCase):
                 break
         problems = self._validate(workflow)
         self.assertTrue(problems, "missing browser step must be rejected")
+
+    def test_mutation_missing_or_conditional_coverage_gate_is_rejected(self):
+        for conditional in (False, True):
+            workflow = copy.deepcopy(self._workflow)
+            for step in workflow['jobs']['frontend-tests']['steps']:
+                if 'verify_changed_coverage.py' in step.get('run', ''):
+                    if conditional:
+                        step['if'] = '${{ false }}'
+                    else:
+                        step.pop('run')
+            self.assertTrue(self._validate(workflow))
 
     def test_mutation_echo_browser_step_is_rejected(self):
         workflow = copy.deepcopy(self._workflow)

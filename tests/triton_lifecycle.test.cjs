@@ -29,7 +29,8 @@ function viewHarness() {
     setTimeout(){return 1;},clearTimeout(){},setInterval(f){intervals.add(f);return f;},clearInterval(f){intervals.delete(f);},
   };
   context.window = context;
-  vm.runInNewContext(fs.readFileSync(require.resolve('../web/triton-view.js'),'utf8'),context);
+  vm.runInNewContext(fs.readFileSync(require.resolve('../web/triton-view.js'),'utf8'),context,
+    {filename:require.resolve('../web/triton-view.js')});
   return {view:context.TritonView,container,node,documentListeners,resizeListeners,intervals,downloads};
 }
 
@@ -43,6 +44,27 @@ function sample() {
     e2e_sample_eligible:false,e2e_exclusion_reason:'unresolved_pr_batch_identity',workflows:[{id:123,attempt:1,jobs:[]}],npu_jobs:[]});
   return {window_start:'2026-10-10T00:00:00Z',window_end:'2026-10-11T00:00:00Z',collected_at:'2026-10-11T00:01:00Z',batches};
 }
+
+test('NPU median trend uses completed qualified samples, matching its P50 and count', () => {
+  const data = sample();
+  data.batches = [];
+  for (const hour of [1, 7]) {
+    for (const [status, value, missing] of [['success', 0, false], ['failure', 60, false], ['running', 9000, false], ['cancelled', 10000, false], ['success', 11000, true]]) {
+      data.batches.push({id: `${hour}-${status}-${value}`, pr: 1, base_branch: 'main', status,
+        start_at: `2026-10-10T${String(hour).padStart(2, '0')}:00:00Z`,
+        duration_seconds: 600, npu_queue_seconds: value, npu_data_missing: missing});
+    }
+  }
+  const h = viewHarness(); h.view.render(data, h.container);
+  const svg = h.node('[data-role="npuChart"]').innerHTML;
+  const max = 11000 * 1.12;
+  const expectedY = 328 - 30 / max * 310;
+  const path = svg.match(/class="median-line" d="([^"]+)"/)[1];
+  const ys = [...path.matchAll(/,[\d.]+/g)].map(x => Number(x[0].slice(1)));
+  assert.equal(ys.length, 2);
+  for (const y of ys) assert.ok(Math.abs(y - expectedY) < 1e-9, `${y} should map P50=30s`);
+  assert.match(h.node('[data-role="kNpuN"]').textContent, /^n=4/);
+});
 
 test('real attention markup renders a failed slow batch once with multiple reasons', () => {
   const h=viewHarness();h.view.render(sample(),h.container);

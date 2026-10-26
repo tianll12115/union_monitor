@@ -24,7 +24,7 @@ def submit(title, body_file, remote='origin'):
         raise ValueError('Commit changes and resolve untracked files before submitting')
     head = run(['git', 'rev-parse', 'HEAD'])
     # Stream test output so a failure is visible and cannot reach push/create.
-    run([sys.executable, '-u', 'scripts/run_checks.py'])
+    run([sys.executable, '-u', 'scripts/run_checks.py', '--browser'])
     if run(['git', 'status', '--porcelain']):
         raise ValueError('Tests changed tracked or untracked files; review and commit first')
     final_head = run(['git', 'rev-parse', 'HEAD'])

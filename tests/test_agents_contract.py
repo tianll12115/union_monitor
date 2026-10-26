@@ -42,6 +42,14 @@ class AgentsContractTests(unittest.TestCase):
             self.assertIn('无需人工批准', text)
             self.assertNotIn('至少一次批准', text)
 
+    def test_ut_and_line_coverage_requirements_are_mandated(self):
+        self.assertIn("每次提交都必须编写或更新对应的单元测试", self.agents)
+        self.assertIn("行覆盖率必须大于 80%", self.agents)
+
+    def test_pr_gate_must_run_the_full_ut_suite(self):
+        self.assertIn("PR 门禁中的测试任务必须执行全量单元测试", self.agents)
+        self.assertIn("不得通过裁剪测试子集", self.agents)
+
 
 if __name__ == "__main__":
     unittest.main()

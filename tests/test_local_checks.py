@@ -84,6 +84,14 @@ class CheckTests(unittest.TestCase):
         self.assertIn(['npm', 'run', 'test:browser'], commands)
         self.assertTrue(any('scripts/verify_basic_junit.py' in c for c in commands))
 
+    def test_browser_coverage_feeds_the_changed_coverage_gate(self):
+        verify = next(c for c in run_checks.commands(browser=True)
+                      if 'scripts/verify_changed_coverage.py' in c)
+        self.assertIn('test-results/browser-coverage/lcov.info', verify)
+        verify_no_browser = next(c for c in run_checks.commands(browser=False)
+                                 if 'scripts/verify_changed_coverage.py' in c)
+        self.assertNotIn('test-results/browser-coverage/lcov.info', verify_no_browser)
+
     @patch('scripts.run_checks.subprocess.run')
     def test_unit_failure_stops_remaining_commands(self, run):
         run.side_effect = subprocess.CalledProcessError(1, 'unit')

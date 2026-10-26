@@ -20,14 +20,17 @@ def commands(browser=False):
     if browser:
         result += [['npm', 'run', 'test:browser'],
                    [sys.executable, 'scripts/verify_basic_junit.py']]
+    verify = [sys.executable, 'scripts/verify_changed_coverage.py', '--lcov',
+              'test-results/python.lcov', 'test-results/node-coverage/lcov.info']
+    if browser:
+        verify.append('test-results/browser-coverage/lcov.info')
     result += [
         [sys.executable, '-m', 'coverage', 'lcov', '--data-file=.tmp/python-coverage/.coverage',
          '-o', 'test-results/python.lcov'],
         ['npm', 'exec', '--', 'c8', '--all', '--include=web/*.js', '--reporter=lcovonly',
          '--reports-dir=test-results/node-coverage', 'node', '--test',
          *[str(p.relative_to(ROOT)).replace('\\', '/') for p in sorted((ROOT / 'tests').glob('*.test.cjs'))]],
-        [sys.executable, 'scripts/verify_changed_coverage.py', '--lcov',
-         'test-results/python.lcov', 'test-results/node-coverage/lcov.info'],
+        verify,
     ]
     return result
 

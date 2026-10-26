@@ -21,8 +21,7 @@ function fixture() {
   };
 }
 
-async function ready(page, query = '') {
-  const data = fixture();
+async function ready(page, query = '', data = fixture()) {
   await page.route('**/data/triton.json*', route => route.fulfill({json: data}));
   await page.goto('./#projects/triton/engineering' + query);
   await expect(page.locator('#reload')).toBeEnabled();
@@ -60,6 +59,52 @@ test('[TRITON-001] every scatter point opens visible matching evidence by pointe
         await expect(tip).toBeHidden();
       }
     }
+  }
+});
+
+test('[TRITON-005] long workflow jobs stay inside the dialog and reopening starts at its visible heading', async ({page}) => {
+  const data = fixture();
+  // Production shape: seven workflows and long NPU names plus failed steps.
+  for (const batch of [data.batches[0], data.batches[2]]) {
+    batch.workflows = Array.from({length:7}, (_, i) => ({
+      id: i + 1, name: `Integration Tests workflow ${i}`, attempt: 1,
+      url: `https://github.com/triton-lang/triton-ascend/actions/runs/${i + 1}`,
+      created_at: batch.start_at, updated_at: batch.end_at,
+      jobs: Array.from({length:3}, (_, j) => ({
+        name: `integration-tests-ascend / integration-tests-ascend (linux-aarch64-a3-800i-4, py3.1${j})`,
+        wait_seconds: 30, run_seconds: 600, conclusion:'failure',
+        failed_steps: ['Run compiler unit and MLIR tests', 'generate ttadapter'],
+      })),
+    }));
+  }
+  await ready(page, '', data);
+  const dialog = page.locator('#detail');
+  for (const width of [2560, 1440, 390]) {
+    await page.setViewportSize({width, height:900});
+    await page.locator('[data-role="chart"] .mark-hit[data-i="0"]').click();
+    await expect(dialog.locator('.detail-title')).toBeInViewport();
+    const layout = await dialog.evaluate(e => {
+      const box = e.getBoundingClientRect();
+      return {overflow:e.scrollWidth > e.clientWidth,
+        jobs:[...e.querySelectorAll('.workflow .jobs')].map(j => {
+          const r = j.getBoundingClientRect();
+          return {width:r.width, inside:r.left >= box.left && r.right <= box.right};
+        })};
+    });
+    expect(layout.overflow, `dialog must not overflow at ${width}px`).toBe(false);
+    expect(layout.jobs).toHaveLength(7);
+    for (const job of layout.jobs) {
+      expect(job.width, `job evidence needs readable width at ${width}px`).toBeGreaterThan(200);
+      expect(job.inside).toBe(true);
+    }
+    await dialog.evaluate(e => {e.scrollTop=e.scrollHeight;});
+    expect(await dialog.evaluate(e => e.scrollTop)).toBeGreaterThan(0);
+    await page.locator('#closeDetail').click();
+    await page.locator('[data-role="chart"] .mark-hit[data-i="2"]').click();
+    await expect(dialog.locator('.detail-title')).toContainText('PR #102');
+    await expect(dialog.locator('.detail-title')).toBeInViewport();
+    expect(await dialog.evaluate(e => e.scrollTop)).toBe(0);
+    await page.locator('#closeDetail').click();
   }
 });
 

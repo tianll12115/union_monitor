@@ -4,6 +4,18 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { createApp } = require('./helpers/app-harness.cjs');
 
+test('opening a Triton batch resets both retained dialog scroll positions', () => {
+  const app = createApp();
+  const dialog = app.element('detail');
+  dialog.scrollTop = 7790;
+  dialog.scrollLeft = 90;
+  app.run("openTritonDetail({id:'batch',pr:7,status:'success',duration_seconds:60,workflows:[]})");
+  assert.equal(dialog.open, true);
+  assert.equal(dialog.scrollTop, 0);
+  assert.equal(dialog.scrollLeft, 0);
+  assert.match(app.element('detailBody').innerHTML, /PR #7/);
+});
+
 test('project Triton route opens its available trend view rather than the workbench', () => {
   const app = createApp();
   app.run("navigate('#projects/triton/trends')");

@@ -438,6 +438,12 @@ td.num,th.num{text-align:right}
 .jobs{margin:0 0 10px 202px;display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--text-2)}
 .jobs span{overflow-wrap:anywhere}
 .jobs .failed{color:var(--danger)}
+/* Dialog evidence has no timeline track: give nested jobs the full width.
+   The trend row's third column and 202px sibling indent collapse them to 0. */
+#detail .workflow{display:block}
+#detail .wf-name{white-space:normal;overflow-wrap:anywhere}
+#detail .wf-time{text-align:left;margin-top:4px}
+#detail .jobs{margin:8px 0 0;min-width:0}
 
 /* ---------- 23. Quality & methodology ---------- */
 .quality-intro{padding:var(--sp-1) var(--sp-5) var(--sp-4);color:var(--text-2);font-size:13px;line-height:1.8}

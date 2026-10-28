@@ -163,7 +163,9 @@ const sampleEligible = (row, metric = 'e2e') => !!row
   }
 
   function circleMark(batch, cx, cy, index, color, kind, anchor) {
-    const radius = batch.status === 'success' ? 3.2 : 4.2;
+    /* TS28-005 AC1: every point uses the same 3.5 CSS px radius so the same-PR
+       highlight (7 px) is measured against one documented base size. */
+    const radius = 3.5;
     const ax = anchor ? ` data-anchor-x="${anchor.x}" data-anchor-y="${anchor.y}"` : ` data-anchor-x="${cx}" data-anchor-y="${cy}"`;
     return `<g class="mark-hit" data-i="${index}" data-kind="${kind || 'e2e'}" data-x="${cx}" data-y="${cy}"${ax} role="button" tabindex="0" aria-label="${markLabel(batch, kind)}" transform="translate(${cx} ${cy})"><circle class="hit-area" r="8"/><circle class="dot" r="${radius}" fill="${color}"/></g>`;
   }
@@ -403,4 +405,465 @@ const sampleEligible = (row, metric = 'e2e') => !!row
   }
 
   return { isSlow, attentionGroups, attentionNote, rowDomIds, minWindowSpan, clampBoundary, keyWindow, navSliderSemantics, freshnessSlots, matchesQuery, sameSessionMount, recoverWindow, placeTipBox, axisTicks, branchBadgeText };
+});
+
+/* ---- TS28 additions: read-only hover/association/timing adapter plus the
+   same-PR visible group helper. All functions are pure and Node-testable; the
+   view only formats and escapes the returned model. Evidence rules follow
+   section 4.3: without a trigger-chain field the reliable set is exactly the
+   current run/attempt, and same-PR/SHA runs stay in a separate
+   same_commit_unproven bucket that never feeds E2E or the charts. ---- */
+(function (root, factory) {
+  const api = factory();
+  if (typeof module === 'object' && module.exports) Object.assign(module.exports, api);
+  else Object.assign(root, api);
+})(typeof globalThis !== 'undefined' ? globalThis : this, function () {
+  const FAILURE_RESULTS = ['failure', 'timed_out', 'action_required', 'startup_failure'];
+  const RUNNING_RESULTS = ['queued', 'waiting', 'pending', 'requested', 'in_progress', 'running'];
+  const CANCELLED_RESULTS = ['cancelled', 'canceled', 'stale'];
+  const FOCUS_ORDER = ['a3-py310', 'a3-py311', 'a5-py312'];
+  const FOCUS_LABELS = { 'a3-py310': 'A3 · py3.10', 'a3-py311': 'A3 · py3.11', 'a5-py312': 'A5 · py3.12' };
+  const EXCLUSION_LABELS = {
+    unresolved_pr_batch_identity: 'PR 与提交批次身份未确认',
+    outside_integration_tests: '辅助检查，不计入 Integration Tests E2E',
+    rerun_queue_start_unknown: '重跑前置排队起点未知，仅观测',
+    legacy_metric_unverified: '旧口径未重新采集',
+    running_observation: '执行中观测',
+    non_sample_result: '当前结果不属完成样本',
+    invalid_or_missing_duration: '时长证据无效或缺失',
+  };
+
+  function stampOf(value) {
+    if (value == null || value === '') return null;
+    const value2 = +new Date(value);
+    return Number.isFinite(value2) ? value2 : null;
+  }
+
+  function finiteSeconds(value) {
+    return typeof value === 'number' && Number.isFinite(value) && value >= 0 ? value : null;
+  }
+
+  function normalizeResult(value) {
+    const text = String(value == null ? '' : value).toLowerCase();
+    if (text === 'success') return 'success';
+    if (FAILURE_RESULTS.includes(text)) return 'failure';
+    if (CANCELLED_RESULTS.includes(text)) return 'cancelled';
+    if (RUNNING_RESULTS.includes(text)) return 'running';
+    if (text === 'skipped' || text === 'neutral') return 'skipped';
+    return 'unknown';
+  }
+
+  /* The scatter color follows this run/attempt's own normalized result; a
+     completed run with no conclusion is unknown, never a default success. */
+  function recordResult(record) {
+    if (!record) return 'unknown';
+    if (record.conclusion != null && record.conclusion !== '') return normalizeResult(record.conclusion);
+    const status = String(record.status == null ? '' : record.status).toLowerCase();
+    if (status === 'completed') return 'unknown';
+    return normalizeResult(status);
+  }
+
+  /* AC2/AC5: only http(s) links may render as actionable anchors. */
+  function safeLink(value) {
+    if (typeof value !== 'string') return null;
+    const text = value.trim();
+    if (!text) return null;
+    try {
+      const parsed = new URL(text, 'https://example.invalid');
+      return parsed.protocol === 'http:' || parsed.protocol === 'https:' ? text : null;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  function deltaSeconds(later, earlier) {
+    return later != null && earlier != null ? (later - earlier) / 1000 : null;
+  }
+
+  /* US28-003 AC4: zero and decimals are preserved; an inverted pair is
+     explained and stays null instead of being clamped to a fake zero. The
+     observed value for a running/queued job is labelled "as of collection"
+     and never joins a completed duration. */
+  function jobTiming(job, asOf) {
+    const source = job || {};
+    const created = stampOf(source.created_at);
+    const started = stampOf(source.started_at);
+    const ended = stampOf(source.completed_at);
+    const asOfMs = stampOf(asOf);
+    const skipped = String(source.conclusion || '').toLowerCase() === 'skipped';
+    const anomalies = [];
+    let wait = null, run = null, observed = null;
+    let waitKind = null, runKind = null, observedKind = null;
+    if (started != null && created != null) {
+      if (started >= created) { wait = deltaSeconds(started, created); waitKind = 'job_created_to_started'; }
+      else anomalies.push('源时间戳异常：开始早于创建，排队不适用');
+    } else if (finiteSeconds(source.wait_seconds) != null) {
+      wait = finiteSeconds(source.wait_seconds); waitKind = 'source_provided';
+    }
+    if (started != null && ended != null) {
+      if (ended >= started) { run = deltaSeconds(ended, started); runKind = 'job_started_to_completed'; }
+      else anomalies.push('源时间戳异常：结束早于开始，执行不适用');
+    } else if (finiteSeconds(source.run_seconds) != null) {
+      run = finiteSeconds(source.run_seconds); runKind = 'source_provided';
+    }
+    if (source.run_inverted === true) { run = null; runKind = null; }
+    if (source.wait_inverted === true) { wait = null; waitKind = null; }
+    if (String(source.status || '').toLowerCase() !== 'completed') {
+      run = null; runKind = null;
+      if (started != null && asOfMs != null && asOfMs >= started) {
+        observed = deltaSeconds(asOfMs, started); observedKind = 'run_observed_until_as_of';
+      } else if (created != null && asOfMs != null && asOfMs >= created) {
+        observed = deltaSeconds(asOfMs, created); observedKind = 'queue_observed_until_as_of';
+      }
+    }
+    return {
+      waitSeconds: skipped ? null : wait,
+      runSeconds: skipped ? null : run,
+      observedSeconds: skipped ? null : observed,
+      waitKind, runKind, observedKind,
+      anomaly: anomalies.length ? anomalies.join('；') : (source.measurement_error || null),
+      applicable: !skipped,
+      skipped,
+      failedSteps: Array.isArray(source.failed_steps) ? source.failed_steps.slice() : [],
+    };
+  }
+
+  function workflowJobsTiming(workflow, asOf) {
+    return (workflow && Array.isArray(workflow.jobs) ? workflow.jobs : [])
+      .map(job => ({ job, timing: jobTiming(job, asOf) }));
+  }
+
+  /* TS28-002 AC1: derived timing fields are read from the payload when the
+     collector supplied them; older snapshots without them are derived from
+     the retained job timestamps and every absence carries a reason. */
+  function workflowTiming(workflow, asOf) {
+    const source = workflow || {};
+    const hasContract = Object.prototype.hasOwnProperty.call(source, 'first_job_wait_seconds');
+    const jobs = Array.isArray(source.jobs) ? source.jobs.filter(j => j && j.conclusion !== 'skipped') : [];
+    const attempt = Number(source.attempt || 1);
+    let wait = finiteSeconds(source.first_job_wait_seconds);
+    let span = finiteSeconds(source.execution_span_seconds);
+    let origin = source.attempt_origin || null;
+    let originSource = source.attempt_origin_source || null;
+    let missing = source.timing_missing_reason || (source.timing_anomaly ? source.timing_anomaly : null);
+    if (!hasContract) {
+      const created = stampOf(source.created_at);
+      const starts = jobs.map(j => stampOf(j.started_at)).filter(v => v != null);
+      const ends = jobs.map(j => stampOf(j.completed_at)).filter(v => v != null);
+      const jobCreated = jobs.map(j => stampOf(j.created_at)).filter(v => v != null);
+      if (attempt === 1 && created != null) { origin = source.created_at; originSource = 'workflow_created'; }
+      else if (attempt > 1 && source.attempt_source === 'enumerated' && jobCreated.length) {
+        origin = new Date(Math.min(...jobCreated)).toISOString(); originSource = 'first_job_created';
+      }
+      const originMs = stampOf(origin);
+      wait = originMs != null && starts.length && Math.min(...starts) >= originMs ? deltaSeconds(Math.min(...starts), originMs) : null;
+      const complete = source.jobs_complete !== false && jobs.length
+        && jobs.every(j => j.status === 'completed' && stampOf(j.started_at) != null && stampOf(j.completed_at) != null
+          && +new Date(j.completed_at) >= +new Date(j.started_at));
+      span = complete && starts.length && ends.length && Math.max(...ends) >= Math.min(...starts)
+        ? deltaSeconds(Math.max(...ends), Math.min(...starts)) : null;
+      if (!jobs.length) missing = '无有效 job 明细（可能被跳过或未获取）';
+      else if (source.jobs_complete === false) missing = 'job 分页不完整，执行跨度不适用';
+      else if (attempt > 1 && originMs == null) missing = '重跑前置排队起点未知，首任务等待留空';
+      else if (wait == null) missing = '缺少首任务开始时间或 attempt 起点';
+      else if (span == null) missing = 'job 尚未全部完成，执行跨度仅截至采集观测';
+    }
+    return {
+      firstJobWaitSeconds: wait,
+      executionSpanSeconds: span,
+      originAt: origin,
+      originSource,
+      jobsComplete: source.jobs_complete !== false,
+      complete: span != null,
+      missingReason: missing || null,
+      anomaly: source.timing_anomaly || null,
+    };
+  }
+
+  function isIntegrationTestsRecord(batch) {
+    if (!batch) return false;
+    if (typeof batch.is_integration_tests === 'boolean') return batch.is_integration_tests;
+    if (batch.e2e_exclusion_reason === 'outside_integration_tests') return false;
+    return true;
+  }
+
+  function runIdentity(batch) {
+    const workflow = (batch && batch.workflows && batch.workflows[0]) || {};
+    return { runId: workflow.id != null ? workflow.id : batch && batch.id, attempt: Number(workflow.attempt || 1) };
+  }
+
+  function workflowMembers(batch, asOf) {
+    return (batch && Array.isArray(batch.workflows) ? batch.workflows : []).map(workflow => {
+      const attempt = Number(workflow.attempt || 1);
+      return {
+        runId: workflow.id,
+        attempt,
+        name: workflow.name || '未命名 workflow',
+        path: workflow.path || null,
+        status: workflow.status || null,
+        result: recordResult(workflow),
+        createdAt: workflow.created_at || null,
+        url: safeLink(workflow.url),
+        jobsComplete: workflow.jobs_complete !== false,
+        relationship: 'current_run',
+        evidence: 'run_id+attempt 身份（当前快照）',
+        time: workflowTiming(workflow, asOf),
+        jobs: workflowJobsTiming(workflow, asOf).map(({ job, timing }) => ({
+          id: job.id,
+          name: job.name || '未命名任务',
+          status: job.status || null,
+          result: recordResult(job),
+          url: safeLink(job.url),
+          timing,
+        })),
+      };
+    });
+  }
+
+  function parseFocusName(name) {
+    const text = String(name || '');
+    const chip = /linux-(aarch64|amd64)-(a[35])(?:[-\s,)]|$)/i.exec(text);
+    const python = /(?:^|[^a-z0-9])py(3\.\d+)/i.exec(text);
+    if (!chip || !python) return null;
+    return { arch: chip[1].toLowerCase(), chip: chip[2].toLowerCase(), python: python[1] };
+  }
+
+  function focusKey(info) {
+    return info.chip + '-py' + info.python.replace('.', '');
+  }
+
+  /* TS28-003: collect every A3/A5 matrix job actually present in the reliable
+     set (not only the default three), dedupe by repo/run/attempt/job_id and
+     never borrow a row from another workflow/partition. */
+  function focusJobs(batch) {
+    const asOf = null;
+    const rows = [];
+    const seen = new Set();
+    const seenJobIds = new Set();
+    const skippedKeys = new Set();
+    const workflowJobs = [];
+    for (const workflow of (batch && batch.workflows) || []) {
+      for (const job of workflow.jobs || []) {
+        workflowJobs.push({ workflow, job });
+        const info = parseFocusName(job.name);
+        if (!info) continue;
+        const key = focusKey(info);
+        if (job.conclusion === 'skipped') { skippedKeys.add(key); continue; }
+        const identity = [workflow.id, workflow.attempt || 1, job.id != null ? job.id : job.url].join('/');
+        if (seen.has(identity)) continue;
+        if (job.id != null && seenJobIds.has(String(job.id))) continue;
+        seen.add(identity);
+        if (job.id != null) seenJobIds.add(String(job.id));
+        rows.push({
+          key, arch: info.arch, python: info.python,
+          name: job.name || '未命名任务',
+          runId: workflow.id, attempt: Number(workflow.attempt || 1), jobId: job.id,
+          status: job.status || null, result: recordResult(job),
+          url: safeLink(job.url),
+          timing: jobTiming(job, asOf),
+        });
+      }
+    }
+    for (const job of (batch && batch.focus_jobs) || []) {
+      const info = parseFocusName(job.name) || { chip: String(job.key || '').split('-')[0], python: null };
+      const key = job.key || (info.python ? focusKey(info) : null);
+      if (!key) continue;
+      const identity = [job.run_id || 'focus', job.attempt || 1, job.id != null ? job.id : job.url].join('/');
+      if (seen.has(identity)) continue;
+      if (job.id != null && seenJobIds.has(String(job.id))) continue;
+      seen.add(identity);
+      if (job.id != null) seenJobIds.add(String(job.id));
+      if (job.conclusion === 'skipped') { skippedKeys.add(key); continue; }
+      rows.push({
+        key, arch: info.arch || (/amd64/.test(String(job.name)) ? 'amd64' : 'aarch64'), python: info.python,
+        name: job.name || '未命名任务', runId: job.run_id != null ? job.run_id : null,
+        attempt: Number(job.attempt || 1), jobId: job.id, status: job.status || null,
+        result: recordResult(job), url: safeLink(job.url), timing: jobTiming(job, asOf),
+      });
+    }
+    const order = row => {
+      const preferred = FOCUS_ORDER.indexOf(row.key);
+      return preferred < 0 ? FOCUS_ORDER.length + 1 : preferred;
+    };
+    rows.sort((a, b) => order(a) - order(b) || String(a.key).localeCompare(String(b.key))
+      || String(a.name).localeCompare(String(b.name)));
+    const missing = FOCUS_ORDER.filter(key => !rows.some(row => row.key === key)).map(key => ({
+      key,
+      label: FOCUS_LABELS[key],
+      reason: !isIntegrationTestsRecord(batch) ? '本记录非 Integration Tests，E2E 不适用'
+        : skippedKeys.has(key) ? '已跳过（未触发）'
+        : (batch.workflows || []).some(w => w.jobs_complete === false) ? '明细采集失败'
+        : '没有找到匹配任务',
+    }));
+    return {
+      rows,
+      missing,
+      labels: FOCUS_LABELS,
+      available: rows.length > 0,
+      note: rows.length ? null
+        : !isIntegrationTestsRecord(batch) ? '本记录非 Integration Tests，E2E 不适用'
+        : (batch.workflows || []).some(w => w.jobs_complete === false) ? 'job 明细采集失败，重点任务无法判断'
+        : '本次可靠集合中没有找到 A3/A5 矩阵任务',
+    };
+  }
+
+  /* TS28-002 AC2 / section 4.3: index the whole snapshot by verified PR + full
+     SHA. Same-PR/SHA runs are candidates only; they are always excluded from
+     E2E and never alter a point's duration. */
+  function relatedIndex(batches) {
+    const index = new Map();
+    for (const batch of batches || []) {
+      if (!batch || batch.pr == null || !batch.sha) continue;
+      const key = String(batch.pr) + '|' + String(batch.sha).toLowerCase();
+      if (!index.has(key)) index.set(key, []);
+      for (const workflow of batch.workflows || []) {
+        index.get(key).push({ batch, workflow });
+      }
+      if (!(batch.workflows || []).length) index.get(key).push({ batch, workflow: {} });
+    }
+    return index;
+  }
+
+  function sameCommitRuns(batch, source) {
+    if (!batch || batch.pr == null || !batch.sha) return [];
+    const key = String(batch.pr) + '|' + String(batch.sha).toLowerCase();
+    const own = new Set((batch.workflows || []).map(w => String(w.id) + '/' + Number(w.attempt || 1)));
+    if (!own.size) {
+      const identity = runIdentity(batch);
+      own.add(String(identity.runId) + '/' + identity.attempt);
+    }
+    const candidates = source instanceof Map
+      ? (source.get(key) || [])
+      : (source || []).flatMap(other => {
+        if (!other || other.pr !== batch.pr || String(other.sha || '').toLowerCase() !== String(batch.sha).toLowerCase()) return [];
+        const list = (other.workflows || []).map(workflow => ({ batch: other, workflow }));
+        return list.length ? list : [{ batch: other, workflow: {} }];
+      });
+    const seen = new Set();
+    const rows = [];
+    for (const candidate of candidates) {
+      const other = candidate.batch;
+      if (!other || other === batch) continue;
+      const workflow = candidate.workflow || {};
+      const identity = String(workflow.id != null ? workflow.id : other.id) + '/' + Number(workflow.attempt || 1);
+      if (own.has(identity) || String(other.id) === String(batch.id) && !(other.workflows || []).length) continue;
+      if (seen.has(identity)) continue;
+      seen.add(identity);
+      rows.push({
+        batchId: other.id,
+        runId: workflow.id != null ? workflow.id : other.id,
+        attempt: Number(workflow.attempt || 1),
+        workflowName: workflow.name || other.critical_workflow || other.action_name || '未命名 workflow',
+        status: workflow.status || other.status || null,
+        result: recordResult(workflow.conclusion ? workflow : other),
+        startAt: other.start_at || workflow.created_at || null,
+        durationSeconds: finiteSeconds(other.duration_seconds),
+        url: safeLink(workflow.url || other.action_url),
+        relationship: 'same_commit_unproven',
+        excludedFromE2e: true,
+      });
+    }
+    rows.sort((a, b) => (stampOf(a.startAt) || 0) - (stampOf(b.startAt) || 0) || String(a.runId).localeCompare(String(b.runId)));
+    return rows;
+  }
+
+  function npuJobRows(batch, asOf) {
+    return ((batch && batch.npu_jobs) || []).map(job => ({
+      id: job.id,
+      name: job.name || '未命名任务',
+      status: job.status || null,
+      result: recordResult(job),
+      url: safeLink(job.url || (batch && batch.action_url)),
+      timing: jobTiming(job, asOf),
+    }));
+  }
+
+  function visiblePrCount(batches, pr) {
+    if (pr == null) return 0;
+    return new Set((batches || []).filter(b => b && b.pr === pr).map(b => b.id)).size;
+  }
+
+  /* Build the complete, escaped-by-the-caller hover model for either chart. */
+  function hoverModel(batch, options) {
+    const opts = options || {};
+    const metric = opts.metric === 'npu' ? 'npu' : 'e2e';
+    const asOf = opts.collectedAt || opts.windowEnd || null;
+    const workflows = (batch && batch.workflows) || [];
+    const identity = runIdentity(batch);
+    const npuRowsData = npuJobRows(batch, asOf);
+    const waits = npuRowsData.map(row => row.timing.waitSeconds).filter(value => value != null);
+    const declaredQueue = finiteSeconds(batch && batch.npu_queue_seconds);
+    const npuQueueSeconds = declaredQueue != null ? declaredQueue : (waits.length ? Math.max(...waits) : null);
+    const integration = isIntegrationTestsRecord(batch);
+    const focus = focusJobs(batch);
+    const related = sameCommitRuns(batch, opts.index || opts.batches || []);
+    const workflowUrls = workflows.map(w => safeLink(w.url)).filter(Boolean);
+    const actions = safeLink(batch && batch.action_url) || workflowUrls[0] || null;
+    const prUrl = safeLink(batch && batch.pr_url);
+    const duration = finiteSeconds(batch && batch.duration_seconds);
+    const exclusion = batch && (batch.e2e_exclusion_reason || (batch.pr == null ? 'unresolved_pr_batch_identity'
+      : metric === 'e2e' && !integration ? 'outside_integration_tests' : null));
+    const missing = Array.isArray(batch && batch.missing) ? batch.missing.slice() : [];
+    const associationNote = batch && batch.pr == null
+      ? '未可靠关联 PR：不推断身份，不生成 PR 链接'
+      : workflows.length
+        ? '本次集合仅含当前 Integration Tests run/attempt；未采集到其他可靠触发链证据'
+        : '缺少来源 run/attempt 证据，按不可关联处理';
+    return {
+      metric,
+      batchId: batch && batch.id,
+      prKnown: !!(batch && batch.pr != null),
+      pr: batch && batch.pr != null ? batch.pr : null,
+      title: (batch && batch.title) || '标题未获取',
+      author: (batch && batch.author) || null,
+      branch: (batch && batch.branch) || null,
+      baseBranch: (batch && batch.base_branch) || null,
+      sha: (batch && batch.sha) || null,
+      runId: identity.runId,
+      attempt: identity.attempt,
+      startAt: batch && batch.start_at || null,
+      status: batch && batch.status || 'unknown',
+      result: normalizeResult(batch && batch.status),
+      durationSeconds: duration,
+      npuQueueSeconds,
+      npuApplicable: integration,
+      npuNotApplicableReason: integration ? null : '本记录非 Integration Tests，E2E 不适用',
+      exclusionReason: exclusion || null,
+      exclusionLabel: exclusion ? (EXCLUSION_LABELS[exclusion] || exclusion) : null,
+      missing,
+      links: { pr: prUrl, actions, detail: null },
+      reliable: {
+        members: workflowMembers(batch, asOf),
+        note: workflows.length
+          ? '本次可靠关联的运行仅来自当前 run/attempt 身份'
+          : '未采集到可核验的 workflow 证据',
+      },
+      focus,
+      related: {
+        rows: related,
+        count: related.length,
+        note: related.length
+          ? '同提交其他运行不能证明同次触发，不计 E2E，也不改变主点时长'
+          : '未发现同提交其他运行（不表示该提交从未触发其他 workflow）',
+      },
+      npu: { jobs: npuRowsData, queueSeconds: npuQueueSeconds, applicable: integration },
+      boundary: {
+        collectedAt: opts.collectedAt || null,
+        discoveryCutoff: opts.discoveryCutoff || null,
+        windowStart: opts.windowStart || null,
+        windowEnd: opts.windowEnd || null,
+        visibleSamePr: opts.visibleSamePr != null ? opts.visibleSamePr : visiblePrCount(opts.batches, batch && batch.pr),
+        associationNote,
+        aggregationNote: (batch && batch.aggregation_note) || null,
+        startSource: (batch && batch.start_source) || null,
+      },
+    };
+  }
+
+  return {
+    normalizeResult, recordResult, safeLink, jobTiming, workflowTiming,
+    workflowMembers, focusJobs, focusKey, parseFocusName, relatedIndex,
+    sameCommitRuns, npuJobRows, visiblePrCount, hoverModel,
+    isIntegrationTestsRecord, EXCLUSION_LABELS, FOCUS_ORDER, FOCUS_LABELS,
+  };
 });

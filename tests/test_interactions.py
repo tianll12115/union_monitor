@@ -14,6 +14,7 @@
 """
 import io
 import json
+import os
 import shutil
 import sys
 import tempfile
@@ -255,6 +256,7 @@ class SyntheticTreeTests(unittest.TestCase):
         self.assertIn(old, text)
         path.write_text(text.replace(old, new), 'utf-8')
 
+    @unittest.skipIf(os.name == 'nt', 'the clean-tree fixture invokes POSIX shell tooling; Linux CI runs it')
     def test_clean_tree_exit_zero(self):
         root = self.build_tree()
         code, report = self.run_tool(root)

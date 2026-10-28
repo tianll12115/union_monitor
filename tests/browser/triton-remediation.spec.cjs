@@ -106,7 +106,14 @@ test('[TA-003] the viewBox matches the laid-out width and the date axis runs lef
   for (const width of [390, 1440, 2560]) {
     await page.setViewportSize({width, height: 900});
     for (const role of ['chart', 'npuChart']) {
-      const shot = await page.locator(`[data-role="${role}"]`).evaluate(svg => {
+      const box = page.locator(`[data-role="${role}"]`);
+      // TA-003 draws on the next animation frame; wait until the deferred redraw
+      // has settled so the viewBox reflects the current layout width.
+      await expect.poll(
+        () => box.evaluate(svg => Math.abs(svg.clientWidth - svg.viewBox.baseVal.width)),
+        {message: `viewBox must settle at ${width}px`},
+      ).toBeLessThanOrEqual(1);
+      const shot = await box.evaluate(svg => {
         const vb = svg.viewBox.baseVal;
         const grid = [...svg.querySelectorAll('line.gridline')];
         const x1 = Math.min(...grid.map(g => +g.getAttribute('x1')));

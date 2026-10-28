@@ -572,7 +572,7 @@ class AttemptEnumerationTests(unittest.TestCase):
         self.assertEqual(len(payload["batches"]), 1)
         batch = payload["batches"][0]
         self.assertIsNone(batch["pr"])
-        self.assertIn("unresolved", batch["id"])
+        self.assertEqual(batch["id"], "run-21-attempt-1")
         self.assertIn("未可靠关联 PR", " ".join(batch["missing"]))
         enriched = json.loads((tmp / "enriched-runs.json").read_text("utf-8"))
         report = quality_validate(enriched, payload)
@@ -786,8 +786,9 @@ class RerunStartEvidenceTests(unittest.TestCase):
         with (tmp / "web" / "data" / "triton-batches.csv").open(encoding="utf-8-sig") as handle:
             csv_rows = list(csv.DictReader(handle))
         by_source = {row["start_source"]: row for row in csv_rows}
-        self.assertEqual(set(by_source), {"trigger_event", "attempt_start"})
-        self.assertEqual(by_source["trigger_event"]["approximate"], "False")
+        # Workflow E2E never substitutes a trigger from an unrelated source;
+        # rerun observations both retain their own attempt-start provenance.
+        self.assertEqual(set(by_source), {"attempt_start"})
         self.assertEqual(by_source["attempt_start"]["approximate"], "True")
 
 

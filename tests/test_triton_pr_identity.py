@@ -230,7 +230,7 @@ class HistoricalAncestorTests(unittest.TestCase):
                 self.assertEqual(result["head_sha"],run["head_sha"])
                 self.assertIn("ancestry",result["pr_evidence"]["method"])
 
-    def test_recovered_histories_group_into_four_eligible_pr_batches(self):
+    def test_recovered_histories_keep_four_prs_and_34_independent_runs(self):
         from triton.dashboard import build_payload
         from datetime import datetime, timedelta
         fixture=json.loads((Path(__file__).parent/"fixtures/historical-ancestry.json").read_text(encoding="utf-8"))
@@ -245,10 +245,11 @@ class HistoricalAncestorTests(unittest.TestCase):
             rows.append(row)
         payload=build_payload(rows,"2026-10-11T09:00:00Z","2026-10-14T12:00:00Z","2026-10-14T12:00:00Z")
         self.assertEqual({b["pr"] for b in payload["batches"]},{2545,2532,2244,2480})
-        self.assertEqual(len(payload["batches"]),4)
+        self.assertEqual(len(payload["batches"]),34)
         self.assertEqual(sum(len(b["workflows"]) for b in payload["batches"]),34)
-        self.assertTrue(all(b["e2e_sample_eligible"] for b in payload["batches"]))
-        self.assertEqual(payload["summary"]["valid"],4)
+        # PR ancestry proof alone cannot establish workflow identity or job end.
+        self.assertTrue(all(not b["e2e_sample_eligible"] for b in payload["batches"]))
+        self.assertEqual(payload["summary"]["valid"],0)
 
     def fixture(self, status="ahead", merge_base=None):
         old="a" * 40; anchor="d" * 40

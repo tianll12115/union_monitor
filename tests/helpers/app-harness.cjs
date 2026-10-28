@@ -22,7 +22,7 @@ function createApp({ fetch, setTimeout, clearTimeout } = {}) {
   }
   const context = {
     document: { getElementById: element, querySelectorAll: () => [], title: '' },
-    window: {}, location: { hash: '#ubs' },
+    window: {...require('../../web/triton-core.js')}, location: { hash: '#ubs' },
     history: { pushState(_s, _t, hash) { context.location.hash = hash; }, replaceState(_s, _t, hash) { context.location.hash = hash; } },
     Metrics: require('../../web/core.js'), Router: require('../../web/router.js'),
     Catalog: require('../../web/catalog.js'), Units: require('../../web/units.js'),

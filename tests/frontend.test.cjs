@@ -42,7 +42,7 @@ test('app load() guards every await boundary with the reload gate',()=>{
  assert.match(source,/const gen=reloadGate\.begin\(\)/,'load() must open a generation');
  const guards=(source.match(/if\(!reloadGate\.isCurrent\(gen\)\)return;/g)||[]).length;
  assert.ok(guards>=3,'index, snapshot commit and error paths must all be guarded, found '+guards);
-  assert.match(source,/if\(reloadGate\.isCurrent\(gen\)\)\{window\.tritonPayload=d;tritonStatus='ok'\}/,'the Triton payload commit must be generation-checked');
+  assert.match(source,/if\(reloadGate\.isCurrent\(gen\)\)\{window\.tritonPayload=window\.normalizeE2ePayload\(d\);tritonStatus='ok'\}/,'the Triton payload commit must be generation-checked');
 });
 test('reload failure keeps the previous snapshot visible with its collection time',()=>{
  const source=fs.readFileSync(path.join(__dirname,'../web/app.js'),'utf8');

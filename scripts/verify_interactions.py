@@ -448,7 +448,7 @@ TRITON_VIEW_CONTRACTS = [
      ' setTimeout(() => hideTip(mark), 180); };'),
     ('mark_click_open_detail',
      "mark.onclick = e => { e.stopPropagation(); hideTip();"
-     " if (mark.dataset.kind !== 'npu' && root.openTritonDetail) openDetail(b);"
+     " if (mark.dataset.kind !== 'npu' && root.openTritonDetail) openDetail(b, candidates());"
      ' else { tipPinned = true; lastPinnedMark = mark; placeTip(e, b, html); } };'),
     ('mark_keyboard_pin', "if (e.key !== 'Enter' && e.key !== ' ') return;"),
     ('tip_escape_close',

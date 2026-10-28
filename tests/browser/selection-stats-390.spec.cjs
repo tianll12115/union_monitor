@@ -6,6 +6,7 @@ test.use({ viewport: { width: 390, height: 844 } });
 
 function tritonFixture() {
   return {
+    e2e_metric_version: 2,
     collected_at: '2026-10-12T00:00:00Z',
     window_start: '2026-10-09T00:00:00Z',
     window_end: '2026-10-12T00:00:00Z',

@@ -66,7 +66,7 @@
 
   function qualificationHtml(batch) {
     if (core.sampleEligible(batch)) return '';
-    const reasons = { unresolved_pr_batch_identity: 'PR 与提交批次身份未确认', running_observation: '执行中观测', non_sample_result: '当前结果不属完成样本', invalid_or_missing_duration: '时长证据无效或缺失' };
+    const reasons = { unresolved_pr_batch_identity: 'PR 与提交批次身份未确认', outside_integration_tests: '辅助检查，不计入 Integration Tests E2E', rerun_queue_start_unknown: '重跑前置排队起点未知，仅观测', legacy_metric_unverified: '旧口径未重新采集', running_observation: '执行中观测', non_sample_result: '当前结果不属完成样本', invalid_or_missing_duration: '时长证据无效或缺失' };
     const reason = batch.e2e_exclusion_reason || (batch.pr == null ? 'unresolved_pr_batch_identity' : 'non_sample_result');
     return `<small class="sub">E2E 排除：${esc(reasons[reason] || reason)}</small>`;
   }
@@ -139,7 +139,7 @@
     };
   }
 
-  function skeleton() {
+  function skeleton(D) {
     const legend = `<div class="legend">
       <span><i style="background:var(--ok)"></i>成功</span>
       <span><i style="background:var(--danger)"></i>失败</span>
@@ -152,7 +152,7 @@
 <div class="notice" data-role="freshness" role="status" hidden></div>
 <div class="notice" data-role="windowNotice" role="status" hidden></div>
 <div class="kpi-grid">
-  <article class="kpi kpi-primary" data-metric="triton_batch_e2e"><div class="kpi-label">门禁 E2E</div><div class="kpi-value"><span data-role="kE2eP90">—</span><em>P90</em></div><div class="kpi-aux"><span data-role="kE2eP50">P50 —</span><span data-role="kE2eN">n=—</span></div><small>按批次起点选区 · 成功/失败批次的有效 E2E · 兼作“耗时偏长”阈值</small></article>
+  <article class="kpi kpi-primary" data-metric="triton_batch_e2e"><div class="kpi-label">Integration Tests E2E</div><div class="kpi-value"><span data-role="kE2eP90">—</span><em>P90</em></div><div class="kpi-aux"><span data-role="kE2eP50">P50 —</span><span data-role="kE2eN">n=—</span></div><small>按批次起点选区 · 成功/失败批次的有效 E2E · 兼作“耗时偏长”阈值</small></article>
   <article class="kpi kpi-primary" data-metric="triton_npu_max_queue"><div class="kpi-label">NPU 最长排队</div><div class="kpi-value"><span data-role="kNpuP90">—</span><em>P90</em></div><div class="kpi-aux"><span data-role="kNpuP50">P50 —</span><span data-role="kNpuN">n=—</span></div><small>包含 NPU Job 的批次 · 取最长 NPU 排队</small></article>
 </div>
 <section class="global-filter">
@@ -167,7 +167,7 @@
 </section>
 <section class="section">
   <div class="panel-head">
-    <div><h2>PR E2E 执行时长</h2><p>每个点代表同一 PR+提交的 E2E 观测跨度（可能聚合多个独立 workflow run）或一次手动重跑；时间范围由下方导航器统一控制。</p></div>
+    <div><h2>Integration Tests E2E</h2>${D.e2e_metric_notice ? `<p class="missing">${esc(D.e2e_metric_notice)}</p>` : ''}<p>每点为一次 Integration Tests；创建至最后 job 完成，含排队。重跑前置排队未知时仅展示观测值。点击查看 PR 提交历史。</p></div>
     <div class="controls" data-role="e2eFilters">
       <button type="button" class="chip active" data-filter="all">全部</button>
       <button type="button" class="chip" data-filter="slow" title="以页级范围（分支×时间窗）的 P90 为阈值">耗时偏长</button>
@@ -175,7 +175,7 @@
       <button type="button" class="chip" data-filter="running">执行中</button>
     </div>
   </div>
-  <div class="chart-wrap"><svg class="chart" data-role="chart" role="img" aria-label="PR E2E 执行时长"></svg></div>
+  <div class="chart-wrap"><svg class="chart" data-role="chart" role="img" aria-label="Integration Tests E2E"></svg></div>
   <div style="padding:0 20px 2px"><div class="selection-stats" data-role="e2eStats" aria-live="polite"></div></div>
   ${legend}
 </section>
@@ -196,7 +196,7 @@
 </section>
 <section class="section">
   <div class="panel-head">
-    <div><h2>NPU Job 排队时长</h2><p>每个点代表一次包含 NPU Job 的 E2E，纵轴取其子 NPU Job 中最长排队时长。</p></div>
+    <div><h2>NPU Job 排队时长</h2><p>每点为一次包含 NPU Job 的运行，纵轴取其子任务中最长排队时长。</p></div>
     <div class="controls" data-role="npuFilters">
       <button type="button" class="chip active" data-npu-filter="all">全部</button>
       <button type="button" class="chip" data-npu-filter="failure">失败</button>
@@ -220,12 +220,12 @@
   </div>
   <div class="attention" data-role="attention"></div>
 </section>
-<div class="foot"><strong>口径：</strong>E2E 从提交事件到该批次最后一项自动检查结束，包含排队与依赖等待；并行任务不相加。无法恢复精确提交事件时使用最早 workflow 创建时间，并在悬浮卡片中注明。成功和失败批次参与趋势；取消与运行中仅展示已观测耗时。<br><strong>数据边界：</strong><span data-role="boundary"></span></div>
+<div class="foot"><strong>口径：</strong>Integration Tests E2E = 本次 workflow 创建至最后 job 完成，包含排队，并行不相加。仅证据完整的成功/失败首次运行参与统计；重跑前置排队起点未知时仅展示观测值。跨 workflow 整套门禁时长未确定。<br><strong>数据边界：</strong><span data-role="boundary"></span></div>
 <div class="tooltip" data-role="tip" tabindex="-1" role="dialog" aria-label="批次详情"></div>`;
   }
 
   function mount(D, container, domainStart, domainEnd, prevState, resetRoute) {
-    container.innerHTML = skeleton();
+    container.innerHTML = skeleton(D);
     const el = selector => container.querySelector(selector);
     const all = selector => Array.from(container.querySelectorAll(selector));
 
@@ -374,10 +374,10 @@
     };
 
     /* ADR-012: opening a batch from any entry also records it in the URL. */
-    const openDetail = b => {
+    const openDetail = (b, candidates) => {
       detailBatchId = b && b.id != null ? String(b.id) : null;
       syncUrl();
-      if (root.openTritonDetail) root.openTritonDetail(b);
+      if (root.openTritonDetail) root.openTritonDetail(b, candidates);
     };
 
     if (initial) {
@@ -392,7 +392,7 @@
     }
 
     function e2eRows(threshold) {
-      return pageSet().filter(b => filter === 'all' || (filter === 'slow' && core.isSlow(b, threshold)) || b.status === filter);
+      return pageSet().filter(b => b.is_integration_tests !== false && b.e2e_exclusion_reason !== 'outside_integration_tests' && (filter === 'all' || (filter === 'slow' && core.isSlow(b, threshold)) || b.status === filter));
     }
 
     function npuRows() {
@@ -460,16 +460,12 @@
         out += `<path class="median-line" d="${bins.map((p, i) => (i ? 'L' : 'M') + p.join(',')).join(' ')}"/><title>六小时桶中位数</title><text class="ref-label" x="${m.l}" y="${bins[0][1] - 4}">六小时桶中位数</text>`;
       }
       /* REQ-017: batches without a valid observed duration are not plotted at a fake 0. */
-      const ordered = rows.filter(b => core.validDuration(b.duration_seconds)).slice().sort((a, b) => (a.status === 'success' ? 0 : 1) - (b.status === 'success' ? 0 : 1));
+      const ordered = rows.filter(b => core.validDuration(b.duration_seconds) && b.e2e_exclusion_reason !== 'outside_integration_tests').slice().sort((a, b) => (a.status === 'success' ? 0 : 1) - (b.status === 'success' ? 0 : 1));
       const raw = ordered.map(b => ({ x: x(b.start_at), y: y(b.duration_seconds || 0) }));
-      /* TA-002: keep the true anchor; only the collision-resolved dot moves, and a
-         leader line plus an anchor tick show where the measured value really sits. */
-      const layout = core.layoutPoints(raw, 12, { minX: m.l, maxX: W - m.r, minY: m.t, maxY: H - m.b });
+      /* Marks stay at measured coordinates; overlapping records are selectable in detail. */
       ordered.forEach((b, i) => {
-        const l = layout[i];
-        if (l.offset) out += `<line class="anchor-lead" x1="${l.anchor.x}" y1="${l.anchor.y}" x2="${l.dot.x}" y2="${l.dot.y}"/>`;
-        out += `<circle class="anchor-tick" cx="${l.anchor.x}" cy="${l.anchor.y}" r="1.5"/>`;
-        out += core.circleMark(b, l.dot.x, l.dot.y, D.batches.indexOf(b), fillFor(b.status), 'e2e', l.anchor);
+        const point = raw[i];
+        out += core.circleMark(b, point.x, point.y, D.batches.indexOf(b), fillFor(b.status), 'e2e', point);
       });
       chartSvg.innerHTML = out;
       paintMarks(chartSvg);
@@ -532,12 +528,9 @@
       }
       const ordered = rows.slice().sort((a, b) => (a.status === 'success' ? 0 : 1) - (b.status === 'success' ? 0 : 1));
       const raw = ordered.map(b => ({ x: x(b.start_at), y: y(b.npu_queue_seconds) }));
-      const layout = core.layoutPoints(raw, 12, { minX: m.l, maxX: W - m.r, minY: m.t, maxY: H - m.b });
       ordered.forEach((b, i) => {
-        const l = layout[i];
-        if (l.offset) out += `<line class="anchor-lead" x1="${l.anchor.x}" y1="${l.anchor.y}" x2="${l.dot.x}" y2="${l.dot.y}"/>`;
-        out += `<circle class="anchor-tick" cx="${l.anchor.x}" cy="${l.anchor.y}" r="1.5"/>`;
-        out += core.circleMark(b, l.dot.x, l.dot.y, D.batches.indexOf(b), fillFor(b.status), 'npu', l.anchor);
+        const point = raw[i];
+        out += core.circleMark(b, point.x, point.y, D.batches.indexOf(b), fillFor(b.status), 'npu', point);
       });
       npuChartSvg.innerHTML = out;
       paintMarks(npuChartSvg);
@@ -634,17 +627,7 @@
 
     /* ---- tooltip card（pin 逻辑移植自原看板） ---- */
     function tipHtml(b) {
-      const actions = (b.workflows || []).map(w => {
-        const seconds = w.updated_at && w.created_at ? (new Date(w.updated_at) - new Date(w.created_at)) / 1000 : null;
-        return `<div class="tip-action"><a href="${esc(w.url)}" target="_blank" rel="noopener">${esc(w.name)} ↗</a><span>${statusLabels[w.conclusion] || statusLabels[w.status] || esc(w.status)} · ${dur(seconds)}</span></div>`;
-      }).join('');
-      const jobs = focusDefs.map(([key, label]) => {
-        const j = (b.focus_jobs || []).find(x => x.key === key);
-        return j
-          ? `<div class="tip-job"><a href="${esc(j.url)}" target="_blank" rel="noopener">${label} ↗</a><span>${j.status === 'completed' ? (j.conclusion === 'success' ? '完成' : '异常') : esc(j.status)}</span><span>排队 ${dur(j.wait_seconds)} · 执行 ${dur(j.run_seconds)}</span></div>`
-          : `<div class="tip-job"><b>${label}</b><span class="missing">未触发或未发现该任务</span></div>`;
-      }).join('');
-      return `<div class="tip-head"><a href="${esc(b.action_url || (b.workflows && b.workflows[0] && b.workflows[0].url) || '#')}" target="_blank" rel="noopener">打开本次 GitHub Actions ↗</a><span>${statusLabels[b.status] || esc(b.status)} · ${dur(b.duration_seconds)}</span><button type="button" class="tip-close" aria-label="关闭详情"><svg class="icon" aria-hidden="true"><use href="#i-x"/></svg></button></div><div class="tip-title">${esc(core.markLabel(b, 'e2e'))}</div><div class="tip-summary">${identityHtml(b)} · ${b.start_at ? fmtDate(b.start_at) + ' · ' + core.startSourceLabel(b) : core.startSourceLabel(b)}${b.aggregation_note ? `<div class="sub">${esc(b.aggregation_note)}</div>` : ''}</div><div class="tip-actions"><div class="tip-label">本次 E2E 的 GitHub Actions</div>${actions}</div><div class="tip-jobs"><div class="tip-label">重点任务</div>${jobs}</div><div class="tip-hint">点击任一链接进入对应 GitHub Actions；点击散点可固定卡片。</div>`;
+      return `<div class="tip-head"><span>${statusLabels[b.status] || esc(b.status)} · ${dur(b.duration_seconds)}</span></div><div class="tip-title">${esc(core.markLabel(b, 'e2e'))}</div><div class="tip-summary">${identityHtml(b)} · SHA ${esc((b.sha || '').slice(0, 7))}</div><div class="tip-hint">点击查看运行详情和 PR 提交历史</div>`;
     }
 
     function npuTipHtml(b) {
@@ -687,17 +670,19 @@
         const b = D.batches[+mark.dataset.i];
         if (!b) return;
         const html = mark.dataset.kind === 'npu' ? npuTipHtml : tipHtml;
+        const candidates = () => core.overlapIndices([...mark.closest('svg').querySelectorAll('.mark-hit')].map(m =>
+          ({i: +m.dataset.i, x: +m.dataset.x, y: +m.dataset.y})), +mark.dataset.x, +mark.dataset.y).map(i => D.batches[i]);
         mark.onmouseenter = e => { clearTimeout(tipTimer); if (!tipPinned) placeTip(e, b, html); };
         mark.onmousemove = e => { if (!tipPinned) placeTip(e, b, html); };
         mark.onmouseleave = () => { if (!tipPinned) tipTimer = setTimeout(() => hideTip(mark), 180); };
-        mark.onclick = e => { e.stopPropagation(); hideTip(); if (mark.dataset.kind !== 'npu' && root.openTritonDetail) openDetail(b); else { tipPinned = true; lastPinnedMark = mark; placeTip(e, b, html); } };
+        mark.onclick = e => { e.stopPropagation(); hideTip(); if (mark.dataset.kind !== 'npu' && root.openTritonDetail) openDetail(b, candidates()); else { tipPinned = true; lastPinnedMark = mark; placeTip(e, b, html); } };
         /* REQ-029 AC01: SVG marks carry no native button activation, so
            Enter/Space open the same unified detail from the keyboard. */
         mark.onkeydown = e => {
           if (e.key !== 'Enter' && e.key !== ' ') return;
           e.preventDefault();
           hideTip();
-          if (mark.dataset.kind !== 'npu' && root.openTritonDetail) { openDetail(b); return; }
+          if (mark.dataset.kind !== 'npu' && root.openTritonDetail) { openDetail(b, candidates()); return; }
           tipPinned = true;
           lastPinnedMark = mark;
           const r = mark.getBoundingClientRect();

@@ -5,7 +5,7 @@ const {test, expect} = require('./error-guard');
 
 function fixture() {
   return {
-    window_start: '2026-10-23T00:00:00Z', window_end: '2026-10-26T00:00:00Z',
+    e2e_metric_version: 2, window_start: '2026-10-23T00:00:00Z', window_end: '2026-10-26T00:00:00Z',
     collected_at: '2026-10-26T00:00:00Z',
     // Batch 2's raw duration is chosen so the 12% y-axis headroom reproduces the
     // audit's frozen five-digit label exactly: max label 3308.76 min.
@@ -95,10 +95,12 @@ test('[TA-002] anchor coordinates are the independent linear map and match the t
     expect(entry.dx, `anchor x within 1px for batch ${entry.mark.index}`).toBeLessThanOrEqual(1);
     expect(entry.dy, `anchor y within 1px for batch ${entry.mark.index}`).toBeLessThanOrEqual(1);
   }
-  const tick = new Map(out.ticks.map((t, i) => [`${t.x},${t.y}`, i]));
+  expect(out.ticks).toHaveLength(0);
   for (const entry of out.band) {
-    expect(tick.has(`${entry.mark.anchorX},${entry.mark.anchorY}`), 'an anchor tick sits on each true position').toBe(true);
+    expect(entry.mark.dotX).toBe(entry.mark.anchorX);
+    expect(entry.mark.dotY).toBe(entry.mark.anchorY);
   }
+  await expect(page.locator('.anchor-lead')).toHaveCount(0);
 });
 
 test('[TA-003] the viewBox matches the laid-out width and the date axis runs left-to-right', async ({page}) => {

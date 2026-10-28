@@ -141,7 +141,7 @@ const sampleEligible = (row, metric = 'e2e') => !!row
   }
 
   /* REQ-014: one start-source label shared by hover card, batch detail and CSV. */
-  const START_SOURCE_LABELS = { trigger_event: '触发事件', attempt_start: '本次重跑开始', workflow_created: '最早 workflow 创建' };
+  const START_SOURCE_LABELS = { trigger_event: '触发事件', first_job_created: '本 attempt 首个 job 创建（前置排队未知）', attempt_start: '本次重跑开始', workflow_created: '最早 workflow 创建' };
   function startSourceLabel(batch) {
     if (!batch || !batch.start_source) return '无起点证据';
     const base = START_SOURCE_LABELS[batch.start_source] || batch.start_source;
@@ -168,7 +168,31 @@ const sampleEligible = (row, metric = 'e2e') => !!row
     return `<g class="mark-hit" data-i="${index}" data-kind="${kind || 'e2e'}" data-x="${cx}" data-y="${cy}"${ax} role="button" tabindex="0" aria-label="${markLabel(batch, kind)}" transform="translate(${cx} ${cy})"><circle class="hit-area" r="8"/><circle class="dot" r="${radius}" fill="${color}"/></g>`;
   }
 
-  return { selectWindow, windowForHours, moveWindow, spreadPoints, layoutPoints, yAxisMarginLeft, navTimeAt, chartStats, filterBranches, dashboardStats, circleMark, markLabel, validDuration, sampleEligible, e2eIdentityKnown, startSourceLabel };
+  function normalizeE2ePayload(payload) {
+    if (payload.e2e_metric_version === 2) return payload;
+    return { ...payload, e2e_metric_version: 2,
+      e2e_metric_notice: '旧口径数据尚未重新采集，Integration Tests E2E 暂不可用；NPU 数据独立保留。',
+      batches: payload.batches.map(b => ({ ...b, legacy_observed_seconds: b.duration_seconds,
+        duration_seconds: null, e2e_sample_eligible: false, e2e_exclusion_reason: 'legacy_metric_unverified' })) };
+  }
+
+  function prHistory(rows, selected) {
+    const peers = selected.pr == null ? [selected] : rows.filter(b => b.pr === selected.pr &&
+      (b.id === selected.id || b.action_name === 'Integration Tests' || (b.workflows || []).some(w => w.name === 'Integration Tests')));
+    const groups = new Map();
+    peers.slice().sort((a, b) => (+new Date(a.start_at) || 0) - (+new Date(b.start_at) || 0) || String(a.id).localeCompare(String(b.id))).forEach(b => {
+      const key = b.sha || b.id;
+      if (!groups.has(key)) groups.set(key, { sha: b.sha, rows: [] });
+      groups.get(key).rows.push(b);
+    });
+    return [...groups.values()];
+  }
+
+  function overlapIndices(points, x, y) {
+    return points.filter(p => Math.hypot(p.x - x, p.y - y) < 8).map(p => p.i);
+  }
+
+  return { normalizeE2ePayload, prHistory, overlapIndices, selectWindow, windowForHours, moveWindow, spreadPoints, layoutPoints, yAxisMarginLeft, navTimeAt, chartStats, filterBranches, dashboardStats, circleMark, markLabel, validDuration, sampleEligible, e2eIdentityKnown, startSourceLabel };
 });
 
 /* ---- T8 additions (appended; the prefix above is the original module plus

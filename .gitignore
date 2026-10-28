@@ -14,5 +14,6 @@ playwright-report/
 /evidence/
 /.tmp/
 /.tmp-tests/
+/.tmp-tools/
 /.acl-recovery/
 /triton_*.log

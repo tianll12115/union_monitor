@@ -1,0 +1,45 @@
+{
+  "checked_at_utc": "2026-10-28T12:56:22.478114+00:00",
+  "base_commit": "6b788a3ff7b8f478411f29146b7cbf28fda9576d",
+  "scope": "Design documents and independent offline audit tooling; no product feature implementation",
+  "python_full": {
+    "command": "PATH=/home/tianli/.nvm/versions/node/v24.14.1/bin:$PATH python3 -B -m unittest discover -s tests -v",
+    "environment": "WSL Ubuntu Python 3.12.3; prepared frozen published artifact fixture; native Node 24.14.1",
+    "tests": 1018,
+    "failed": 0,
+    "skipped": 0,
+    "seconds": 114.327,
+    "log": ".tmp/1028-design/python-tests-delivery.log"
+  },
+  "node_full": {
+    "command": "node --test tests/*.test.cjs",
+    "tests": 347,
+    "failed": 0,
+    "skipped": 0,
+    "log": ".tmp/1028-design/node-tests.log"
+  },
+  "browser_full": {
+    "command": "DASHBOARD_TEST_URL=http://dashboard.test:8879 npm run test:browser",
+    "tests": 64,
+    "failed": 0,
+    "skipped": 0,
+    "seconds": 35.5,
+    "log": ".tmp/1028-design/browser-tests-retry.log",
+    "required_journeys": "17/17 via scripts/verify_basic_junit.py"
+  },
+  "audit_ut": {
+    "command": "python -B -m unittest discover -s tests -p test_triton_1028_design_audit.py -v",
+    "tests": 9,
+    "failed": 0,
+    "coverage_percent": 100.0,
+    "covered_executable_lines": 56,
+    "executable_lines": 56
+  },
+  "initial_environment_failures": [
+    "Windows full Python: WSL bash could not execute a Windows-generated shim (7 failures); resolved by running complete suite in native Linux with Node.",
+    "Default browser port8877: Windows WinError10013; full unchanged suite passed against serve.py at alternate port8879."
+  ],
+  "fixture_provenance": "Published files are actual frozen HTTP responses. dashboard-data used in tests is a mirror, not independent raw-collector evidence. Original ignored local files restored after verification.",
+  "builder_check": "Reviewed after section3.2/pin lifecycle addition; nothing important left.",
+  "publication": "local commit only; no push, PR, merge, workflow modification or product change"
+}

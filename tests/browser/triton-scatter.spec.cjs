@@ -81,8 +81,8 @@ test('[TRITON-001] every scatter point opens visible matching evidence by pointe
         const tip = page.locator('[data-role="tip"]');
         await expect(tip).toBeVisible();
         await expect(tip).toContainText(`PR #${b.pr}`);
-        await expect(tip.locator('.tip-job')).toContainText(`NPU ${i}`);
-        await expect(tip.locator('.tip-job a')).toHaveAttribute('href', b.npu_jobs[0].url);
+        await expect(tip.locator('.tip-npu .tip-job')).toContainText(`NPU ${i}`);
+        await expect(tip.locator('.tip-npu .tip-job a')).toHaveAttribute('href', b.npu_jobs[0].url);
         await expect(tip.locator('.tip-head')).toContainText((b.npu_queue_seconds / 60).toFixed(2) + ' min');
         await expect(tip.locator('.tip-head')).toBeInViewport();
         await tip.locator('.tip-close').click();

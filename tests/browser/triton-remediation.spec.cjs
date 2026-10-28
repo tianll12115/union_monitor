@@ -174,13 +174,15 @@ test('[TA-008] a pinned NPU card keeps its identity when another chart point is 
   await expect(tip.locator('.tip-title')).not.toContainText('PR #101');
 });
 
-test('[TA-013] reference lines carry visible names, not bare dashed strokes', async ({page}) => {
+test('[TA-013/TS28-006] P90 stays named; the bucket median is removed from both charts and the legend', async ({page}) => {
   await ready(page);
-  const chart = page.locator('[data-role="chart"]');
-  await expect(chart.locator('text.ref-label')).toHaveCount(1);
-  await expect(chart.locator('text.ref-label')).toContainText('图内 P90');
-  const nbins = await page.locator('[data-role="chart"] .mark-hit').count();
-  // The six-hour median line appears only when more than one bucket is populated;
-  // with a 3-day window and 3 samples it is deterministic to confirm the legend names.
-  await expect(page.locator('div.legend').first()).toContainText('六小时桶中位数');
+  for (const role of ['chart', 'npuChart']) {
+    const chart = page.locator(`[data-role="${role}"]`);
+    await expect(chart.locator('text.ref-label')).toHaveCount(1);
+    await expect(chart.locator('text.ref-label')).toContainText('图内 P90');
+    await expect(chart.locator('.median-line')).toHaveCount(0);
+    await expect(chart).not.toContainText('六小时桶中位数');
+  }
+  await expect(page.locator('div.legend').first()).toContainText('图内 P90');
+  await expect(page.locator('div.legend').first()).not.toContainText('六小时桶中位数');
 });

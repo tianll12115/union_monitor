@@ -1,0 +1,421 @@
+{
+  "payload_rows": 2950,
+  "unique_ids": 2950,
+  "selected_all_workflows": 1009,
+  "selected_integration_runs": 121,
+  "selected_status": {
+    "success": 59,
+    "cancelled": 22,
+    "failure": 37,
+    "running": 3
+  },
+  "e2e_samples": 84,
+  "e2e_p50_seconds": 1223.5,
+  "e2e_p90_seconds": 2491.7000000000007,
+  "npu_samples": 101,
+  "npu_p50_seconds": 30.0,
+  "npu_p90_seconds": 436.0,
+  "creation_discovery_gap_seconds": 1720.0,
+  "payload_issues": [],
+  "upstream_reconciliation": [
+    {
+      "run_id": 40269159120,
+      "attempt": 1,
+      "expected_seconds": 1536.0,
+      "published_seconds": 1536.0,
+      "matches": true
+    },
+    {
+      "run_id": 40505027483,
+      "attempt": 1,
+      "expected_seconds": 2594.0,
+      "published_seconds": 2594.0,
+      "matches": true
+    },
+    {
+      "run_id": 40505895817,
+      "attempt": 1,
+      "expected_seconds": 3315.0,
+      "published_seconds": 3315.0,
+      "matches": true
+    },
+    {
+      "run_id": 40629162122,
+      "attempt": 1,
+      "expected_seconds": 4554.0,
+      "published_seconds": 4554.0,
+      "matches": true
+    }
+  ],
+  "job_duration_check": {
+    "jobs_checked": 5091,
+    "issues": [
+      {
+        "batch": "run-40260270803-attempt-1",
+        "job": 121371007095,
+        "expected_seconds": -1.0,
+        "published_seconds": 0,
+        "conclusion": "skipped"
+      },
+      {
+        "batch": "run-40279388664-attempt-1",
+        "job": 121430476136,
+        "expected_seconds": -1.0,
+        "published_seconds": 0,
+        "conclusion": "cancelled"
+      },
+      {
+        "batch": "run-40284722503-attempt-1",
+        "job": 121453064313,
+        "expected_seconds": -1.0,
+        "published_seconds": 0,
+        "conclusion": "cancelled"
+      },
+      {
+        "batch": "run-40284722503-attempt-1",
+        "job": 121453064766,
+        "expected_seconds": -1.0,
+        "published_seconds": 0,
+        "conclusion": "cancelled"
+      },
+      {
+        "batch": "run-40286529426-attempt-1",
+        "job": 121578841687,
+        "expected_seconds": -1.0,
+        "published_seconds": 0,
+        "conclusion": "skipped"
+      },
+      {
+        "batch": "run-40435486958-attempt-1",
+        "job": 121966572007,
+        "expected_seconds": -1.0,
+        "published_seconds": 0,
+        "conclusion": "cancelled"
+      },
+      {
+        "batch": "run-40436097008-attempt-1",
+        "job": 121980072124,
+        "expected_seconds": -1.0,
+        "published_seconds": 0,
+        "conclusion": "skipped"
+      },
+      {
+        "batch": "run-40441057681-attempt-1",
+        "job": 122002506511,
+        "expected_seconds": -1.0,
+        "published_seconds": 0,
+        "conclusion": "skipped"
+      },
+      {
+        "batch": "run-40441057681-attempt-1",
+        "job": 122002506973,
+        "expected_seconds": -1.0,
+        "published_seconds": 0,
+        "conclusion": "skipped"
+      },
+      {
+        "batch": "run-40445319301-attempt-1",
+        "job": 122015263927,
+        "expected_seconds": -1.0,
+        "published_seconds": 0,
+        "conclusion": "skipped"
+      },
+      {
+        "batch": "run-40449420513-attempt-1",
+        "job": 122011823658,
+        "expected_seconds": -1.0,
+        "published_seconds": 0,
+        "conclusion": "cancelled"
+      },
+      {
+        "batch": "run-40449730282-attempt-1",
+        "job": 122010830426,
+        "expected_seconds": -1.0,
+        "published_seconds": 0,
+        "conclusion": "cancelled"
+      },
+      {
+        "batch": "run-40449730282-attempt-1",
+        "job": 122010830807,
+        "expected_seconds": -1.0,
+        "published_seconds": 0,
+        "conclusion": "cancelled"
+      },
+      {
+        "batch": "run-40470331339-attempt-1",
+        "job": 122081850144,
+        "expected_seconds": -1.0,
+        "published_seconds": 0,
+        "conclusion": "cancelled"
+      },
+      {
+        "batch": "run-40471713893-attempt-1",
+        "job": 122091421506,
+        "expected_seconds": -1.0,
+        "published_seconds": 0,
+        "conclusion": "cancelled"
+      },
+      {
+        "batch": "run-40471713893-attempt-1",
+        "job": 122091421951,
+        "expected_seconds": -1.0,
+        "published_seconds": 0,
+        "conclusion": "cancelled"
+      },
+      {
+        "batch": "run-40471810540-attempt-1",
+        "job": 122125332644,
+        "expected_seconds": -1.0,
+        "published_seconds": 0,
+        "conclusion": "skipped"
+      },
+      {
+        "batch": "run-40474328766-attempt-1",
+        "job": 122138615770,
+        "expected_seconds": -1.0,
+        "published_seconds": 0,
+        "conclusion": "skipped"
+      },
+      {
+        "batch": "run-40474328766-attempt-1",
+        "job": 122138617527,
+        "expected_seconds": -1.0,
+        "published_seconds": 0,
+        "conclusion": "skipped"
+      },
+      {
+        "batch": "run-40474564679-attempt-1",
+        "job": 122148973992,
+        "expected_seconds": -1.0,
+        "published_seconds": 0,
+        "conclusion": "skipped"
+      },
+      {
+        "batch": "run-40474564679-attempt-1",
+        "job": 122148974335,
+        "expected_seconds": -1.0,
+        "published_seconds": 0,
+        "conclusion": "skipped"
+      },
+      {
+        "batch": "run-40614321184-attempt-1",
+        "job": 122585855604,
+        "expected_seconds": -1.0,
+        "published_seconds": 0,
+        "conclusion": "cancelled"
+      },
+      {
+        "batch": "run-40614321184-attempt-1",
+        "job": 122585855757,
+        "expected_seconds": -1.0,
+        "published_seconds": 0,
+        "conclusion": "cancelled"
+      },
+      {
+        "batch": "run-40614331807-attempt-1",
+        "job": 122585860345,
+        "expected_seconds": -1.0,
+        "published_seconds": 0,
+        "conclusion": "cancelled"
+      },
+      {
+        "batch": "run-40614381218-attempt-1",
+        "job": 122585854753,
+        "expected_seconds": -1.0,
+        "published_seconds": 0,
+        "conclusion": "cancelled"
+      },
+      {
+        "batch": "run-40616134165-attempt-1",
+        "job": 122583201832,
+        "expected_seconds": -1.0,
+        "published_seconds": 0,
+        "conclusion": "cancelled"
+      },
+      {
+        "batch": "run-40626550238-attempt-1",
+        "job": 122619007960,
+        "expected_seconds": -1.0,
+        "published_seconds": 0,
+        "conclusion": "cancelled"
+      },
+      {
+        "batch": "run-40676861344-attempt-1",
+        "job": 122789612014,
+        "expected_seconds": -1.0,
+        "published_seconds": 0,
+        "conclusion": "skipped"
+      },
+      {
+        "batch": "run-40676862378-attempt-1",
+        "job": 122783405547,
+        "expected_seconds": -1.0,
+        "published_seconds": 0,
+        "conclusion": "cancelled"
+      },
+      {
+        "batch": "run-40676862378-attempt-1",
+        "job": 122783405962,
+        "expected_seconds": -1.0,
+        "published_seconds": 0,
+        "conclusion": "cancelled"
+      },
+      {
+        "batch": "run-40678001330-attempt-1",
+        "job": 122791398313,
+        "expected_seconds": -1.0,
+        "published_seconds": 0,
+        "conclusion": "cancelled"
+      },
+      {
+        "batch": "run-40678001330-attempt-1",
+        "job": 122791398591,
+        "expected_seconds": -1.0,
+        "published_seconds": 0,
+        "conclusion": "cancelled"
+      },
+      {
+        "batch": "run-40678980260-attempt-1",
+        "job": 122784531084,
+        "expected_seconds": -1.0,
+        "published_seconds": 0,
+        "conclusion": "skipped"
+      }
+    ]
+  },
+  "published_assets": {
+    "triton-core.js": true,
+    "triton-view.js": true,
+    "app.js": true,
+    "router.js": true,
+    "style.css": true
+  },
+  "pr2280": [
+    {
+      "id": "run-40269159120-attempt-1",
+      "duration_seconds": 1536.0,
+      "eligible": true
+    }
+  ],
+  "manifest": {
+    "sha256": "cfa675bc6958e39cad305fe51501babb68d090f57a4fdfc096221252e557dbda",
+    "collected_at": "2026-10-28T12:01:46Z",
+    "qualifications_file": "triton-qualifications-v1.json",
+    "qualifications_sha256": "6473858de3346db4a42f6f9a959e80320be6630f2a6209420feb690bf14d1ade",
+    "passed": true,
+    "errors": [],
+    "warnings": [
+      "run 38863609886 job 121368842333: source timestamps inverted; excluded from queue statistics",
+      "run 38863609886 job 121368875971: source timestamps inverted; excluded from queue statistics",
+      "run 39713222418 job 121432679257: source timestamps inverted; excluded from queue statistics",
+      "run 39713222418 job 121432679390: source timestamps inverted; excluded from queue statistics",
+      "run 40289442398: PR identity unresolved (PR identity unresolved/ambiguous: {'run_id': 40289442398, 'head_sha': 'deae07d270f78351dc95fd14aa31161cc0349c51', 'head_branch': 'master', 'candidates': [2779, 1959], 'matches': [2779, 1959]})",
+      "run 40289442376: PR identity unresolved (PR identity unresolved/ambiguous: {'run_id': 40289442376, 'head_sha': 'deae07d270f78351dc95fd14aa31161cc0349c51', 'head_branch': 'master', 'candidates': [2779, 1959], 'matches': [2779, 1959]})",
+      "run 40289442340: PR identity unresolved (PR identity unresolved/ambiguous: {'run_id': 40289442340, 'head_sha': 'deae07d270f78351dc95fd14aa31161cc0349c51', 'head_branch': 'master', 'candidates': [2779, 1959], 'matches': [2779, 1959]})",
+      "run 40289442466: PR identity unresolved (PR identity unresolved/ambiguous: {'run_id': 40289442466, 'head_sha': 'deae07d270f78351dc95fd14aa31161cc0349c51', 'head_branch': 'master', 'candidates': [2779, 1959], 'matches': [2779, 1959]})",
+      "run 40070220945 job 121355424503: source timestamps inverted; excluded from queue statistics",
+      "run 40070220945 job 121355425107: source timestamps inverted; excluded from queue statistics",
+      "run 40482120849 job 122371364807: source timestamps inverted; excluded from queue statistics",
+      "run 40482120849 job 122371423495: source timestamps inverted; excluded from queue statistics",
+      "run 40482120849 job 122139589387: source timestamps inverted; excluded from queue statistics",
+      "run 40481712201 job 122125077632: source timestamps inverted; excluded from queue statistics",
+      "run 40481712201 job 122125078583: source timestamps inverted; excluded from queue statistics",
+      "run 40479987325: PR identity unresolved (PR identity unresolved/ambiguous: {'run_id': 40479987325, 'head_sha': 'd2b2b95457e6c0749cede0161bb0f351d0e290f9', 'head_branch': 'fix/flag-id-from-zero', 'candidates': [2804, 2450], 'matches': [2804, 2450]})",
+      "run 40479987288: PR identity unresolved (PR identity unresolved/ambiguous: {'run_id': 40479987288, 'head_sha': 'd2b2b95457e6c0749cede0161bb0f351d0e290f9', 'head_branch': 'fix/flag-id-from-zero', 'candidates': [2804, 2450], 'matches': [2804, 2450]})",
+      "run 40479987601: PR identity unresolved (PR identity unresolved/ambiguous: {'run_id': 40479987601, 'head_sha': 'd2b2b95457e6c0749cede0161bb0f351d0e290f9', 'head_branch': 'fix/flag-id-from-zero', 'candidates': [2804, 2450], 'matches': [2804, 2450]})",
+      "run 40479987627: PR identity unresolved (PR identity unresolved/ambiguous: {'run_id': 40479987627, 'head_sha': 'd2b2b95457e6c0749cede0161bb0f351d0e290f9', 'head_branch': 'fix/flag-id-from-zero', 'candidates': [2804, 2450], 'matches': [2804, 2450]})",
+      "run 40479987627 job 122182737040: source timestamps inverted; excluded from queue statistics",
+      "run 40479987627 job 122182737638: source timestamps inverted; excluded from queue statistics",
+      "run 40479987627: PR identity unresolved (PR identity unresolved/ambiguous: {'run_id': 40479987627, 'head_sha': 'd2b2b95457e6c0749cede0161bb0f351d0e290f9', 'head_branch': 'fix/flag-id-from-zero', 'candidates': [2804, 2450], 'matches': [2804, 2450]})",
+      "run 40446043694: PR identity unresolved (PR identity unresolved/ambiguous: {'run_id': 40446043694, 'head_sha': '5e712b2aaf2ee8b592d05fa9bae6aad464687aee', 'head_branch': 'issue1', 'candidates': [2794, 2665], 'matches': [2794, 2665]})",
+      "run 40446043628: PR identity unresolved (PR identity unresolved/ambiguous: {'run_id': 40446043628, 'head_sha': '5e712b2aaf2ee8b592d05fa9bae6aad464687aee', 'head_branch': 'issue1', 'candidates': [2794, 2665], 'matches': [2794, 2665]})",
+      "run 40446043590: PR identity unresolved (PR identity unresolved/ambiguous: {'run_id': 40446043590, 'head_sha': '5e712b2aaf2ee8b592d05fa9bae6aad464687aee', 'head_branch': 'issue1', 'candidates': [2794, 2665], 'matches': [2794, 2665]})",
+      "run 40446043572: PR identity unresolved (PR identity unresolved/ambiguous: {'run_id': 40446043572, 'head_sha': '5e712b2aaf2ee8b592d05fa9bae6aad464687aee', 'head_branch': 'issue1', 'candidates': [2794, 2665], 'matches': [2794, 2665]})",
+      "run 40446043572: PR identity unresolved (PR identity unresolved/ambiguous: {'run_id': 40446043572, 'head_sha': '5e712b2aaf2ee8b592d05fa9bae6aad464687aee', 'head_branch': 'issue1', 'candidates': [2794, 2665], 'matches': [2794, 2665]})",
+      "run 40434039598: PR identity unresolved (PR identity unresolved/ambiguous: {'run_id': 40434039598, 'head_sha': '5e712b2aaf2ee8b592d05fa9bae6aad464687aee', 'head_branch': 'issue1', 'candidates': [2794, 2665], 'matches': [2794, 2665]})",
+      "run 40434039580: PR identity unresolved (PR identity unresolved/ambiguous: {'run_id': 40434039580, 'head_sha': '5e712b2aaf2ee8b592d05fa9bae6aad464687aee', 'head_branch': 'issue1', 'candidates': [2794, 2665], 'matches': [2794, 2665]})",
+      "run 40434039591: PR identity unresolved (PR identity unresolved/ambiguous: {'run_id': 40434039591, 'head_sha': '5e712b2aaf2ee8b592d05fa9bae6aad464687aee', 'head_branch': 'issue1', 'candidates': [2794, 2665], 'matches': [2794, 2665]})",
+      "run 40434039578: PR identity unresolved (PR identity unresolved/ambiguous: {'run_id': 40434039578, 'head_sha': '5e712b2aaf2ee8b592d05fa9bae6aad464687aee', 'head_branch': 'issue1', 'candidates': [2794, 2665], 'matches': [2794, 2665]})",
+      "run 40434039578: PR identity unresolved (PR identity unresolved/ambiguous: {'run_id': 40434039578, 'head_sha': '5e712b2aaf2ee8b592d05fa9bae6aad464687aee', 'head_branch': 'issue1', 'candidates': [2794, 2665], 'matches': [2794, 2665]})",
+      "run 40323806698 job 121954194439: source timestamps inverted; excluded from queue statistics",
+      "run 40323806698 job 121954194911: source timestamps inverted; excluded from queue statistics",
+      "run 40314060057 job 121554179357: source timestamps inverted; excluded from queue statistics",
+      "run 40314060057 job 121554179805: source timestamps inverted; excluded from queue statistics",
+      "run 40303641517 job 121755417366: source timestamps inverted; excluded from queue statistics",
+      "run 40303641517 job 121755417840: source timestamps inverted; excluded from queue statistics",
+      "run 40295432152: PR identity unresolved (PR identity unresolved/ambiguous: {'run_id': 40295432152, 'head_sha': '805a3e5073dc9e90c95ccdd877fc294ab57b868a', 'head_branch': 'master', 'candidates': [2779, 1959], 'matches': [2779, 1959]})",
+      "run 40295432172: PR identity unresolved (PR identity unresolved/ambiguous: {'run_id': 40295432172, 'head_sha': '805a3e5073dc9e90c95ccdd877fc294ab57b868a', 'head_branch': 'master', 'candidates': [2779, 1959], 'matches': [2779, 1959]})",
+      "run 40295432494: PR identity unresolved (PR identity unresolved/ambiguous: {'run_id': 40295432494, 'head_sha': '805a3e5073dc9e90c95ccdd877fc294ab57b868a', 'head_branch': 'master', 'candidates': [2779, 1959], 'matches': [2779, 1959]})",
+      "run 40295432240: PR identity unresolved (PR identity unresolved/ambiguous: {'run_id': 40295432240, 'head_sha': '805a3e5073dc9e90c95ccdd877fc294ab57b868a', 'head_branch': 'master', 'candidates': [2779, 1959], 'matches': [2779, 1959]})",
+      "run 40670381210 job 122785765319: source timestamps inverted; excluded from queue statistics",
+      "run 40670381210 job 122785766053: source timestamps inverted; excluded from queue statistics",
+      "run 40670381210 job 122774732805: source timestamps inverted; excluded from queue statistics",
+      "run 40670381210 job 122774801594: source timestamps inverted; excluded from queue statistics",
+      "run 40656847468 job 122728776128: source timestamps inverted; excluded from queue statistics",
+      "run 40656847468 job 122728776631: source timestamps inverted; excluded from queue statistics",
+      "run 40656711914 job 122725489550: source timestamps inverted; excluded from queue statistics",
+      "run 40656711914 job 122725490153: source timestamps inverted; excluded from queue statistics",
+      "run 40654241703 job 122746658674: source timestamps inverted; excluded from queue statistics",
+      "run 40654241703 job 122746659850: source timestamps inverted; excluded from queue statistics",
+      "run 40654241703 job 122736382712: source timestamps inverted; excluded from queue statistics",
+      "run 40654241703 job 122736382736: source timestamps inverted; excluded from queue statistics",
+      "run 40644081995 job 122709250085: source timestamps inverted; excluded from queue statistics",
+      "run 40644081995 job 122709251054: source timestamps inverted; excluded from queue statistics",
+      "run 40622985444 job 122655110650: source timestamps inverted; excluded from queue statistics",
+      "run 40622985444 job 122655145447: source timestamps inverted; excluded from queue statistics",
+      "run 40617424514 job 122611016594: source timestamps inverted; excluded from queue statistics",
+      "run 40614472199: PR identity unresolved (PR identity unresolved/ambiguous: {'run_id': 40614472199, 'head_sha': '83950d2fd0fa4e55e3304983bf1949e08fcd0f0f', 'head_branch': 'merge_block_1020', 'candidates': [2814, 2641], 'matches': [2814, 2641]})",
+      "run 40614472231: PR identity unresolved (PR identity unresolved/ambiguous: {'run_id': 40614472231, 'head_sha': '83950d2fd0fa4e55e3304983bf1949e08fcd0f0f', 'head_branch': 'merge_block_1020', 'candidates': [2814, 2641], 'matches': [2814, 2641]})",
+      "run 40614472302: PR identity unresolved (PR identity unresolved/ambiguous: {'run_id': 40614472302, 'head_sha': '83950d2fd0fa4e55e3304983bf1949e08fcd0f0f', 'head_branch': 'merge_block_1020', 'candidates': [2814, 2641], 'matches': [2814, 2641]})",
+      "run 40614472205: PR identity unresolved (PR identity unresolved/ambiguous: {'run_id': 40614472205, 'head_sha': '83950d2fd0fa4e55e3304983bf1949e08fcd0f0f', 'head_branch': 'merge_block_1020', 'candidates': [2814, 2641], 'matches': [2814, 2641]})",
+      "run 40289438070: PR identity unresolved (PR identity unresolved/ambiguous: {'run_id': 40289438070, 'head_sha': 'deae07d270f78351dc95fd14aa31161cc0349c51', 'head_branch': 'master', 'candidates': [2779, 1959], 'matches': [2779, 1959]})",
+      "run 40289438021: PR identity unresolved (PR identity unresolved/ambiguous: {'run_id': 40289438021, 'head_sha': 'deae07d270f78351dc95fd14aa31161cc0349c51', 'head_branch': 'master', 'candidates': [2779, 1959], 'matches': [2779, 1959]})",
+      "run 40289437993: PR identity unresolved (PR identity unresolved/ambiguous: {'run_id': 40289437993, 'head_sha': 'deae07d270f78351dc95fd14aa31161cc0349c51', 'head_branch': 'master', 'candidates': [2779, 1959], 'matches': [2779, 1959]})",
+      "run 40479981342: PR identity unresolved (PR identity unresolved/ambiguous: {'run_id': 40479981342, 'head_sha': 'd2b2b95457e6c0749cede0161bb0f351d0e290f9', 'head_branch': 'fix/flag-id-from-zero', 'candidates': [2804, 2450], 'matches': [2804, 2450]})",
+      "run 40479981455: PR identity unresolved (PR identity unresolved/ambiguous: {'run_id': 40479981455, 'head_sha': 'd2b2b95457e6c0749cede0161bb0f351d0e290f9', 'head_branch': 'fix/flag-id-from-zero', 'candidates': [2804, 2450], 'matches': [2804, 2450]})",
+      "run 40479981437: PR identity unresolved (PR identity unresolved/ambiguous: {'run_id': 40479981437, 'head_sha': 'd2b2b95457e6c0749cede0161bb0f351d0e290f9', 'head_branch': 'fix/flag-id-from-zero', 'candidates': [2804, 2450], 'matches': [2804, 2450]})",
+      "run 40446043596: PR identity unresolved (PR identity unresolved/ambiguous: {'run_id': 40446043596, 'head_sha': '5e712b2aaf2ee8b592d05fa9bae6aad464687aee', 'head_branch': 'issue1', 'candidates': [2794, 2665], 'matches': [2794, 2665]})",
+      "run 40446043539: PR identity unresolved (PR identity unresolved/ambiguous: {'run_id': 40446043539, 'head_sha': '5e712b2aaf2ee8b592d05fa9bae6aad464687aee', 'head_branch': 'issue1', 'candidates': [2794, 2665], 'matches': [2794, 2665]})",
+      "run 40446043595: PR identity unresolved (PR identity unresolved/ambiguous: {'run_id': 40446043595, 'head_sha': '5e712b2aaf2ee8b592d05fa9bae6aad464687aee', 'head_branch': 'issue1', 'candidates': [2794, 2665], 'matches': [2794, 2665]})",
+      "run 40446043603: PR identity unresolved (PR identity unresolved/ambiguous: {'run_id': 40446043603, 'head_sha': '5e712b2aaf2ee8b592d05fa9bae6aad464687aee', 'head_branch': 'issue1', 'candidates': [2794, 2665], 'matches': [2794, 2665]})",
+      "run 40434037250: PR identity unresolved (PR identity unresolved/ambiguous: {'run_id': 40434037250, 'head_sha': '5e712b2aaf2ee8b592d05fa9bae6aad464687aee', 'head_branch': 'issue1', 'candidates': [2794, 2665], 'matches': [2794, 2665]})",
+      "run 40434037354: PR identity unresolved (PR identity unresolved/ambiguous: {'run_id': 40434037354, 'head_sha': '5e712b2aaf2ee8b592d05fa9bae6aad464687aee', 'head_branch': 'issue1', 'candidates': [2794, 2665], 'matches': [2794, 2665]})",
+      "run 40434037243: PR identity unresolved (PR identity unresolved/ambiguous: {'run_id': 40434037243, 'head_sha': '5e712b2aaf2ee8b592d05fa9bae6aad464687aee', 'head_branch': 'issue1', 'candidates': [2794, 2665], 'matches': [2794, 2665]})",
+      "run 40434037381: PR identity unresolved (PR identity unresolved/ambiguous: {'run_id': 40434037381, 'head_sha': '5e712b2aaf2ee8b592d05fa9bae6aad464687aee', 'head_branch': 'issue1', 'candidates': [2794, 2665], 'matches': [2794, 2665]})",
+      "run 40295429150: PR identity unresolved (PR identity unresolved/ambiguous: {'run_id': 40295429150, 'head_sha': '805a3e5073dc9e90c95ccdd877fc294ab57b868a', 'head_branch': 'master', 'candidates': [2779, 1959], 'matches': [2779, 1959]})",
+      "run 40295429183: PR identity unresolved (PR identity unresolved/ambiguous: {'run_id': 40295429183, 'head_sha': '805a3e5073dc9e90c95ccdd877fc294ab57b868a', 'head_branch': 'master', 'candidates': [2779, 1959], 'matches': [2779, 1959]})",
+      "run 40295429290: PR identity unresolved (PR identity unresolved/ambiguous: {'run_id': 40295429290, 'head_sha': '805a3e5073dc9e90c95ccdd877fc294ab57b868a', 'head_branch': 'master', 'candidates': [2779, 1959], 'matches': [2779, 1959]})",
+      "run 40295429153: PR identity unresolved (PR identity unresolved/ambiguous: {'run_id': 40295429153, 'head_sha': '805a3e5073dc9e90c95ccdd877fc294ab57b868a', 'head_branch': 'master', 'candidates': [2779, 1959], 'matches': [2779, 1959]})",
+      "run 40295428471: PR identity unresolved (PR identity unresolved/ambiguous: {'run_id': 40295428471, 'head_sha': '805a3e5073dc9e90c95ccdd877fc294ab57b868a', 'head_branch': 'master', 'candidates': [2779, 1959], 'matches': [2779, 1959]})",
+      "run 40295428107: PR identity unresolved (PR identity unresolved/ambiguous: {'run_id': 40295428107, 'head_sha': '805a3e5073dc9e90c95ccdd877fc294ab57b868a', 'head_branch': 'master', 'candidates': [2779, 1959], 'matches': [2779, 1959]})",
+      "run 40295428007: PR identity unresolved (PR identity unresolved/ambiguous: {'run_id': 40295428007, 'head_sha': '805a3e5073dc9e90c95ccdd877fc294ab57b868a', 'head_branch': 'master', 'candidates': [2779, 1959], 'matches': [2779, 1959]})",
+      "run 40614469718: PR identity unresolved (PR identity unresolved/ambiguous: {'run_id': 40614469718, 'head_sha': '83950d2fd0fa4e55e3304983bf1949e08fcd0f0f', 'head_branch': 'merge_block_1020', 'candidates': [2814, 2641], 'matches': [2814, 2641]})",
+      "run 40614469709: PR identity unresolved (PR identity unresolved/ambiguous: {'run_id': 40614469709, 'head_sha': '83950d2fd0fa4e55e3304983bf1949e08fcd0f0f', 'head_branch': 'merge_block_1020', 'candidates': [2814, 2641], 'matches': [2814, 2641]})",
+      "run 40614469682: PR identity unresolved (PR identity unresolved/ambiguous: {'run_id': 40614469682, 'head_sha': '83950d2fd0fa4e55e3304983bf1949e08fcd0f0f', 'head_branch': 'merge_block_1020', 'candidates': [2814, 2641], 'matches': [2814, 2641]})",
+      "batch run-40258841397-attempt-1: no valid completion time; excluded from completed statistics",
+      "batch run-40265733593-attempt-1: no valid completion time; excluded from completed statistics",
+      "batch run-40278592824-attempt-1: no valid completion time; excluded from completed statistics",
+      "batch run-40279390413-attempt-1: no valid completion time; excluded from completed statistics",
+      "batch run-40279794903-attempt-1: no valid completion time; excluded from completed statistics",
+      "batch run-40281349884-attempt-1: no valid completion time; excluded from completed statistics",
+      "batch run-40287832653-attempt-1: no valid completion time; excluded from completed statistics",
+      "batch run-40294037091-attempt-1: no valid completion time; excluded from completed statistics",
+      "batch run-40295764224-attempt-1: no valid completion time; excluded from completed statistics",
+      "batch run-40297064676-attempt-1: no valid completion time; excluded from completed statistics",
+      "batch run-40314159195-attempt-1: no valid completion time; excluded from completed statistics",
+      "batch run-40436040841-attempt-1: no valid completion time; excluded from completed statistics",
+      "batch run-40438226469-attempt-1: no valid completion time; excluded from completed statistics",
+      "batch run-40616135276-attempt-1: no valid completion time; excluded from completed statistics",
+      "batch run-40617422936-attempt-1: no valid completion time; excluded from completed statistics",
+      "batch run-40625551906-attempt-1: no valid completion time; excluded from completed statistics",
+      "batch run-40625551932-attempt-1: no valid completion time; excluded from completed statistics",
+      "batch run-40625552082-attempt-1: no valid completion time; excluded from completed statistics",
+      "batch run-40642579560-attempt-1: no valid completion time; excluded from completed statistics",
+      "batch run-40643402558-attempt-1: no valid completion time; excluded from completed statistics",
+      "batch run-40654406251-attempt-1: no valid completion time; excluded from completed statistics"
+    ],
+    "runs": 2954,
+    "batches": 2950,
+    "npu_points": 389
+  }
+}

@@ -1,0 +1,640 @@
+{
+  "jobs_checked": 5091,
+  "issues": [
+    {
+      "batch": "run-40260270803-attempt-1",
+      "job": 121371007095,
+      "field": "run",
+      "expected": -1.0,
+      "actual": 0
+    },
+    {
+      "batch": "run-40279388664-attempt-1",
+      "job": 121430476136,
+      "field": "run",
+      "expected": -1.0,
+      "actual": 0
+    },
+    {
+      "batch": "run-40284722503-attempt-1",
+      "job": 121453064313,
+      "field": "run",
+      "expected": -1.0,
+      "actual": 0
+    },
+    {
+      "batch": "run-40284722503-attempt-1",
+      "job": 121453064766,
+      "field": "run",
+      "expected": -1.0,
+      "actual": 0
+    },
+    {
+      "batch": "run-40286529426-attempt-1",
+      "job": 121578841687,
+      "field": "run",
+      "expected": -1.0,
+      "actual": 0
+    },
+    {
+      "batch": "run-40435486958-attempt-1",
+      "job": 121966572007,
+      "field": "run",
+      "expected": -1.0,
+      "actual": 0
+    },
+    {
+      "batch": "run-40436097008-attempt-1",
+      "job": 121980072124,
+      "field": "run",
+      "expected": -1.0,
+      "actual": 0
+    },
+    {
+      "batch": "run-40441057681-attempt-1",
+      "job": 122002506511,
+      "field": "run",
+      "expected": -1.0,
+      "actual": 0
+    },
+    {
+      "batch": "run-40441057681-attempt-1",
+      "job": 122002506973,
+      "field": "run",
+      "expected": -1.0,
+      "actual": 0
+    },
+    {
+      "batch": "run-40445319301-attempt-1",
+      "job": 122015263927,
+      "field": "run",
+      "expected": -1.0,
+      "actual": 0
+    },
+    {
+      "batch": "run-40449420513-attempt-1",
+      "job": 122011823658,
+      "field": "run",
+      "expected": -1.0,
+      "actual": 0
+    },
+    {
+      "batch": "run-40449730282-attempt-1",
+      "job": 122010830426,
+      "field": "run",
+      "expected": -1.0,
+      "actual": 0
+    },
+    {
+      "batch": "run-40449730282-attempt-1",
+      "job": 122010830807,
+      "field": "run",
+      "expected": -1.0,
+      "actual": 0
+    },
+    {
+      "batch": "run-40470331339-attempt-1",
+      "job": 122081850144,
+      "field": "run",
+      "expected": -1.0,
+      "actual": 0
+    },
+    {
+      "batch": "run-40471713893-attempt-1",
+      "job": 122091421506,
+      "field": "run",
+      "expected": -1.0,
+      "actual": 0
+    },
+    {
+      "batch": "run-40471713893-attempt-1",
+      "job": 122091421951,
+      "field": "run",
+      "expected": -1.0,
+      "actual": 0
+    },
+    {
+      "batch": "run-40471810540-attempt-1",
+      "job": 122125332644,
+      "field": "run",
+      "expected": -1.0,
+      "actual": 0
+    },
+    {
+      "batch": "run-40474328766-attempt-1",
+      "job": 122138615770,
+      "field": "run",
+      "expected": -1.0,
+      "actual": 0
+    },
+    {
+      "batch": "run-40474328766-attempt-1",
+      "job": 122138617527,
+      "field": "run",
+      "expected": -1.0,
+      "actual": 0
+    },
+    {
+      "batch": "run-40474564679-attempt-1",
+      "job": 122148973992,
+      "field": "run",
+      "expected": -1.0,
+      "actual": 0
+    },
+    {
+      "batch": "run-40474564679-attempt-1",
+      "job": 122148974335,
+      "field": "run",
+      "expected": -1.0,
+      "actual": 0
+    },
+    {
+      "batch": "run-40614321184-attempt-1",
+      "job": 122585855604,
+      "field": "run",
+      "expected": -1.0,
+      "actual": 0
+    },
+    {
+      "batch": "run-40614321184-attempt-1",
+      "job": 122585855757,
+      "field": "run",
+      "expected": -1.0,
+      "actual": 0
+    },
+    {
+      "batch": "run-40614331807-attempt-1",
+      "job": 122585860345,
+      "field": "run",
+      "expected": -1.0,
+      "actual": 0
+    },
+    {
+      "batch": "run-40614381218-attempt-1",
+      "job": 122585854753,
+      "field": "run",
+      "expected": -1.0,
+      "actual": 0
+    },
+    {
+      "batch": "run-40616134165-attempt-1",
+      "job": 122583201832,
+      "field": "run",
+      "expected": -1.0,
+      "actual": 0
+    },
+    {
+      "batch": "run-40626550238-attempt-1",
+      "job": 122619007960,
+      "field": "run",
+      "expected": -1.0,
+      "actual": 0
+    },
+    {
+      "batch": "run-40676861344-attempt-1",
+      "job": 122789612014,
+      "field": "run",
+      "expected": -1.0,
+      "actual": 0
+    },
+    {
+      "batch": "run-40676862378-attempt-1",
+      "job": 122783405547,
+      "field": "run",
+      "expected": -1.0,
+      "actual": 0
+    },
+    {
+      "batch": "run-40676862378-attempt-1",
+      "job": 122783405962,
+      "field": "run",
+      "expected": -1.0,
+      "actual": 0
+    },
+    {
+      "batch": "run-40678001330-attempt-1",
+      "job": 122791398313,
+      "field": "run",
+      "expected": -1.0,
+      "actual": 0
+    },
+    {
+      "batch": "run-40678001330-attempt-1",
+      "job": 122791398591,
+      "field": "run",
+      "expected": -1.0,
+      "actual": 0
+    },
+    {
+      "batch": "run-40678980260-attempt-1",
+      "job": 122784531084,
+      "field": "run",
+      "expected": -1.0,
+      "actual": 0
+    }
+  ],
+  "selected_integration_exclusions": {
+    "unresolved_pr_batch_identity": 2,
+    "non_sample_result": 22,
+    "invalid_or_missing_duration": 10,
+    "running_observation": 3
+  },
+  "details": [
+    {
+      "batch": "run-40260270803-attempt-1",
+      "job": 121371007095,
+      "name": "integration-tests-ascend",
+      "status": "completed",
+      "conclusion": "skipped",
+      "start": "2026-10-26T02:40:55Z",
+      "end": "2026-10-26T02:40:54Z",
+      "run_seconds": 0,
+      "sample_eligible": false,
+      "in_user_scope": false
+    },
+    {
+      "batch": "run-40279388664-attempt-1",
+      "job": 121430476136,
+      "name": "Pipeline Tests",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "start": "2026-10-26T06:26:34Z",
+      "end": "2026-10-26T06:26:33Z",
+      "run_seconds": 0,
+      "sample_eligible": false,
+      "in_user_scope": false
+    },
+    {
+      "batch": "run-40284722503-attempt-1",
+      "job": 121453064313,
+      "name": "Publish wheels (${{ matrix.config.arch }}-${{ matrix.python }}-${{ matrix.branch.tag }})",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "start": "2026-10-26T07:38:41Z",
+      "end": "2026-10-26T07:38:40Z",
+      "run_seconds": 0,
+      "sample_eligible": false,
+      "in_user_scope": false
+    },
+    {
+      "batch": "run-40284722503-attempt-1",
+      "job": 121453064766,
+      "name": "Test wheels on NPU (${{ matrix.config.chip_type }})",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "start": "2026-10-26T07:38:41Z",
+      "end": "2026-10-26T07:38:40Z",
+      "run_seconds": 0,
+      "sample_eligible": false,
+      "in_user_scope": false
+    },
+    {
+      "batch": "run-40286529426-attempt-1",
+      "job": 121578841687,
+      "name": "Publish wheels (${{ matrix.config.arch }}-${{ matrix.python }}-${{ matrix.branch.tag }})",
+      "status": "completed",
+      "conclusion": "skipped",
+      "start": "2026-10-26T12:44:33Z",
+      "end": "2026-10-26T12:44:32Z",
+      "run_seconds": 0,
+      "sample_eligible": false,
+      "in_user_scope": false
+    },
+    {
+      "batch": "run-40435486958-attempt-1",
+      "job": 121966572007,
+      "name": "Publish wheels (${{ matrix.config.arch }}-${{ matrix.python }}-${{ matrix.branch.tag }})",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "start": "2026-10-27T02:07:22Z",
+      "end": "2026-10-27T02:07:21Z",
+      "run_seconds": 0,
+      "sample_eligible": false,
+      "in_user_scope": false
+    },
+    {
+      "batch": "run-40436097008-attempt-1",
+      "job": 121980072124,
+      "name": "Publish wheels (${{ matrix.config.arch }}-${{ matrix.python }}-${{ matrix.branch.tag }})",
+      "status": "completed",
+      "conclusion": "skipped",
+      "start": "2026-10-27T02:49:52Z",
+      "end": "2026-10-27T02:49:51Z",
+      "run_seconds": 0,
+      "sample_eligible": false,
+      "in_user_scope": false
+    },
+    {
+      "batch": "run-40441057681-attempt-1",
+      "job": 122002506511,
+      "name": "Test wheels on NPU (${{ matrix.config.chip_type }})",
+      "status": "completed",
+      "conclusion": "skipped",
+      "start": "2026-10-27T04:03:33Z",
+      "end": "2026-10-27T04:03:32Z",
+      "run_seconds": 0,
+      "sample_eligible": false,
+      "in_user_scope": false
+    },
+    {
+      "batch": "run-40441057681-attempt-1",
+      "job": 122002506973,
+      "name": "Publish wheels (${{ matrix.config.arch }}-${{ matrix.python }}-${{ matrix.branch.tag }})",
+      "status": "completed",
+      "conclusion": "skipped",
+      "start": "2026-10-27T04:03:33Z",
+      "end": "2026-10-27T04:03:32Z",
+      "run_seconds": 0,
+      "sample_eligible": false,
+      "in_user_scope": false
+    },
+    {
+      "batch": "run-40445319301-attempt-1",
+      "job": 122015263927,
+      "name": "Publish wheels (${{ matrix.config.arch }}-${{ matrix.python }}-${{ matrix.branch.tag }})",
+      "status": "completed",
+      "conclusion": "skipped",
+      "start": "2026-10-27T04:46:24Z",
+      "end": "2026-10-27T04:46:23Z",
+      "run_seconds": 0,
+      "sample_eligible": false,
+      "in_user_scope": false
+    },
+    {
+      "batch": "run-40449420513-attempt-1",
+      "job": 122011823658,
+      "name": "Test wheels on NPU (${{ matrix.config.chip_type }})",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "start": "2026-10-27T04:34:42Z",
+      "end": "2026-10-27T04:34:41Z",
+      "run_seconds": 0,
+      "sample_eligible": false,
+      "in_user_scope": false
+    },
+    {
+      "batch": "run-40449730282-attempt-1",
+      "job": 122010830426,
+      "name": "Test wheels on NPU (${{ matrix.config.chip_type }})",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "start": "2026-10-27T04:31:17Z",
+      "end": "2026-10-27T04:31:16Z",
+      "run_seconds": 0,
+      "sample_eligible": false,
+      "in_user_scope": false
+    },
+    {
+      "batch": "run-40449730282-attempt-1",
+      "job": 122010830807,
+      "name": "Publish wheels (${{ matrix.config.arch }}-${{ matrix.python }}-${{ matrix.branch.tag }})",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "start": "2026-10-27T04:31:17Z",
+      "end": "2026-10-27T04:31:16Z",
+      "run_seconds": 0,
+      "sample_eligible": false,
+      "in_user_scope": false
+    },
+    {
+      "batch": "run-40470331339-attempt-1",
+      "job": 122081850144,
+      "name": "Publish wheels (${{ matrix.config.arch }}-${{ matrix.python }}-${{ matrix.branch.tag }})",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "start": "2026-10-27T08:15:22Z",
+      "end": "2026-10-27T08:15:21Z",
+      "run_seconds": 0,
+      "sample_eligible": false,
+      "in_user_scope": false
+    },
+    {
+      "batch": "run-40471713893-attempt-1",
+      "job": 122091421506,
+      "name": "Test wheels on NPU (${{ matrix.config.chip_type }})",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "start": "2026-10-27T08:40:27Z",
+      "end": "2026-10-27T08:40:26Z",
+      "run_seconds": 0,
+      "sample_eligible": false,
+      "in_user_scope": false
+    },
+    {
+      "batch": "run-40471713893-attempt-1",
+      "job": 122091421951,
+      "name": "Publish wheels (${{ matrix.config.arch }}-${{ matrix.python }}-${{ matrix.branch.tag }})",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "start": "2026-10-27T08:40:27Z",
+      "end": "2026-10-27T08:40:26Z",
+      "run_seconds": 0,
+      "sample_eligible": false,
+      "in_user_scope": false
+    },
+    {
+      "batch": "run-40471810540-attempt-1",
+      "job": 122125332644,
+      "name": "Publish wheels (${{ matrix.config.arch }}-${{ matrix.python }}-${{ matrix.branch.tag }})",
+      "status": "completed",
+      "conclusion": "skipped",
+      "start": "2026-10-27T10:01:30Z",
+      "end": "2026-10-27T10:01:29Z",
+      "run_seconds": 0,
+      "sample_eligible": false,
+      "in_user_scope": false
+    },
+    {
+      "batch": "run-40474328766-attempt-1",
+      "job": 122138615770,
+      "name": "Test wheels on NPU (${{ matrix.config.chip_type }})",
+      "status": "completed",
+      "conclusion": "skipped",
+      "start": "2026-10-27T10:32:04Z",
+      "end": "2026-10-27T10:32:03Z",
+      "run_seconds": 0,
+      "sample_eligible": false,
+      "in_user_scope": false
+    },
+    {
+      "batch": "run-40474328766-attempt-1",
+      "job": 122138617527,
+      "name": "Publish wheels (${{ matrix.config.arch }}-${{ matrix.python }}-${{ matrix.branch.tag }})",
+      "status": "completed",
+      "conclusion": "skipped",
+      "start": "2026-10-27T10:32:04Z",
+      "end": "2026-10-27T10:32:03Z",
+      "run_seconds": 0,
+      "sample_eligible": false,
+      "in_user_scope": false
+    },
+    {
+      "batch": "run-40474564679-attempt-1",
+      "job": 122148973992,
+      "name": "Test wheels on NPU (${{ matrix.config.chip_type }})",
+      "status": "completed",
+      "conclusion": "skipped",
+      "start": "2026-10-27T10:56:05Z",
+      "end": "2026-10-27T10:56:04Z",
+      "run_seconds": 0,
+      "sample_eligible": false,
+      "in_user_scope": false
+    },
+    {
+      "batch": "run-40474564679-attempt-1",
+      "job": 122148974335,
+      "name": "Publish wheels (${{ matrix.config.arch }}-${{ matrix.python }}-${{ matrix.branch.tag }})",
+      "status": "completed",
+      "conclusion": "skipped",
+      "start": "2026-10-27T10:56:05Z",
+      "end": "2026-10-27T10:56:04Z",
+      "run_seconds": 0,
+      "sample_eligible": false,
+      "in_user_scope": false
+    },
+    {
+      "batch": "run-40614321184-attempt-1",
+      "job": 122585855604,
+      "name": "Test wheels on NPU (${{ matrix.config.chip_type }})",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "start": "2026-10-28T01:59:43Z",
+      "end": "2026-10-28T01:59:42Z",
+      "run_seconds": 0,
+      "sample_eligible": false,
+      "in_user_scope": true
+    },
+    {
+      "batch": "run-40614321184-attempt-1",
+      "job": 122585855757,
+      "name": "Publish wheels (${{ matrix.config.arch }}-${{ matrix.python }}-${{ matrix.branch.tag }})",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "start": "2026-10-28T01:59:43Z",
+      "end": "2026-10-28T01:59:42Z",
+      "run_seconds": 0,
+      "sample_eligible": false,
+      "in_user_scope": true
+    },
+    {
+      "batch": "run-40614331807-attempt-1",
+      "job": 122585860345,
+      "name": "Publish wheels (${{ matrix.config.arch }}-${{ matrix.python }}-${{ matrix.branch.tag }})",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "start": "2026-10-28T01:59:44Z",
+      "end": "2026-10-28T01:59:43Z",
+      "run_seconds": 0,
+      "sample_eligible": false,
+      "in_user_scope": true
+    },
+    {
+      "batch": "run-40614381218-attempt-1",
+      "job": 122585854753,
+      "name": "Publish wheels (${{ matrix.config.arch }}-${{ matrix.python }}-${{ matrix.branch.tag }})",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "start": "2026-10-28T01:59:43Z",
+      "end": "2026-10-28T01:59:42Z",
+      "run_seconds": 0,
+      "sample_eligible": false,
+      "in_user_scope": true
+    },
+    {
+      "batch": "run-40616134165-attempt-1",
+      "job": 122583201832,
+      "name": "Pipeline Tests",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "start": "2026-10-28T01:50:58Z",
+      "end": "2026-10-28T01:50:57Z",
+      "run_seconds": 0,
+      "sample_eligible": false,
+      "in_user_scope": true
+    },
+    {
+      "batch": "run-40626550238-attempt-1",
+      "job": 122619007960,
+      "name": "Pipeline Tests",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "start": "2026-10-28T03:45:20Z",
+      "end": "2026-10-28T03:45:19Z",
+      "run_seconds": 0,
+      "sample_eligible": false,
+      "in_user_scope": true
+    },
+    {
+      "batch": "run-40676861344-attempt-1",
+      "job": 122789612014,
+      "name": "Test wheels on NPU (${{ matrix.config.chip_type }})",
+      "status": "completed",
+      "conclusion": "skipped",
+      "start": "2026-10-28T11:30:24Z",
+      "end": "2026-10-28T11:30:23Z",
+      "run_seconds": 0,
+      "sample_eligible": false,
+      "in_user_scope": true
+    },
+    {
+      "batch": "run-40676862378-attempt-1",
+      "job": 122783405547,
+      "name": "Test wheels on NPU (${{ matrix.config.chip_type }})",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "start": "2026-10-28T11:16:24Z",
+      "end": "2026-10-28T11:16:23Z",
+      "run_seconds": 0,
+      "sample_eligible": false,
+      "in_user_scope": true
+    },
+    {
+      "batch": "run-40676862378-attempt-1",
+      "job": 122783405962,
+      "name": "Publish wheels (${{ matrix.config.arch }}-${{ matrix.python }}-${{ matrix.branch.tag }})",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "start": "2026-10-28T11:16:24Z",
+      "end": "2026-10-28T11:16:23Z",
+      "run_seconds": 0,
+      "sample_eligible": false,
+      "in_user_scope": true
+    },
+    {
+      "batch": "run-40678001330-attempt-1",
+      "job": 122791398313,
+      "name": "Test wheels on NPU (${{ matrix.config.chip_type }})",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "start": "2026-10-28T11:34:30Z",
+      "end": "2026-10-28T11:34:29Z",
+      "run_seconds": 0,
+      "sample_eligible": false,
+      "in_user_scope": true
+    },
+    {
+      "batch": "run-40678001330-attempt-1",
+      "job": 122791398591,
+      "name": "Publish wheels (${{ matrix.config.arch }}-${{ matrix.python }}-${{ matrix.branch.tag }})",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "start": "2026-10-28T11:34:30Z",
+      "end": "2026-10-28T11:34:29Z",
+      "run_seconds": 0,
+      "sample_eligible": false,
+      "in_user_scope": true
+    },
+    {
+      "batch": "run-40678980260-attempt-1",
+      "job": 122784531084,
+      "name": "integration-tests-ascend",
+      "status": "completed",
+      "conclusion": "skipped",
+      "start": "2026-10-28T11:18:57Z",
+      "end": "2026-10-28T11:18:56Z",
+      "run_seconds": 0,
+      "sample_eligible": false,
+      "in_user_scope": true
+    }
+  ]
+}

@@ -77,6 +77,7 @@ def publish_site(bundle, site):
     shutil.copytree(bundle / 'web' / 'data', site / 'data', dirs_exist_ok=True)
 
 
+@unittest.skipIf(os.name == 'nt', 'replays POSIX bash/curl workflow scripts; Linux CI runs them')
 class CacheChainTests(unittest.TestCase):
     def setUp(self):
         self.tmp = Path(tempfile.mkdtemp(prefix='ubs-chain-'))

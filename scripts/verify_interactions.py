@@ -439,29 +439,22 @@ TRITON_VIEW_CONTRACTS = [
      '[viewStart, viewEnd] = core.keyWindow(`${mode}-${direction}`,'
      ' domainStart, domainEnd, viewStart, viewEnd);'),
     ('mark_hover_enter',
-     'mark.onmouseenter = e => { clearTimeout(tipTimer); if (!tipPinned)'
-     ' placeTip(e, b, html); };'),
+     'mark.onmouseenter = e => {\n          clearTimeout(tipTimer);'
+     '\n          if (tipPinned) return;\n          showTip(b, kind, mark, false);'),
     ('mark_hover_move',
-     'mark.onmousemove = e => { if (!tipPinned) placeTip(e, b, html); };'),
+     'if (currentTipBatch !== b || currentTipKind !== kind) showTip(b, kind, mark, false);'),
     ('mark_hover_leave',
-     'mark.onmouseleave = () => { if (!tipPinned) tipTimer ='
-     ' setTimeout(() => hideTip(mark), 180); };'),
+     'tipTimer = setTimeout(() => hideTip(mark), 180);'),
     ('mark_click_open_detail',
-     "mark.onclick = e => { e.stopPropagation(); hideTip();"
-     " if (mark.dataset.kind !== 'npu' && root.openTritonDetail) openDetail(b, candidates());"
-     ' else { tipPinned = true; lastPinnedMark = mark; placeTip(e, b, html); } };'),
+     "if (kind !== 'npu' && root.openTritonDetail) { openDetail(b, candidatesFor(mark, b)); return; }"),
     ('mark_keyboard_pin', "if (e.key !== 'Enter' && e.key !== ' ') return;"),
     ('tip_escape_close',
-     "tip.onkeydown = e => { if (e.key === 'Escape') { e.preventDefault();"
-     ' hideTip(); } };'),
+     "if (e.key === 'Escape') { e.preventDefault(); hideTip(lastHoverMark); }"),
     ('tip_button_close',
-     "tip.onclick = e => { if (e.target.closest('.tip-close')) {"
-     ' e.stopPropagation(); hideTip(); } };'),
+     "if (e.target.closest('.tip-close')) { e.stopPropagation(); hideTip(lastHoverMark); return; }"),
     ('outside_click_close',
-     "if (!e.target.closest('.tooltip') && !e.target.closest('.mark-hit'))"
-     ' hideTip();'),
-    ('focus_return',
-     'if (wasInside && target && target.isConnected) target.focus();'),
+     "if (!e.target.closest('.tooltip') && !e.target.closest('.mark-hit')) hideTip();"),
+    ('focus_return', 'focusReturnGuard = true;'),
     ('row_click_expand', "if (e.target.closest('a')) return;"),
     ('row_aria_expanded', "btn.setAttribute('aria-expanded', String(open));"),
     ('row_toggle_button',
@@ -494,8 +487,7 @@ STYLE_CONTRACTS = [
      '.nav-svg{display:block;width:100%;height:72px;touch-action:none;'
      'user-select:none}'),
     ('tooltip_viewport_cap',
-     'width:min(430px,calc(100vw - 24px));max-height:min(76vh,680px,'
-     'calc(50vh - 24px));overflow:auto'),
+     'max-height:calc(100vh - 24px);overflow:auto'),
     ('table_scroll', '.table-scroll{overflow-x:auto}'),
     ('batch_content_scroll', '.batch-content{overflow-x:auto}'),
     ('media_1150', '@media(max-width:1150px)'),

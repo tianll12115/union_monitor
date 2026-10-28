@@ -90,9 +90,12 @@ def parse_job_header(source, run_created_at, as_of):
     else:
         status="completed" if completed_at else "unknown"
         conclusion="failure" if "failed" in text else "cancelled" if "cancel" in text else "success" if "succeeded" in text else None
-    wait_seconds=max(0,(started_at-created_at).total_seconds()) if started_at and created_at else None
+    # TS28-007: an inverted pair is unmeasured, never a clamped zero.
+    wait_seconds=((started_at-created_at).total_seconds()
+                  if started_at and created_at and started_at >= created_at else None)
     if status in ("queued","in_progress") and created_at:
-        wait_seconds=max(0,(dt(as_of)-created_at).total_seconds()) if status=="queued" else wait_seconds
+        observed=(dt(as_of)-created_at).total_seconds() if dt(as_of) else None
+        wait_seconds=observed if status=="queued" and observed is not None and observed >= 0 else wait_seconds
     return {"status":status,"conclusion":conclusion,
             "started_at":iso(started_at) if started_at else None,"completed_at":iso(completed_at) if completed_at else None,
             "wait_seconds":wait_seconds,"run_seconds":run_seconds}
@@ -154,19 +157,99 @@ def merge_run_evidence(api_row, page_row):
 
 
 def _job(row):
+    """Serialize one job without ever disguising an anomaly as a measured zero.
+
+    DQ-09/TS28-007: an inverted timestamp pair (source data defect) keeps its raw
+    fields, reports ``measurement_error`` and leaves the derived duration null.
+    ``max(0, negative)`` is rejected because it would present a cancelled or
+    skipped job as a real zero-second execution.
+    """
     start = dt(row.get("started_at"))
     end = dt(row.get("completed_at"))
     created = dt(row.get("created_at"))
+    inverted_wait = bool(start and created and start < created)
+    inverted_run = bool(start and end and end < start)
+    errors = []
+    if inverted_wait:
+        errors.append("源时间戳异常：开始时间早于创建时间，排队不适用")
+    if inverted_run:
+        errors.append("源时间戳异常：结束时间早于开始时间，执行不适用")
     return {
         "id": row.get("id"), "name": row.get("name") or "未命名任务",
         "status": row.get("status"), "conclusion": row.get("conclusion"),
         "created_at": row.get("created_at"), "started_at": row.get("started_at"),
         "completed_at": row.get("completed_at"), "url": row.get("html_url"),
         "runner_name": row.get("runner_name"), "runner_label": row.get("runner_label"),
-        "wait_seconds": (start-created).total_seconds() if start and created and start >= created else None,
-        "measurement_error": "源时间戳异常：开始时间早于创建时间" if start and created and start < created else None,
-        "run_seconds": max(0, (end-start).total_seconds()) if start and end else row.get("duration_seconds"),
+        "wait_seconds": None if inverted_wait else ((start-created).total_seconds() if start and created else None),
+        "measurement_error": "；".join(errors) if errors else None,
+        "wait_inverted": inverted_wait,
+        "run_inverted": inverted_run,
+        "run_seconds": None if inverted_run else ((end-start).total_seconds() if start and end else row.get("duration_seconds")),
         "failed_steps": [s.get("name") for s in row.get("steps", []) if s.get("conclusion") in ("failure", "timed_out", "action_required")],
+    }
+
+
+def workflow_timing(workflow, as_of):
+    """Derive the TS28-002 workflow timing contract from retained job evidence.
+
+    ``first_job_wait_seconds`` is ``min(valid started_at) - attempt origin`` and
+    ``execution_span_seconds`` is ``max(completed_at) - min(started_at)`` — a
+    wall-clock span, never a sum of parallel jobs. A rerun without a reliable
+    queue origin keeps the wait empty instead of borrowing the first attempt's
+    ``created_at``. Inverted or incomplete evidence is explained, not clamped.
+    Missing reasons are explicit so the card and export can say why a value is
+    absent.
+    """
+    attempt = int(workflow.get("attempt") or 1)
+    attempt_source = workflow.get("attempt_source")
+    jobs = [j for j in (workflow.get("jobs") or []) if isinstance(j, dict)]
+    active = [j for j in jobs if j.get("conclusion") != "skipped"]
+    jobs_complete = workflow.get("jobs_complete") is not False
+    starts = [dt(j.get("started_at")) for j in active if dt(j.get("started_at"))]
+    ends = [dt(j.get("completed_at")) for j in active if dt(j.get("completed_at"))]
+    if attempt == 1:
+        origin, origin_source = dt(workflow.get("created_at")), "workflow_created"
+    elif attempt_source == "enumerated":
+        created = [dt(j.get("created_at")) for j in active if dt(j.get("created_at"))]
+        origin, origin_source = (min(created), "first_job_created") if created else (None, None)
+    else:
+        origin, origin_source = None, None
+    wait = span = None
+    anomaly = None
+    if origin and starts:
+        if min(starts) >= origin:
+            wait = (min(starts) - origin).total_seconds()
+        else:
+            anomaly = "源时间戳异常：首个 job 开始早于 attempt 起点"
+    complete_jobs = bool(active) and all(
+        j.get("status") == "completed" and dt(j.get("started_at")) and dt(j.get("completed_at"))
+        and dt(j.get("completed_at")) >= dt(j.get("started_at")) for j in active)
+    if jobs_complete and complete_jobs and starts and ends and max(ends) >= min(starts):
+        span = (max(ends) - min(starts)).total_seconds()
+    if not active:
+        missing = "无有效 job 明细（可能被跳过或未获取）"
+    elif not jobs_complete:
+        missing = "job 分页不完整，执行跨度不适用"
+    elif attempt > 1 and origin is None:
+        missing = "重跑前置排队起点未知，首任务等待留空"
+    elif anomaly:
+        missing = anomaly
+    elif wait is None:
+        missing = "缺少首任务开始时间或 attempt 起点"
+    elif span is None:
+        missing = "job 尚未全部完成，执行跨度仅截至采集观测"
+    else:
+        missing = None
+    return {
+        "attempt_origin": iso(origin) if origin else None,
+        "attempt_origin_source": origin_source,
+        "first_job_wait_seconds": wait,
+        "execution_span_seconds": span,
+        "timing_complete": span is not None,
+        "timing_missing_reason": missing,
+        "timing_anomaly": anomaly,
+        "timing_measurement_kind": "workflow_wall_clock",
+        "timing_as_of": as_of,
     }
 
 
@@ -745,10 +828,20 @@ def e2e_qualification(batch):
 
 
 def qualification_manifest(payload):
-    """Versioned metadata accompanies, rather than changes, the legacy CSV."""
-    return {"schema_version": 1, "metric": payload.get('e2e_metric') or "triton_commit_attempt_e2e",
+    """Versioned metadata accompanies, rather than changes, the legacy CSV.
+
+    DQ-02: the published payload, collector and download sidecar must name the
+    same metric. The schema version stays 1 for readers; the scope/boundary
+    fields are additive and describe the same snapshot as the CSV.
+    """
+    discovery = payload.get("discovery") or {}
+    return {"schema_version": 1,
+            "metric": payload.get('e2e_metric') or "integration_tests_workflow_e2e",
+            "metric_version": payload.get("e2e_metric_version", 2),
             "collected_at": payload.get("collected_at"),
             "window_start": payload.get("window_start"), "window_end": payload.get("window_end"),
+            "discovery_fetch_window_end": discovery.get("fetch_window_end"),
+            "boundary_note": discovery.get("boundary_note"),
             "batches": [{"id": b["id"], "pr": b.get("pr"),
                          "workflow_attempts": [{"run_id": w.get("id"), "attempt": w.get("attempt", 1)} for w in b.get("workflows", [])],
                          "e2e_sample_eligible": e2e_qualification(b)[0],
@@ -772,8 +865,15 @@ def build_payload(runs, window_start, window_end, collected_at, calls=0, fetch_s
         if row.get("conclusion") in ("skipped","neutral"): row["jobs_complete"]=True
     from .run_e2e import build_run_batches
     batches=build_run_batches(runs, window_end, window_start)
+    # TS28-002/TS28-007: every workflow carries its own derived timing contract
+    # (origin, first-task wait, wall-clock execution span and the reason a value
+    # is absent). Rendering never re-derives these from display strings.
+    for batch in batches:
+        for workflow in batch.get("workflows", []):
+            workflow.update(workflow_timing(workflow, window_end))
     payload={"repo":REPO,"window_start":window_start,"window_end":window_end,"collected_at":collected_at,
              "e2e_metric_version":2,"e2e_metric":"integration_tests_workflow_e2e",
+             "timing_contract":"first_task_wait + execution_span (wall clock, seconds)",
              "batches":batches,"summary":summary_of(batches,calls)}
     # ADR-018: the run-list API filters by run *creation* time, so a run created
     # more than RERUN_LOOKBACK before the window whose current attempt started

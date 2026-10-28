@@ -439,8 +439,8 @@ TRITON_VIEW_CONTRACTS = [
      '[viewStart, viewEnd] = core.keyWindow(`${mode}-${direction}`,'
      ' domainStart, domainEnd, viewStart, viewEnd);'),
     ('mark_hover_enter',
-     'mark.onmouseenter = e => { clearTimeout(tipTimer); placeTip(e, b,'
-     ' html); };'),
+     'mark.onmouseenter = e => { clearTimeout(tipTimer); if (!tipPinned)'
+     ' placeTip(e, b, html); };'),
     ('mark_hover_move',
      'mark.onmousemove = e => { if (!tipPinned) placeTip(e, b, html); };'),
     ('mark_hover_leave',

@@ -178,8 +178,9 @@ TRITON_VIEW_CONTRACTS = [
     ('same_session_mount',
      'if (core.sameSessionMount(mounted, payload, container) && !routeChanged) {'),
     ('empty_no_data',
-     "container.innerHTML = '<div class=\"empty\">暂无 Triton 门禁数据"
-     "</div>';"),
+     'container.innerHTML = \'<div class="empty" data-role="tritonEmpty" data-state="invalid">Triton 数据缺失或格式无效：没有可用的 batches 数组。</div>\';'),
+    ('empty_invalid_window',
+     'container.innerHTML = \'<div class="empty" data-role="tritonEmpty" data-state="invalid">Triton 时间窗无效：window_end 必须晚于 window_start，且两者都能解析为时间。</div>\';'),
     ('empty_no_batches_note',
      "priorityNoteEl.textContent = '当前分支与时间范围内没有批次。';"),
     ('empty_no_batches',

@@ -72,8 +72,13 @@ def extract_focus_job_links(source):
     return list(found.values())
 
 
-def parse_job_header(source, run_created_at, as_of):
-    """Derive job wait/execution timing from GitHub's public job header fragment."""
+def parse_job_header(source, as_of):
+    """Derive execution timing from GitHub's public job header fragment.
+
+    TS28-007/4.2: this fragment has no ``job.created_at``. Borrowing the attempt
+    or workflow origin here would silently turn workflow queueing into runner
+    queueing, so the job wait stays unknown until API evidence exists.
+    """
     import re
     text=html.unescape(re.sub(r"<[^>]+>"," ",source))
     text=" ".join(text.split()).lower()
@@ -82,7 +87,6 @@ def parse_job_header(source, run_created_at, as_of):
     run_seconds=_duration_seconds(duration.group(1)) if duration else None
     completed_at=dt(timestamp.group(1)) if timestamp else None
     started_at=completed_at-timedelta(seconds=run_seconds) if completed_at and run_seconds is not None else None
-    created_at=dt(run_created_at)
     if "queued" in text or "waiting" in text:
         status="queued";conclusion=None
     elif "in progress" in text:
@@ -90,12 +94,9 @@ def parse_job_header(source, run_created_at, as_of):
     else:
         status="completed" if completed_at else "unknown"
         conclusion="failure" if "failed" in text else "cancelled" if "cancel" in text else "success" if "succeeded" in text else None
-    # TS28-007: an inverted pair is unmeasured, never a clamped zero.
-    wait_seconds=((started_at-created_at).total_seconds()
-                  if started_at and created_at and started_at >= created_at else None)
-    if status in ("queued","in_progress") and created_at:
-        observed=(dt(as_of)-created_at).total_seconds() if dt(as_of) else None
-        wait_seconds=observed if status=="queued" and observed is not None and observed >= 0 else wait_seconds
+    # TS28-007/4.2: no job-level created_at means no measured job queue. The
+    # execution duration is still source-derived and kept.
+    wait_seconds=None
     return {"status":status,"conclusion":conclusion,
             "started_at":iso(started_at) if started_at else None,"completed_at":iso(completed_at) if completed_at else None,
             "wait_seconds":wait_seconds,"run_seconds":run_seconds}
@@ -582,7 +583,7 @@ def augment_focus_jobs(runs, as_of):
             with urllib.request.urlopen(request,timeout=45) as response: source=response.read().decode("utf-8","replace")
             cache.parent.mkdir(parents=True,exist_ok=True);cache.write_text(source,encoding="utf-8")
         run=run_by_id.get(job["run_id"],{})
-        return {**job,**parse_job_header(source,run.get("created_at"),as_of)}
+        return {**job,**parse_job_header(source,as_of)}
     by_run=defaultdict(list)
     with ThreadPoolExecutor(max_workers=16) as pool:
         futures={pool.submit(fetch,job):job for job in links.values()}

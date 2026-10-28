@@ -13,17 +13,60 @@
   'use strict';
 
   const HOUR = 3600000;
-  const statusLabels = { success: '成功', failure: '失败', running: '执行中', cancelled: '取消', unknown: '未知' };
+  const statusLabels = { success: '成功', failure: '失败', running: '执行中', cancelled: '取消', skipped: '已跳过', unknown: '未知' };
   const statusFill = {
     success: 'var(--ok)', failure: 'var(--danger)', running: 'var(--info)',
-    cancelled: 'var(--warn)', unknown: 'var(--neutral)',
+    cancelled: 'var(--warn)', skipped: 'var(--neutral)', unknown: 'var(--neutral)',
   };
   const focusDefs = [['a3-py310', 'A3 · py3.10'], ['a3-py311', 'A3 · py3.11'], ['a5-py312', 'A5 · py3.12']];
   const csvFields = ['pr', 'title', 'sha', 'base_branch', 'kind', 'start_at', 'end_at', 'status',
     'duration_seconds', 'npu_queue_seconds', 'approximate', 'start_source', 'critical_workflow', 'missing', 'pr_url', 'action_url'];
+  const METRIC_ID = 'integration_tests_workflow_e2e';
+
+  /* DQ-02/TS28-008 AC2: the CSV and its qualification sidecar always share one
+     scope — metric version, selection window, branch, query, unknown-time
+     exemption, discovery cutoff, collection completion and boundary note. The
+     same object feeds the zero-row export so an empty selection is still
+     auditable instead of an unexplained blank file. */
+  function exportScope(payload, options) {
+    const o = options || {};
+    const disclosure = payload.discovery || {};
+    return {
+      metric: payload.e2e_metric || METRIC_ID,
+      metric_version: payload.e2e_metric_version || 2,
+      snapshot_window_start: payload.window_start || null,
+      snapshot_window_end: payload.window_end || null,
+      selection_start: o.start != null && Number.isFinite(o.start) ? new Date(o.start).toISOString() : null,
+      selection_end: o.end != null && Number.isFinite(o.end) ? new Date(o.end).toISOString() : null,
+      branches: Array.isArray(o.branches) ? o.branches.slice() : [],
+      query: typeof o.query === 'string' ? o.query : '',
+      unknown_time_included: !!o.unknownTime,
+      discovery_fetch_window_end: disclosure.fetch_window_end || null,
+      collected_at: payload.collected_at || null,
+      boundary_note: disclosure.boundary_note || null,
+    };
+  }
+
+  function saveQualifications(qualification) {
+    if (!root.URL || typeof root.URL.createObjectURL !== 'function' || !root.document) return null;
+    const url = root.URL.createObjectURL(new root.Blob([JSON.stringify(qualification, null, 2)], { type: 'application/json' }));
+    const link = root.document.createElement('a');
+    link.href = url;
+    link.download = 'triton-qualifications-v1.json';
+    /* A detached anchor is enough in Chromium, but appending it also keeps the
+       download attributable inside an already-asynchronous export handler. */
+    if (root.document.body && typeof root.document.body.appendChild === 'function') root.document.body.appendChild(link);
+    link.click();
+    if (link.parentNode) link.parentNode.removeChild(link);
+    root.URL.revokeObjectURL(url);
+    return link.download;
+  }
 
   const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
   const fmtDate = stamp => new Intl.DateTimeFormat('zh-CN', { timeZone: 'Asia/Shanghai', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(stamp));
+  /* TS28-001 AC1 / section 4.2: source times keep the date and seconds in
+     Shanghai time; a >24h or cross-day span is never shortened. */
+  const fmtStamp = stamp => (stamp == null || !Number.isFinite(+new Date(stamp))) ? '未知' : new Intl.DateTimeFormat('zh-CN', { timeZone: 'Asia/Shanghai', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).format(new Date(stamp));
   /* REQ-031 AC01: .axis 刻度（11px/600）逐字符宽度的保守估计（实测约 6.05px/字符），
      用于把绘图区宽度折算成可容纳的刻度数。 */
   const AXIS_CHAR_W = 7;
@@ -131,8 +174,13 @@
     const note = container.querySelector('[data-role="exportNote"]');
     if (btn) btn.onclick = async () => {
       try {
+        const scope = exportScope(payload, { start: +new Date(payload.window_start), end: +new Date(payload.window_end), branches: [], query: '', unknownTime: false });
+        const qualification = { schema_version: 1, metric: scope.metric, metric_version: scope.metric_version,
+          collected_at: payload.collected_at, window_start: payload.window_start, window_end: payload.window_end,
+          scope, batches: [] };
         const file = await root.Metrics.saveCsv([csvFields], 'triton-batches.csv');
-        if (note) note.textContent = '已下载：' + (file.name || 'triton-batches.csv') + '（仅表头，0 行数据）';
+        saveQualifications(qualification);
+        if (note) note.textContent = '已下载：' + (file.name || 'triton-batches.csv') + '（仅表头，0 行数据）与 triton-qualifications-v1.json（含导出 scope）';
       } catch (err) {
         if (note) note.textContent = '导出失败：' + (err && err.message ? err.message : err);
       }
@@ -146,7 +194,6 @@
       <span><i style="background:var(--warn)"></i>取消</span>
       <span><i style="background:var(--info)"></i>执行中</span>
       <span><i class="ref-swatch ref-p90"></i>图内 P90</span>
-      <span><i class="ref-swatch ref-median"></i>六小时桶中位数</span>
     </div>`;
     return `
 <div class="notice" data-role="freshness" role="status" hidden></div>
@@ -221,7 +268,7 @@
   <div class="attention" data-role="attention"></div>
 </section>
 <div class="foot"><strong>口径：</strong>Integration Tests E2E = 本次 workflow 创建至最后 job 完成，包含排队，并行不相加。仅证据完整的成功/失败首次运行参与统计；重跑前置排队起点未知时仅展示观测值。跨 workflow 整套门禁时长未确定。<br><strong>数据边界：</strong><span data-role="boundary"></span></div>
-<div class="tooltip" data-role="tip" tabindex="-1" role="dialog" aria-label="批次详情"></div>`;
+<div class="tooltip" data-role="tip" tabindex="-1" role="region" aria-label="运行与任务详情" aria-live="polite"></div>`;
   }
 
   function mount(D, container, domainStart, domainEnd, prevState, resetRoute) {
@@ -272,7 +319,7 @@
     const selectedBranches = new Set(initial ? initial.branches : []);
     let filter = initial && initial.filter ? initial.filter : 'all';
     let npuFilter = initial && initial.npuFilter ? initial.npuFilter : 'all';
-    let showAll = initial ? !!initial.showAll : false, unknownTime = initial ? !!initial.unknownTime : false, tipPinned = false, tipTimer = 0, navDrag = null, lastPinnedMark = null;
+    let showAll = initial ? !!initial.showAll : false, unknownTime = initial ? !!initial.unknownTime : false, tipPinned = false, tipTimer = 0, navDrag = null, lastPinnedMark = null, focusReturnGuard = false;
     let viewStart, viewEnd;
     const recovered = initial ? core.recoverWindow(initial.start, initial.end, domainStart, domainEnd) : null;
     if (recovered) {
@@ -400,11 +447,16 @@
     }
 
     /* SVG presentation attributes do not accept var(), so status colors are
-       applied as inline style fills after the marks are in the DOM. */
+       applied as inline style fills after the marks are in the DOM. TS28-004:
+       the fill follows this record's normalized result, never a default green. */
     function paintMarks(svg) {
       svg.querySelectorAll('.mark-hit .dot').forEach(dot => {
-        const batch = D.batches[+dot.closest('.mark-hit').dataset.i];
-        dot.style.fill = batch ? fillFor(batch.status) : statusFill.unknown;
+        const mark = dot.closest('.mark-hit');
+        const batch = D.batches[+mark.dataset.i];
+        const result = batch ? core.recordResult(batch) : 'unknown';
+        dot.style.fill = statusFill[result] || statusFill.unknown;
+        mark.dataset.result = result;
+        dot.dataset.result = result;
       });
     }
 
@@ -447,18 +499,9 @@
         const py = y(stats.p90);
         out += `<line class="p90-line" x1="${m.l}" x2="${W - m.r}" y1="${py}" y2="${py}"/><title>图内 P90（当前图内已完成样本）</title><text class="ref-label" x="${W - m.r}" y="${py - 4}" text-anchor="end">图内 P90 ${dur(stats.p90)}</text>`;
       }
-      const bins = [];
-      for (let a = viewStart; a < viewEnd; a += 6 * HOUR) {
-        const vals = rows.filter(b => +new Date(b.start_at) >= a && +new Date(b.start_at) < a + 6 * HOUR && core.sampleEligible(b))
-          .map(b => b.duration_seconds).sort((p, q) => p - q);
-        if (vals.length) {
-          const mid = vals.length % 2 ? vals[(vals.length - 1) / 2] : (vals[vals.length / 2 - 1] + vals[vals.length / 2]) / 2;
-          bins.push([x(Math.min(a + 3 * HOUR, viewEnd)), y(mid)]);
-        }
-      }
-      if (bins.length > 1) {
-        out += `<path class="median-line" d="${bins.map((p, i) => (i ? 'L' : 'M') + p.join(',')).join(' ')}"/><title>六小时桶中位数</title><text class="ref-label" x="${m.l}" y="${bins[0][1] - 4}">六小时桶中位数</text>`;
-      }
+      /* TS28-006: the six-hour bucket median is removed from both main charts
+         (calculation, DOM, legend and title). The in-chart P90 line and the
+         card P50 stay — "cancel the bucket median" is not "cancel all medians". */
       /* REQ-017: batches without a valid observed duration are not plotted at a fake 0. */
       const ordered = rows.filter(b => core.validDuration(b.duration_seconds) && b.e2e_exclusion_reason !== 'outside_integration_tests').slice().sort((a, b) => (a.status === 'success' ? 0 : 1) - (b.status === 'success' ? 0 : 1));
       const raw = ordered.map(b => ({ x: x(b.start_at), y: y(b.duration_seconds || 0) }));
@@ -474,6 +517,7 @@
         ? `<div class="selection-stat"><span>选区范围</span><strong>${spanText(viewEnd - viewStart)}</strong></div><div class="selection-stat"><span>有效样本</span><strong>${stats.count} 次</strong></div><div class="selection-stat metric"><span>平均（图内）</span><strong>${dur(stats.average)}</strong></div><div class="selection-stat metric"><span>P50（图内）</span><strong>${dur(stats.p50)}</strong></div><div class="selection-stat metric"><span>P90（图内）</span><strong>${dur(stats.p90)}</strong></div>${thresholdStat}`
         : `<div class="selection-empty">当前选区暂无已完成的有效样本</div>${thresholdStat}`;
       bindMarks();
+      refreshHighlight();
     }
 
     function drawNpu() {
@@ -514,18 +558,7 @@
         const py = y(stats.p90);
         out += `<line class="p90-line" x1="${m.l}" x2="${W - m.r}" y1="${py}" y2="${py}"/><title>图内 P90（当前图内有效排队样本）</title><text class="ref-label" x="${W - m.r}" y="${py - 4}" text-anchor="end">图内 P90 ${dur(stats.p90)}</text>`;
       }
-      const bins = [];
-      for (let a = viewStart; a < viewEnd; a += 6 * HOUR) {
-        const vals = rows.filter(b => +new Date(b.start_at) >= a && +new Date(b.start_at) < a + 6 * HOUR && core.sampleEligible(b, 'npu'))
-          .map(b => b.npu_queue_seconds).sort((p, q) => p - q);
-        if (vals.length) {
-          const mid = vals.length % 2 ? vals[(vals.length - 1) / 2] : (vals[vals.length / 2 - 1] + vals[vals.length / 2]) / 2;
-          bins.push([x(Math.min(a + 3 * HOUR, viewEnd)), y(mid)]);
-        }
-      }
-      if (bins.length > 1) {
-        out += `<path class="median-line" d="${bins.map((p, i) => (i ? 'L' : 'M') + p.join(',')).join(' ')}"/><title>六小时桶中位数</title><text class="ref-label" x="${m.l}" y="${bins[0][1] - 4}">六小时桶中位数</text>`;
-      }
+      /* TS28-006: no bucket-median curve or label on the NPU chart either. */
       const ordered = rows.slice().sort((a, b) => (a.status === 'success' ? 0 : 1) - (b.status === 'success' ? 0 : 1));
       const raw = ordered.map(b => ({ x: x(b.start_at), y: y(b.npu_queue_seconds) }));
       ordered.forEach((b, i) => {
@@ -538,6 +571,7 @@
         ? `<div class="selection-stat"><span>选区范围</span><strong>${spanText(viewEnd - viewStart)}</strong></div><div class="selection-stat"><span>有效样本</span><strong>${stats.count} 次</strong></div><div class="selection-stat metric"><span>平均排队</span><strong>${dur(stats.average)}</strong></div><div class="selection-stat metric"><span>P50</span><strong>${dur(stats.p50)}</strong></div><div class="selection-stat metric"><span>P90</span><strong>${dur(stats.p90)}</strong></div>`
         : '<div class="selection-empty">当前选区暂无有效的 NPU 排队样本</div>';
       bindMarks();
+      refreshHighlight();
     }
 
     function drawNavigator() {
@@ -623,85 +657,333 @@
       syncBranchBadge([...selectedBranches]);
     }
 
-    function updateGlobal() { updateSummary(); redrawAll(); renderRows(); syncUrl(); }
-
-    /* ---- tooltip card（pin 逻辑移植自原看板） ---- */
-    function tipHtml(b) {
-      return `<div class="tip-head"><span>${statusLabels[b.status] || esc(b.status)} · ${dur(b.duration_seconds)}</span></div><div class="tip-title">${esc(core.markLabel(b, 'e2e'))}</div><div class="tip-summary">${identityHtml(b)} · SHA ${esc((b.sha || '').slice(0, 7))}</div><div class="tip-hint">点击查看运行详情和 PR 提交历史</div>`;
+    function updateGlobal() {
+      clearHover();
+      updateSummary(); redrawAll(); renderRows(); syncUrl();
     }
 
-    function npuTipHtml(b) {
-      const jobs = (b.npu_jobs || []).slice().sort((a, c) => (c.wait_seconds || -1) - (a.wait_seconds || -1)).map(j =>
-        `<div class="tip-job"><a href="${esc(j.url || b.action_url)}" target="_blank" rel="noopener">${esc(j.name)} ↗</a><span>${statusLabels[j.conclusion] || statusLabels[j.status] || esc(j.status)}</span><span>排队 ${dur(j.wait_seconds)}${j.measurement_error ? ' · ' + esc(j.measurement_error) : ''}</span></div>`).join('');
-      return `<div class="tip-head"><a href="${esc(b.action_url || '#')}" target="_blank" rel="noopener">打开本次 GitHub Actions ↗</a><span>最长排队 ${dur(b.npu_queue_seconds)}</span><button type="button" class="tip-close" aria-label="关闭详情"><svg class="icon" aria-hidden="true"><use href="#i-x"/></svg></button></div><div class="tip-title">${esc(core.markLabel(b, 'e2e'))}</div><div class="tip-summary">${identityHtml(b)} · ${fmtDate(b.start_at)}</div><div class="tip-jobs"><div class="tip-label">本次 E2E 的 NPU Jobs</div>${jobs}</div><div class="tip-hint">圆点取上述子任务中的最长排队时长。</div>`;
+    /* ---- TS28-001: rich hover card shared by both charts ---- */
+    const relatedIdx = core.relatedIndex(D.batches);
+    let hoveredPrKey = null;
+    let highlightMarks = [];
+    let lastHoverMark = null;
+    let currentTipBatch = null;
+    let currentTipKind = 'e2e';
+
+    const secondsText = (seconds, observed) => {
+      if (seconds == null || !Number.isFinite(seconds)) return '—';
+      return `${dur(seconds)}（${Number(seconds).toFixed(2)} s${observed ? '，截至采集已观测' : ''}）`;
+    };
+    const resultText = result => statusLabels[result] || '未知';
+    const resultTag = result => `<span class="tip-result ${esc(result)}">${esc(resultText(result))}</span>`;
+    const anchorHtml = (url, label, cls) => {
+      const href = core.safeLink(url);
+      return href ? `<a class="${esc(cls || '')}" href="${esc(href)}" target="_blank" rel="noopener">${esc(label)}</a>` : '';
+    };
+
+    function jobRowHtml(job) {
+      const t = job.timing || {};
+      const observed = t.observedSeconds != null
+        ? `<span class="tip-observed">截至采集已观测 ${secondsText(t.observedSeconds, true)}</span>` : '';
+      const wait = t.applicable === false ? '不适用（已跳过）' : secondsText(t.waitSeconds);
+      const run = t.applicable === false ? '不适用（已跳过）' : secondsText(t.runSeconds);
+      const failed = (t.failedSteps || []).length
+        ? `<span class="missing">失败步骤：${esc(t.failedSteps.join('、'))}</span>` : '';
+      const anomaly = t.anomaly ? `<span class="missing">${esc(t.anomaly)}</span>` : '';
+      return `<div class="tip-job"><span class="tip-job-name">${anchorHtml(job.url, job.name + ' ↗') || esc(job.name)}</span>${resultTag(job.result)}<span>排队 ${esc(wait)}</span><span>执行 ${esc(run)}</span>${observed}${failed}${anomaly}</div>`;
     }
 
-    function placeTip(e, b, renderer) {
-      showTip(e.clientX, e.clientY, b, renderer);
+    function memberHtml(member) {
+      const time = member.time || {};
+      const jobs = (member.jobs || []).map(jobRowHtml).join('')
+        || '<div class="tip-job missing">job 明细未获取</div>';
+      const incomplete = member.jobsComplete === false ? '<span class="missing">部分明细：job 分页不完整</span>' : '';
+      return `<details class="tip-wf"><summary><span class="tip-wf-name">${esc(member.name)} · run ${esc(member.runId == null ? '?' : member.runId)} · attempt ${esc(member.attempt)}</span><span>首任务等待 ${esc(secondsText(time.firstJobWaitSeconds))}</span><span>执行跨度 ${esc(secondsText(time.executionSpanSeconds))}</span>${resultTag(member.result)}${anchorHtml(member.url, '↗')}</summary>${time.missingReason ? `<p class="tip-note">${esc(time.missingReason)}</p>` : ''}${incomplete}<div class="tip-jobs">${jobs}</div></details>`;
     }
 
-    /* REQ-029: pointer and keyboard pinning share one show path; the
-       keyboard path anchors the card to the mark's on-screen position.
-       core.placeTipBox clamps into the viewport and flips above, then
-       left of the 16×16 mark box so the card never covers the mark it
-       was opened from; the .tooltip CSS max-height cap keeps an escape
-       band open even in short viewports. */
-    function showTip(x, y, b, renderer) {
-      tip.innerHTML = renderer(b);
+    function focusRowHtml(row) {
+      const t = row.timing || {};
+      const label = core.FOCUS_LABELS[row.key] || `${String(row.key).toUpperCase()}`;
+      return `<div class="tip-focus-row"><span class="tip-chip">${esc(label)}</span><span class="tip-focus-name">${esc(row.name)}</span><span>排队 ${esc(secondsText(t.waitSeconds))}</span><span>执行 ${esc(secondsText(t.runSeconds))}</span>${resultTag(row.result)}${anchorHtml(row.url, '↗')}${t.anomaly ? `<span class="missing">${esc(t.anomaly)}</span>` : ''}</div>`;
+    }
+
+    function relatedRowHtml(row) {
+      return `<div class="tip-related-row"><span class="tip-wf-name">${esc(row.workflowName)} #${esc(row.attempt)}</span><span>${esc(fmtStamp(row.startAt))}</span><span>独立耗时 ${esc(secondsText(row.durationSeconds))}</span>${resultTag(row.result)}${anchorHtml(row.url, 'Actions ↗')}</div>`;
+    }
+
+    function cardHtml(model, pinned) {
+      const headValue = model.metric === 'npu'
+        ? `最长排队 ${secondsText(model.npuQueueSeconds)}`
+        : `E2E ${secondsText(model.durationSeconds)}`;
+      const runText = model.runId == null ? '?' : model.runId;
+      const title = model.prKnown
+        ? `PR #${esc(model.pr)} · ${esc(model.title)}`
+        : `未关联 PR · Run #${esc(runText)} · attempt ${esc(model.attempt)}`;
+      const links = [
+        model.prKnown ? anchorHtml(model.links.pr, `打开 PR #${model.pr}`) : '<span class="tip-note">未关联 PR，不生成 PR 链接</span>',
+        anchorHtml(model.links.actions, `本次 ${((model.reliable.members[0] || {}).name) || 'Actions'} Actions ↗`),
+        '<button type="button" class="tip-detail" data-role="tipDetail">运行详情</button>',
+      ].filter(Boolean).join('');
+      const members = model.reliable.members.map(memberHtml).join('');
+      const reliableNote = model.reliable.members.length
+        ? `<p class="tip-note">${esc(model.boundary.associationNote)}</p>`
+        : `<p class="tip-note">${esc(model.reliable.note)}</p>`;
+      const focusRows = model.focus.rows.map(focusRowHtml).join('');
+      const focusMissing = model.focus.missing.map(item => `<p class="tip-note">未找到 ${esc(item.label)}：${esc(item.reason)}</p>`).join('');
+      const focusSection = `<section class="tip-section"><h4>重点测试任务（本次可靠集合）</h4>${focusRows || `<p class="tip-note">${esc(model.focus.note || '没有找到匹配任务')}</p>`}${focusMissing}</section>`;
+      const relatedRows = model.related.rows.map(relatedRowHtml).join('');
+      const relatedSection = `<details class="tip-section tip-related"><summary>同提交其他运行（${model.related.count} 个，不能证明同次触发，不计 E2E）</summary>${relatedRows || `<p class="tip-note">${esc(model.related.note)}</p>`}<p class="tip-note">范围：当前快照内同 PR、同完整 SHA 的候选；快照外不宣称完整，也不改变图中指标。</p></details>`;
+      const npuSection = model.metric === 'npu'
+        ? `<section class="tip-section tip-npu"><h4>本次记录的 NPU Jobs（取最长排队）</h4>${(model.npu.jobs || []).map(jobRowHtml).join('') || '<p class="tip-note">当前记录没有可用的 NPU job 明细</p>'}</section>`
+        : '';
+      const notApplicable = !model.npuApplicable
+        ? `<p class="tip-note warn">${esc(model.npuNotApplicableReason)}</p>` : '';
+      const exclusion = model.exclusionLabel
+        ? `<p class="tip-note">E2E 排除：${esc(model.exclusionLabel)}</p>` : '';
+      const evidence = [
+        `关联依据：${model.boundary.associationNote}`,
+        `发现截止 ${fmtStamp(model.boundary.discoveryCutoff)}`,
+        `采集完成 ${fmtStamp(model.boundary.collectedAt)}`,
+        `当前可见同 PR：${model.boundary.visibleSamePr} 个点`,
+      ].concat(model.boundary.aggregationNote ? [model.boundary.aggregationNote] : []).map(esc).join(' · ');
+      return `<div class="tip-head"><div class="tip-headline"><span class="tip-result ${esc(model.result)}">${esc(resultText(model.result))}</span><strong>${esc(headValue)}</strong></div>${pinned ? '<span class="tip-pin">已固定 · 关闭后恢复悬停</span>' : ''}<button type="button" class="tip-close" aria-label="关闭详情"><svg class="icon" aria-hidden="true"><use href="#i-x"/></svg></button></div>
+        <div class="tip-title">${title}</div>
+        <div class="tip-summary">${esc(model.author || '未知作者')} · ${esc(model.branch || '未知来源')} → ${esc(model.baseBranch || '未知目标分支')}</div>
+        <div class="tip-ident">SHA <code class="tip-sha">${esc(model.sha || '未知')}</code> · run ${esc(runText)} · attempt ${esc(model.attempt)} · 触发 ${esc(fmtStamp(model.startAt))}</div>
+        <div class="tip-actions-row">${links}</div>
+        ${notApplicable}${exclusion}
+        <section class="tip-section"><h4>本次可靠关联的运行（${model.reliable.members.length} 个；来源证据：run/attempt 身份）</h4>${members || `<p class="tip-note">${esc(model.reliable.note)}</p>`}${reliableNote}</section>
+        ${focusSection}${relatedSection}${npuSection}
+        <div class="tip-hint">${evidence}${model.missing.length ? ' · 证据缺口：' + esc(model.missing.join('；')) : ''}</div>`;
+    }
+
+    function visibleSamePrCount(pr) {
+      if (pr == null) return 0;
+      return new Set(all('.mark-hit').filter(mark => {
+        const batch = D.batches[+mark.dataset.i];
+        return batch && batch.pr === pr;
+      }).map(mark => mark.dataset.i)).size;
+    }
+
+    function modelFor(batch, kind) {
+      return core.hoverModel(batch, {
+        metric: kind, batches: D.batches, index: relatedIdx,
+        collectedAt: D.collected_at, discoveryCutoff: (D.discovery || {}).fetch_window_end,
+        windowStart: D.window_start, windowEnd: D.window_end,
+        visibleSamePr: visibleSamePrCount(batch && batch.pr),
+      });
+    }
+
+    function clearHighlight() {
+      highlightMarks.forEach(entry => {
+        const dot = entry.dot;
+        if (!dot) return;
+        dot.setAttribute('r', '3.5');
+        if (entry.source) {
+          dot.removeAttribute('stroke');
+          dot.removeAttribute('stroke-width');
+        }
+      });
+      all('.mark-hit').forEach(mark => {
+        mark.classList.toggle('is-pr', false);
+        mark.classList.toggle('is-pr-source', false);
+      });
+      highlightMarks = [];
+      hoveredPrKey = null;
+    }
+
+    /* TS28-005: enlarge every currently drawn point of PR=P in BOTH charts
+       (all SHA/attempts), without touching x/y, colors, KPI or URL. Unknown PR
+       points only enlarge themselves. */
+    function applyHighlight(pr, sourceMark) {
+      clearHighlight();
+      all('.mark-hit').forEach(mark => {
+        const batch = D.batches[+mark.dataset.i];
+        if (!batch) return;
+        const match = pr != null && batch.pr === pr;
+        if (!match && mark !== sourceMark) return;
+        const dot = mark.querySelector('.dot');
+        if (!dot) return;
+        dot.setAttribute('r', '7');
+        const source = mark === sourceMark;
+        if (source) {
+          if (dot.style.fill) dot.setAttribute('stroke', dot.style.fill);
+          dot.setAttribute('stroke-width', '1.5');
+        }
+        mark.classList.add('is-pr');
+        if (source) mark.classList.add('is-pr-source');
+        highlightMarks.push({ dot, source });
+      });
+      /* '∅' keeps an unknown-PR self-highlight alive across a redraw; plain
+         null still means "no active group". */
+      hoveredPrKey = pr == null ? '∅' : String(pr);
+    }
+
+    /* TS28-005 AC3: a resize redraws the marks but keeps the currently valid PR
+       group; hidden/filtered marks cannot be resurrected because the lookup is
+       always against the live DOM. */
+    function refreshHighlight() {
+      if (hoveredPrKey == null) return;
+      const source = lastHoverMark && lastHoverMark.isConnected ? lastHoverMark : null;
+      applyHighlight(hoveredPrKey === '∅' ? null : Number(hoveredPrKey), source);
+    }
+
+    function showTip(b, kind, mark, pinned) {
+      currentTipBatch = b;
+      currentTipKind = kind;
+      const model = modelFor(b, kind);
+      lastHoverMark = mark || lastHoverMark;
+      tip.innerHTML = cardHtml(model, !!pinned);
+      tip.classList.toggle('pinned', !!pinned);
       tip.style.display = 'block';
-      const p = core.placeTipBox(x, y, tip.offsetWidth, tip.offsetHeight, window.innerWidth, window.innerHeight, 16, 16);
+      placeCard(mark);
+      applyHighlight(model.pr, mark);
+    }
+
+    /* TS28-001 AC4: the card never exceeds viewport-24 and never covers the
+       originating mark; when the natural card is taller than the space above
+       or below, it shrinks and scrolls internally instead of overlapping. */
+    function placeCard(mark) {
+      const rect = mark && typeof mark.getBoundingClientRect === 'function' ? mark.getBoundingClientRect() : null;
+      const ax = rect ? rect.left + rect.width / 2 : window.innerWidth / 2;
+      const ay = rect ? rect.top + rect.height / 2 : window.innerHeight / 2;
+      const pad = 12, gap = 14;
+      const spaceAbove = rect ? Math.max(0, rect.top - gap - pad) : 0;
+      const spaceBelow = rect ? Math.max(0, window.innerHeight - rect.bottom - gap - pad) : 0;
+      const cap = Math.max(120, window.innerHeight - 24);
+      const natural = Math.max(tip.scrollHeight || 0, 160);
+      /* Shrink against the side the card will actually occupy, not against the
+         larger side: otherwise placeTipBox may flip to the smaller side and
+         cover the mark. */
+      const chosen = spaceBelow >= Math.min(natural, cap) ? spaceBelow : spaceAbove;
+      tip.style.maxHeight = Math.max(160, Math.min(cap, chosen)) + 'px';
+      const p = core.placeTipBox(ax, ay, tip.offsetWidth, tip.offsetHeight, window.innerWidth, window.innerHeight, 16, 16);
       tip.style.left = p.x + 'px';
       tip.style.top = p.y + 'px';
     }
 
-    /* REQ-029 AC02/AC03: one close path for Esc, the ✕ button and outside
-       clicks — when focus was inside the card it returns to the originating
-       mark, so hiding the card never leaves focus on a dead element. */
+    /* REQ-029/TS28-001 AC3/AC5: one close path for Esc, ✕, outside click and
+       the 180ms leave timer. Closing clears the same-PR group and returns focus
+       to the originating mark when focus was inside the card. */
     function hideTip(fallback) {
       const wasInside = tip.contains(document.activeElement);
       tipPinned = false;
+      tip.classList.toggle('pinned', false);
       tip.style.display = 'none';
+      clearHighlight();
+      lastHoverMark = null;
+      currentTipBatch = null;
       const target = fallback || lastPinnedMark;
-      if (wasInside && target && target.isConnected) target.focus();
+      if (wasInside && target && target.isConnected) {
+        /* Returning focus must not immediately reopen the card via onfocus. */
+        focusReturnGuard = true;
+        target.focus();
+        focusReturnGuard = false;
+      }
+    }
+
+    /* Filters/time/branch changes and teardown actively release pin+hover. */
+    function clearHover() {
+      clearTimeout(tipTimer);
+      hideTip();
+      lastPinnedMark = null;
+    }
+
+    function candidatesFor(mark, b) {
+      const svg = mark.closest('svg');
+      const marks = svg ? [...svg.querySelectorAll('.mark-hit')] : [];
+      return core.overlapIndices(marks.map(m => ({ i: +m.dataset.i, x: +m.dataset.x, y: +m.dataset.y })),
+        +mark.dataset.x, +mark.dataset.y).map(i => D.batches[i]);
     }
 
     function bindMarks() {
       all('.mark-hit').forEach(mark => {
         const b = D.batches[+mark.dataset.i];
         if (!b) return;
-        const html = mark.dataset.kind === 'npu' ? npuTipHtml : tipHtml;
-        const candidates = () => core.overlapIndices([...mark.closest('svg').querySelectorAll('.mark-hit')].map(m =>
-          ({i: +m.dataset.i, x: +m.dataset.x, y: +m.dataset.y})), +mark.dataset.x, +mark.dataset.y).map(i => D.batches[i]);
-        mark.onmouseenter = e => { clearTimeout(tipTimer); if (!tipPinned) placeTip(e, b, html); };
-        mark.onmousemove = e => { if (!tipPinned) placeTip(e, b, html); };
-        mark.onmouseleave = () => { if (!tipPinned) tipTimer = setTimeout(() => hideTip(mark), 180); };
-        mark.onclick = e => { e.stopPropagation(); hideTip(); if (mark.dataset.kind !== 'npu' && root.openTritonDetail) openDetail(b, candidates()); else { tipPinned = true; lastPinnedMark = mark; placeTip(e, b, html); } };
+        const kind = mark.dataset.kind === 'npu' ? 'npu' : 'e2e';
+        mark.onmouseenter = e => {
+          clearTimeout(tipTimer);
+          if (tipPinned) return;
+          showTip(b, kind, mark, false);
+        };
+        mark.onmousemove = e => {
+          if (tipPinned) return;
+          /* Moving between points only re-renders when the identity changes,
+             so a same-PR sweep does not rebuild the card on every pixel. */
+          if (currentTipBatch !== b || currentTipKind !== kind) showTip(b, kind, mark, false);
+        };
+        mark.onmouseleave = () => {
+          if (tipPinned) return;
+          tipTimer = setTimeout(() => hideTip(mark), 180);
+        };
+        /* TS28-001 AC5: keyboard focus exposes the same information. */
+        mark.onfocus = () => {
+          clearTimeout(tipTimer);
+          if (tipPinned || focusReturnGuard) return;
+          showTip(b, kind, mark, false);
+        };
+        mark.onblur = () => {
+          if (tipPinned) return;
+          tipTimer = setTimeout(() => {
+            if (!tipPinned && !tip.contains(document.activeElement)) hideTip(mark);
+          }, 180);
+        };
+        mark.onclick = e => {
+          e.stopPropagation();
+          hideTip();
+          if (kind !== 'npu' && root.openTritonDetail) { openDetail(b, candidatesFor(mark, b)); return; }
+          /* TS28-002/3.2: explicit NPU click pins this identity; hovering other
+             points never rewrites it, another explicit click switches it. */
+          tipPinned = true;
+          lastPinnedMark = mark;
+          showTip(b, kind, mark, true);
+        };
         /* REQ-029 AC01: SVG marks carry no native button activation, so
            Enter/Space open the same unified detail from the keyboard. */
         mark.onkeydown = e => {
+          if (e.key === 'Escape') { e.preventDefault(); hideTip(mark); return; }
           if (e.key !== 'Enter' && e.key !== ' ') return;
           e.preventDefault();
           hideTip();
-          if (mark.dataset.kind !== 'npu' && root.openTritonDetail) { openDetail(b, candidates()); return; }
+          if (kind !== 'npu' && root.openTritonDetail) { openDetail(b, candidatesFor(mark, b)); return; }
           tipPinned = true;
           lastPinnedMark = mark;
-          const r = mark.getBoundingClientRect();
-          showTip(r.x + r.width / 2, r.y + r.height / 2, b, html);
+          showTip(b, kind, mark, true);
           tip.focus();
         };
       });
     }
 
     tip.onmouseenter = () => clearTimeout(tipTimer);
-    tip.onmouseleave = () => { if (!tipPinned) hideTip(); };
+    tip.onmouseleave = () => {
+      if (tipPinned) return;
+      const target = lastHoverMark;
+      tipTimer = setTimeout(() => hideTip(target), 180);
+    };
     /* REQ-029 AC02: Esc and the ✕ button close the pinned card; focus that
        was inside returns to the originating mark. */
-    tip.onkeydown = e => { if (e.key === 'Escape') { e.preventDefault(); hideTip(); } };
-    tip.onclick = e => { if (e.target.closest('.tip-close')) { e.stopPropagation(); hideTip(); } };
+    tip.onkeydown = e => {
+      if (e.key === 'Escape') { e.preventDefault(); hideTip(lastHoverMark); }
+    };
+    tip.onclick = e => {
+      if (e.target.closest('.tip-close')) { e.stopPropagation(); hideTip(lastHoverMark); return; }
+      const detailButton = e.target.closest('[data-role="tipDetail"]');
+      if (detailButton) {
+        e.stopPropagation();
+        const batch = currentTipBatch;
+        const mark = lastHoverMark;
+        hideTip();
+        if (batch && root.openTritonDetail) openDetail(batch, mark ? candidatesFor(mark, batch) : undefined);
+      }
+    };
     const onDocClick = e => {
       if (!e.target.closest('.tooltip') && !e.target.closest('.mark-hit')) hideTip();
     };
+    const onDocKeydown = e => {
+      if (e.key === 'Escape' && tip.style.display === 'block') { e.preventDefault(); hideTip(lastHoverMark); }
+    };
     document.addEventListener('click', onDocClick);
+    document.addEventListener('keydown', onDocKeydown);
 
     /* ---- 关注列表（分组、搜索、展开、样本退化） ---- */
     function wfHtml(w, b) {
@@ -824,9 +1106,10 @@
       const pool = displayedPool();
       const rows = [csvFields, ...pool.map(b => csvFields.map(key =>
         key === 'missing' ? (b.missing || []).join('; ') : key === 'approximate' ? (b.approximate ? 'True' : 'False') : key === 'start_at' ? (b.start_at || '时间未知') : b[key] ?? ''))];
-      const scope = { start_at: new Date(viewStart).toISOString(), end_at: new Date(viewEnd).toISOString(), branches: [...selectedBranches], query: searchInput.value };
-      const qualification = { schema_version: 1, metric: 'triton_commit_attempt_e2e', collected_at: D.collected_at,
-        window_start: D.window_start, window_end: D.window_end, analysis_scope: scope,
+      const scope = exportScope(D, { start: viewStart, end: viewEnd, branches: [...selectedBranches], query: searchInput.value, unknownTime });
+      const qualification = { schema_version: 1, metric: scope.metric, metric_version: scope.metric_version,
+        collected_at: D.collected_at, window_start: D.window_start, window_end: D.window_end,
+        scope, analysis_scope: scope,
         batches: pool.map(b => ({ id: b.id, pr: b.pr ?? null,
           workflow_attempts: (b.workflows || []).map(w => ({ run_id: w.id, attempt: w.attempt || 1 })),
           workflow_run_count: b.workflow_run_count != null ? b.workflow_run_count : (b.workflows || []).length,
@@ -835,12 +1118,7 @@
       try {
         const file = await root.Metrics.saveCsv(rows, 'triton-batches.csv');
         if (active !== session) return;
-        const metaUrl = root.URL.createObjectURL(new root.Blob([JSON.stringify(qualification, null, 2)], {type: 'application/json'}));
-        const metaLink = root.document.createElement('a');
-        metaLink.href = metaUrl;
-        metaLink.download = 'triton-qualifications-v1.json';
-        metaLink.click();
-        root.URL.revokeObjectURL(metaUrl);
+        saveQualifications(qualification);
         notice.innerHTML = file.mode === 'saved'
           ? `CSV 已保存到本地：<a href="${esc(file.url)}" download="${esc(file.name)}">${esc(file.name)} ↓</a>；资格元数据已由浏览器下载。`
           : '已下载：' + esc(file.name) + ' 与 triton-qualifications-v1.json';
@@ -857,6 +1135,7 @@
       if (!btn) return;
       filter = btn.dataset.filter;
       all('[data-filter]').forEach(x => x.classList.toggle('active', x === btn));
+      clearHover();
       draw(); syncUrl();
     };
     el('[data-role="npuFilters"]').onclick = e => {
@@ -864,14 +1143,13 @@
       if (!btn) return;
       npuFilter = btn.dataset.npuFilter;
       all('[data-npu-filter]').forEach(x => x.classList.toggle('active', x === btn));
+      clearHover();
       drawNpu(); syncUrl();
     };
     el('.range-control').onclick = e => {
       const btn = e.target.closest('[data-hours]');
       if (!btn) return;
       [viewStart, viewEnd] = core.windowForHours(domainStart, domainEnd, Number(btn.dataset.hours));
-      tipPinned = false;
-      tip.style.display = 'none';
       updateGlobal();
     };
 
@@ -942,9 +1220,14 @@
 
     active = {
       destroy() {
+        clearTimeout(tipTimer);
+        clearHighlight();
         tipPinned = false;
+        tip.classList.toggle('pinned', false);
         tip.style.display = 'none';
         lastPinnedMark = null;
+        lastHoverMark = null;
+        currentTipBatch = null;
         if (navDrag && navDrag.pointerId != null && navSvg.releasePointerCapture) {
           try { navSvg.releasePointerCapture(navDrag.pointerId); } catch (_) { /* capture may already have ended */ }
         }
@@ -954,6 +1237,7 @@
         clearTimeout(tipTimer);
         window.removeEventListener('resize', onResize);
         document.removeEventListener('click', onDocClick);
+        document.removeEventListener('keydown', onDocKeydown);
       },
       state() {
         return { branches: [...selectedBranches], search: searchInput.value, filter, npuFilter, showAll, unknownTime, start: viewStart, end: viewEnd };

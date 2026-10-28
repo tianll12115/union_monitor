@@ -45,7 +45,7 @@ function sample() {
   return {window_start:'2026-10-10T00:00:00Z',window_end:'2026-10-11T00:00:00Z',collected_at:'2026-10-11T00:01:00Z',batches};
 }
 
-test('NPU median trend uses completed qualified samples, matching its P50 and count', () => {
+test('TS28-006: both main charts drop the bucket median but keep P90 and the NPU P50 sample', () => {
   const data = sample();
   data.batches = [];
   for (const hour of [1, 7]) {
@@ -56,14 +56,17 @@ test('NPU median trend uses completed qualified samples, matching its P50 and co
     }
   }
   const h = viewHarness(); h.view.render(data, h.container);
-  const svg = h.node('[data-role="npuChart"]').innerHTML;
-  const max = 11000 * 1.12;
-  const expectedY = 328 - 30 / max * 310;
-  const path = svg.match(/class="median-line" d="([^"]+)"/)[1];
-  const ys = [...path.matchAll(/,[\d.]+/g)].map(x => Number(x[0].slice(1)));
-  assert.equal(ys.length, 2);
-  for (const y of ys) assert.ok(Math.abs(y - expectedY) < 1e-9, `${y} should map P50=30s`);
-  assert.match(h.node('[data-role="kNpuN"]').textContent, /^n=4/);
+  for (const role of ['chart', 'npuChart']) {
+    const svg = h.node(`[data-role="${role}"]`).innerHTML;
+    assert.doesNotMatch(svg, /median-line/, `${role} must not calculate or draw a bucket median`);
+    assert.doesNotMatch(svg, /六小时桶中位数/, `${role} must not carry the bucket-median label or title`);
+    assert.match(svg, /p90-line/, `${role} keeps the in-chart P90 reference line`);
+  }
+  const legend = h.node('container').innerHTML;
+  assert.doesNotMatch(legend, /六小时桶中位数/, 'the legend must not advertise a removed curve');
+  assert.match(legend, /图内 P90/);
+  assert.match(h.node('[data-role="kNpuN"]').textContent, /^n=4/, 'the overall NPU P50 sample is unchanged');
+  assert.equal(h.node('[data-role="kNpuP50"]').textContent, 'P50 0.50 min');
 });
 
 test('real attention markup renders a failed slow batch once with multiple reasons', () => {
@@ -92,9 +95,10 @@ test('deactivation closes the card and clears resources, while remount restores 
   assert.equal(h.documentListeners.size,0);assert.equal(h.resizeListeners.size,0);assert.equal(h.intervals.size,0);
   h.node('[data-role="search"]').value='';h.view.render(data,h.container);
   assert.equal(h.node('[data-role="search"]').value,'Example');
-  assert.equal(h.documentListeners.size,1);assert.equal(h.resizeListeners.size,1);assert.equal(h.intervals.size,1);
+  // click + keydown (Escape) document listeners; remount must not accumulate.
+  assert.equal(h.documentListeners.size,2);assert.equal(h.resizeListeners.size,1);assert.equal(h.intervals.size,1);
   h.view.render(data,h.container);
-  assert.equal(h.documentListeners.size,1);assert.equal(h.intervals.size,1);
+  assert.equal(h.documentListeners.size,2);assert.equal(h.intervals.size,1);
 });
 
 test('record export matches the displayed attention list and persists qualification metadata separately', async () => {
@@ -108,6 +112,13 @@ test('record export matches the displayed attention list and persists qualificat
   assert.equal(h.downloads[1].name,'triton-qualifications-v1.json');
   const metadata=JSON.parse(await h.downloads[1].blob.text());
   assert.equal(metadata.schema_version,1);
+  // DQ-02/TS28-008: download, page and collector agree on the metric id and
+  // the same export scope travels with the CSV's qualification sidecar.
+  assert.equal(metadata.metric,'integration_tests_workflow_e2e');
+  assert.equal(metadata.metric_version,2);
+  assert.equal(metadata.scope.metric,'integration_tests_workflow_e2e');
+  assert.ok(metadata.scope.selection_start && metadata.scope.selection_end);
+  assert.equal(metadata.scope.unknown_time_included,false);
   assert.equal(metadata.batches.length,2);
   assert.equal(metadata.batches.find(batch=>batch.id==='unresolved').e2e_sample_eligible,false);
 });

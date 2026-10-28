@@ -138,7 +138,10 @@ function applyProjectRoute(route){
   if(pendingPr!=null){if(snapshot&&snapshot.prs.some(p=>p.number===pendingPr))openDetail(pendingPr,pendingBatch??null,true);else{$('notice').hidden=false;$('notice').textContent='未找到该 PR 详情（可能已过期或不存在），已返回记录列表。';}}
   else{closeDetailContext();if(scopeNotice){$('notice').hidden=false;$('notice').textContent=scopeNotice;}}
  }
- const knownKeys=['repository','entity','branch','from','to','basis','q','sort','page','tm','state','tf','qf','ps','pr','batch'],unknownKey=Object.keys(q).find(k=>!knownKeys.includes(k)),dupKey=Object.keys(q).find(k=>Array.isArray(q[k]));
+ /* TS28-008 AC1: a repeated `branch` is a legitimate multi-branch selection
+    (parsed into an array), not a duplicate-value defect; only other repeated
+    keys keep the "first value wins" warning. */
+ const repeatableKeys=['branch'],knownKeys=['repository','entity','branch','from','to','basis','q','sort','page','tm','state','tf','qf','ps','pr','batch'],unknownKey=Object.keys(q).find(k=>!knownKeys.includes(k)),dupKey=Object.keys(q).find(k=>Array.isArray(q[k])&&!repeatableKeys.includes(k));
  if(sortUpgraded){$('notice').hidden=false;$('notice').textContent='排序口径已升级：原「创建时间从新到旧」已改为按最近代码提交时间排序，地址已规范为 sort=submitted。';}
   else if(retiredFilters.length){$('notice').hidden=false;$('notice').textContent='已精简：'+retiredFilters.join('、')+'筛选已随高级分析面板移除，请在 PR 详情查看相关字段；本次未按这些条件筛选。';}
  else if(retiredRecordConditions.length){$('notice').hidden=false;$('notice').textContent='批次记录已并入工程效能页；地址中的「'+retiredRecordConditions.join('、')+'」条件由页面内控件控制，本次未随地址应用。';}

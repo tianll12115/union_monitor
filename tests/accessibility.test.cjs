@@ -29,7 +29,7 @@ test('P-014: focus visibility and reduced motion remain preserved', () => {
 test('P-014: keyboard paths are preserved (navigator sliders, Escape close, row toggle)', () => {
   assert.match(tritonView, /role="slider" tabindex="0" aria-label="时间范围整体窗口"/);
   assert.match(tritonView, /aria-label="时间范围\$\{side === 'start' \? '起点' : '终点'\}"/);
-  assert.match(tritonView, /if \(e\.key === 'Escape'\) \{\s*e\.preventDefault\(\); hideTip\(\)/);
+  assert.match(tritonView, /if \(e\.key === 'Escape'\) \{\s*e\.preventDefault\(\); hideTip\(/);
   assert.match(tritonView, /aria-expanded="false" aria-controls=/);
 });
 

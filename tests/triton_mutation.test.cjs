@@ -108,11 +108,10 @@ mutationCaught('detail formatting raw seconds instead of milliseconds',
 /* TA-008：固定卡片期间，其它点的 mouseenter 不得覆盖固定身份。 */
 mutationCaught('hover overwriting a pinned tip identity',
   src => ({
-    holds: src.includes("mark.onmouseenter = e => { clearTimeout(tipTimer); if (!tipPinned) placeTip(e, b, html); };"),
+    holds: /mark\.onmouseenter = e => \{\s*clearTimeout\(tipTimer\);\s*if \(tipPinned\) return;\s*showTip\(b, kind, mark, false\);\s*\};/.test(src),
     reason: 'mouseenter must respect the pinned state instead of unconditionally repainting',
   }),
-  src => src.replace("mark.onmouseenter = e => { clearTimeout(tipTimer); if (!tipPinned) placeTip(e, b, html); };",
-    "mark.onmouseenter = e => { clearTimeout(tipTimer); placeTip(e, b, html); };"), 'view');
+  src => src.replace(/(mark\.onmouseenter = e => \{\s*clearTimeout\(tipTimer\);\s*)if \(tipPinned\) return;\s*/, '$1'), 'view');
 
 /* TA-006：Escape 关闭（原生 close 事件）必须清理详情批次 URL 状态。 */
 mutationCaught('Escape close leaving the batch in the URL',

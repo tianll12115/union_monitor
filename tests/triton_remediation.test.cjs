@@ -153,14 +153,17 @@ test('TA-010: an invalid window and a missing payload are distinct error states'
   assert.match(h.container.innerHTML, /缺失或格式无效/);
 });
 
-test('TA-013: the two reference lines carry readable names, not bare dashed lines', () => {
+test('TA-013/TS28-006: the retained P90 line is named and the bucket median is gone', () => {
   const h = harness();
   h.view.render(payload(), h.container);
-  const chart = h.node('[data-role="chart"]').innerHTML;
-  assert.match(chart, /图内 P90/);
+  for (const role of ['chart', 'npuChart']) {
+    const chart = h.node(`[data-role="${role}"]`).innerHTML;
+    assert.doesNotMatch(chart, /median-line|六小时桶中位数/);
+    if (role === 'chart') assert.match(chart, /图内 P90/, 'the E2E chart keeps its named P90 line');
+  }
   const legend = h.node('container').innerHTML;
   assert.match(legend, /图内 P90/);
-  assert.match(legend, /六小时桶中位数/);
+  assert.doesNotMatch(legend, /六小时桶中位数|ref-median/);
 });
 
 test('TA-011: the navigator reverse-mapping is the pure navTimeAt contract (shared inset)', () => {

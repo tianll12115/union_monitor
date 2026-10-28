@@ -66,7 +66,7 @@ class WorkflowTimeGateTests(unittest.TestCase):
         aux=self.run_row(id=2,created_at="2026-09-22T00:00:00Z",trigger_at="2026-09-22T00:30:00Z",trigger_exact=True,updated_at="2026-09-22T03:00:00Z",
                          pr_evidence={"method":"m","run_id":2,"pr":7,"resolved_head_sha":"abc"})
         p=build_payload([bad,aux],"2026-09-22T00:00:00Z","2026-09-22T04:00:00Z","2026-09-22T04:00:00Z")
-        self.assertEqual(len(p["batches"]),1)
+        self.assertEqual(len(p["batches"]),2)
         report=validate([bad,aux],p)
         self.assertFalse(report["passed"])
         self.assertTrue(any("applicable start" in e for e in report["errors"]))
@@ -131,7 +131,7 @@ class PayloadContractTests(unittest.TestCase):
     def rerun_row(self, **overrides):
         row={"id":1,"event":"pull_request","head_sha":"abc","created_at":"2026-09-28T00:00:00Z",
              "run_started_at":"2026-09-28T02:00:00Z","updated_at":"2026-09-28T02:05:00Z","run_attempt":2,
-             "status":"completed","conclusion":"success","jobs":[],"jobs_complete":True,"pr":23,"pr_title":"T",
+             "status":"completed","conclusion":"success","jobs":[{"id":7,"status":"completed","created_at":"2026-09-28T02:00:00Z","started_at":"2026-09-28T02:00:00Z","completed_at":"2026-09-28T02:05:00Z"}],"jobs_complete":True,"pr":23,"pr_title":"T",
              "pr_url":"https://github.com/triton-lang/triton-ascend/pull/23","base_branch":"main",
              "pr_evidence":{"method":"m","run_id":1,"pr":23,"resolved_head_sha":"abc"}}
         row.update(overrides); return row

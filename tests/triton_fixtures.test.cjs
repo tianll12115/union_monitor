@@ -7,13 +7,13 @@ const { dashboardStats, startSourceLabel, markLabel, validDuration } = require('
 const load = name => JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures/minimal', name), 'utf8'));
 const close = (actual, expected, msg) => assert.ok(Math.abs(actual - expected) < 1e-9, `${msg}: ${actual} != ${expected}`);
 
-test('REQ-037 AC01: minimal fixture p90 is the interpolated 840, not the 900 sample', () => {
+test('REQ-037 AC01: minimal fixture p90 is the interpolated 870, excluding a rerun with unknown queue origin', () => {
   const payload = load('triton.json');
-  assert.equal(payload.summary.p90, 840);
+  assert.equal(payload.summary.p90, 870);
   assert.notEqual(payload.summary.p90, 900);
   const stats = dashboardStats(payload.batches);
-  close(stats.p90, 840, 'frontend p90');
-  close(stats.median, 600, 'frontend median');
+  close(stats.p90, 870, 'frontend p90');
+  close(stats.median, 750, 'frontend median');
 });
 
 test('REQ-037 AC02: frontend dashboardStats recomputes the same summary from minimal batches', () => {
@@ -21,9 +21,9 @@ test('REQ-037 AC02: frontend dashboardStats recomputes the same summary from min
   const stats = dashboardStats(payload.batches);
   assert.equal(stats.prs, 2);
   assert.equal(stats.batches, 5);
-  assert.equal(stats.valid, 3);
+  assert.equal(stats.valid, 2);
   assert.equal(stats.incomplete, 1);
-  assert.equal(stats.approximate, 5);
+  assert.equal(stats.approximate, 1);
 });
 
 test('REQ-037 AC02: kind semantics — rerun start source and per-PR E2E labels', () => {
@@ -33,7 +33,7 @@ test('REQ-037 AC02: kind semantics — rerun start source and per-PR E2E labels'
   assert.equal(rerun.start_source, 'attempt_start');
   assert.equal(startSourceLabel(rerun), '本次重跑开始，近似');
   const initial = payload.batches.find(b => b.kind === 'initial');
-  assert.equal(startSourceLabel(initial), '最早 workflow 创建，近似');
+  assert.equal(startSourceLabel(initial), '最早 workflow 创建');
   assert.ok(markLabel(rerun, 'e2e').includes('第 2/3 次 E2E'));
 });
 
@@ -62,5 +62,5 @@ test('REQ-037 AC03: missing-value and running batches never join valid samples',
   assert.equal(validDuration(gap.duration_seconds), false);
   const running = payload.batches.find(b => b.status === 'running');
   assert.equal(running.end_at, null);
-  assert.equal(dashboardStats(payload.batches).valid, 3);
+  assert.equal(dashboardStats(payload.batches).valid, 2);
 });

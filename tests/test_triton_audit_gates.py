@@ -13,7 +13,7 @@ from triton.quality import validate, verify_artifacts, fingerprint
 
 def run_row(number=1, *, pr=7, attempt=1, created="2026-10-10T01:00:00Z", start=None):
     row = {
-        "id": number, "pr": pr, "pr_title": "Example", "pr_url": "https://github.com/example/repo/pull/7" if pr else None,
+        "id": number, "name":"Integration Tests", "workflow_id":241783889,"path":".github/workflows/ci.yml", "pr": pr, "pr_title": "Example", "pr_url": "https://github.com/example/repo/pull/7" if pr else None,
         "base_branch": "main" if pr else None, "head_sha": "abc", "event": "pull_request",
         "run_attempt": attempt, "created_at": created, "run_started_at": start or created,
         "updated_at": "2026-10-10T01:10:00Z", "status": "completed", "conclusion": "failure",

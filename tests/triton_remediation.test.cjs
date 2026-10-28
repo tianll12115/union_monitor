@@ -66,23 +66,35 @@ test('TA-002: every scatter mark records its true anchor, which equals the dot w
     assert.equal(dx, ax, 'dot x stays at anchor x');
     assert.equal(dy, ay, 'dot y stays at anchor y');
   }
-  assert.match(chart, /class="anchor-tick"/, 'true anchor ticks are drawn');
+  assert.doesNotMatch(chart, /class="anchor-tick"/, 'no redundant anchor ticks');
   assert.doesNotMatch(chart, /class="anchor-lead"/, 'no leader line when nothing collides');
 });
 
-test('TA-002: overlapping marks spread the dot but keep the anchor and draw a leader line', () => {
+test('TA-002: overlapping marks retain actual coordinates without a leader line', () => {
   const h = harness();
   const data = payload();
   data.batches[1].start_at = data.batches[0].start_at;
   data.batches[1].duration_seconds = data.batches[0].duration_seconds;
   h.view.render(data, h.container);
   const chart = h.node('[data-role="chart"]').innerHTML;
-  assert.match(chart, /class="anchor-lead"/, 'leader line appears for the spread mark');
+  assert.doesNotMatch(chart, /class="anchor-lead"/, 'overlap must not invent displacement');
   const marks = chart.match(/<g class="mark-hit"[^>]*>/g) || [];
   assert.equal(marks.length, 3);
   const spread = marks.filter(m => m.includes('data-x') && (m.match(/data-x="([0-9.e-]+)"/)[1] !== m.match(/data-anchor-x="([0-9.e-]+)"/)[1] || m.match(/data-y="([0-9.e-]+)"/)[1] !== m.match(/data-anchor-y="([0-9.e-]+)"/)[1]));
-  assert.equal(spread.length, 1, 'exactly one dot is spread away from its anchor');
-  assert.match(spread[0], /data-anchor-x="[0-9.e-]+"/, 'the spread dot still records its true anchor');
+  assert.equal(spread.length, 0, 'all dots remain at actual coordinates');
+
+});
+
+test('auxiliary workflow duration cannot distort Integration Tests axis or plotted samples', () => {
+  const h=harness(),data=payload();
+  data.batches[2].duration_seconds=172949;
+  data.batches[2].e2e_sample_eligible=false;
+  data.batches[2].e2e_exclusion_reason='outside_integration_tests';
+  h.view.render(data,h.container);
+  const chart=h.node('[data-role="chart"]').innerHTML;
+  assert.doesNotMatch(chart,/data-i="2"/);
+  assert.match(chart,/>12\.32 min<\/text>/);
+  assert.doesNotMatch(h.container.innerHTML,/E2E 从提交事件/);
 });
 
 test('TA-005: the boundary line discloses window, discovery cutoff and collection time', () => {

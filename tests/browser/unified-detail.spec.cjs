@@ -198,6 +198,7 @@ test('EC-012: the retired quality task collapses to the UBS overview', async ({ 
 // closing returns to the records list without losing the list state.
 function tritonFixture() {
   return {
+    e2e_metric_version: 2,
     collected_at: '2026-10-12T00:00:00Z',
     window_start: '2026-10-09T00:00:00Z',
     window_end: '2026-10-12T00:00:00Z',
@@ -252,7 +253,7 @@ test('triton list rows open the unified detail and closing returns to the merged
   await page.locator('#triton-view .row[data-batch-id="run-1"] .row-main').click();
   await expect(dialog).toBeVisible();
   await expect(dialog.locator('.detail-title')).toContainText('PR #100');
-  await expect(dialog.locator('[data-role="evidence"]')).toContainText('Triton 门禁批次');
+  await expect(dialog.locator('[data-role="evidence"]')).toContainText('Integration Tests E2E');
   await expect(dialog.locator('.event-heading', { hasText: 'GitHub Actions' })).toBeVisible();
   await expect(dialog.locator('.wf-name a[target="_blank"]').first()).toBeVisible();
   await page.locator('#closeDetail').click();

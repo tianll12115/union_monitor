@@ -746,7 +746,7 @@ def e2e_qualification(batch):
 
 def qualification_manifest(payload):
     """Versioned metadata accompanies, rather than changes, the legacy CSV."""
-    return {"schema_version": 1, "metric": "triton_commit_attempt_e2e",
+    return {"schema_version": 1, "metric": payload.get('e2e_metric') or "triton_commit_attempt_e2e",
             "collected_at": payload.get("collected_at"),
             "window_start": payload.get("window_start"), "window_end": payload.get("window_end"),
             "batches": [{"id": b["id"], "pr": b.get("pr"),
@@ -770,8 +770,10 @@ def summary_of(batches, calls=0):
 def build_payload(runs, window_start, window_end, collected_at, calls=0, fetch_start=None, fetch_end=None):
     for row in runs:
         if row.get("conclusion") in ("skipped","neutral"): row["jobs_complete"]=True
-    batches=build_batches(runs, window_end, window_start)
+    from .run_e2e import build_run_batches
+    batches=build_run_batches(runs, window_end, window_start)
     payload={"repo":REPO,"window_start":window_start,"window_end":window_end,"collected_at":collected_at,
+             "e2e_metric_version":2,"e2e_metric":"integration_tests_workflow_e2e",
              "batches":batches,"summary":summary_of(batches,calls)}
     # ADR-018: the run-list API filters by run *creation* time, so a run created
     # more than RERUN_LOOKBACK before the window whose current attempt started

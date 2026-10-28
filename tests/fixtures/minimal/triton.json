@@ -19,7 +19,7 @@
       "duration_seconds": 600,
       "status": "success",
       "complete": true,
-      "approximate": true,
+      "approximate": false,
       "start_source": "workflow_created",
       "critical_workflow": "Integration Tests",
       "action_url": "https://github.com/triton-lang/triton-ascend/actions/runs/1",
@@ -42,7 +42,7 @@
               "conclusion": "success",
               "created_at": "2026-10-07T01:00:36Z",
               "started_at": "2026-10-07T01:02:36Z",
-              "completed_at": "2026-10-07T01:09:36Z",
+              "completed_at": "2026-10-07T01:10:00Z",
               "url": "https://github.com/triton-lang/triton-ascend/actions/runs/1/job/11",
               "runner_name": "linux-aarch64-a3-800i-4-cn12-001-runner-x",
               "runner_label": null,
@@ -57,7 +57,9 @@
           "pr": 101,
           "pr_url": "https://github.com/triton-lang/triton-ascend/pull/101",
           "head_sha": "abcd1234abcd1234abcd1234abcd1234abcd1234",
-          "pr_evidence": null
+          "pr_evidence": null,
+          "workflow_id": 241783889,
+          "path": ".github/workflows/ci.yml"
         },
         {
           "id": 2,
@@ -76,7 +78,7 @@
               "conclusion": "success",
               "created_at": "2026-10-07T01:00:05Z",
               "started_at": "2026-10-07T01:00:15Z",
-              "completed_at": "2026-10-07T01:00:35Z",
+              "completed_at": "2026-10-07T01:10:00Z",
               "url": "https://github.com/triton-lang/triton-ascend/actions/runs/2/job/21",
               "runner_name": "GitHub Actions 1000126735",
               "runner_label": null,
@@ -91,7 +93,9 @@
           "pr": 101,
           "pr_url": "https://github.com/triton-lang/triton-ascend/pull/101",
           "head_sha": "abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234",
-          "pr_evidence": null
+          "pr_evidence": null,
+          "workflow_id": 241783889,
+          "path": ".github/workflows/ci.yml"
         }
       ],
       "focus_jobs": [],
@@ -117,7 +121,10 @@
       "npu_queue_seconds": 120.0,
       "missing": [],
       "e2e_index": 1,
-      "e2e_total": 3
+      "e2e_total": 3,
+      "e2e_metric_version": 2,
+      "e2e_sample_eligible": true,
+      "end_source": "last_job_completed"
     },
     {
       "id": "101-abcd1234abcd1234abcd1234abcd1234abcd1234-rerun-1-2",
@@ -157,14 +164,16 @@
               "conclusion": "failure",
               "created_at": "2026-10-07T02:00:30Z",
               "started_at": "2026-10-07T02:01:30Z",
-              "completed_at": "2026-10-07T02:09:50Z",
+              "completed_at": "2026-10-07T02:10:00Z",
               "url": "https://github.com/triton-lang/triton-ascend/actions/runs/1/job/12",
               "runner_name": "linux-aarch64-a3-800i-4-cn12-001-runner-y",
               "runner_label": null,
               "wait_seconds": 60.0,
               "measurement_error": null,
               "run_seconds": 500.0,
-              "failed_steps": ["Run integration tests"]
+              "failed_steps": [
+                "Run integration tests"
+              ]
             }
           ],
           "jobs_complete": true,
@@ -172,7 +181,9 @@
           "pr": 101,
           "pr_url": "https://github.com/triton-lang/triton-ascend/pull/101",
           "head_sha": "abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234",
-          "pr_evidence": null
+          "pr_evidence": null,
+          "workflow_id": 241783889,
+          "path": ".github/workflows/ci.yml"
         }
       ],
       "focus_jobs": [],
@@ -191,14 +202,20 @@
           "wait_seconds": 60.0,
           "measurement_error": null,
           "run_seconds": 500.0,
-          "failed_steps": ["Run integration tests"]
+          "failed_steps": [
+            "Run integration tests"
+          ]
         }
       ],
       "npu_data_missing": false,
       "npu_queue_seconds": 60.0,
       "missing": [],
       "e2e_index": 2,
-      "e2e_total": 3
+      "e2e_total": 3,
+      "e2e_metric_version": 2,
+      "e2e_sample_eligible": false,
+      "end_source": "last_job_completed",
+      "e2e_exclusion_reason": "rerun_queue_start_unknown"
     },
     {
       "id": "101-bbbb1111bbbb1111bbbb1111bbbb1111bbbb1111-initial",
@@ -215,7 +232,7 @@
       "duration_seconds": null,
       "status": "success",
       "complete": false,
-      "approximate": true,
+      "approximate": false,
       "start_source": "workflow_created",
       "critical_workflow": "Integration Tests",
       "action_url": "https://github.com/triton-lang/triton-ascend/actions/runs/5",
@@ -236,16 +253,23 @@
           "pr": 101,
           "pr_url": "https://github.com/triton-lang/triton-ascend/pull/101",
           "head_sha": "bbbb1111bbbb1111bbbb1111bbbb1111bbbb1111",
-          "pr_evidence": null
+          "pr_evidence": null,
+          "workflow_id": 241783889,
+          "path": ".github/workflows/ci.yml"
         }
       ],
       "focus_jobs": [],
       "npu_jobs": [],
       "npu_data_missing": false,
       "npu_queue_seconds": null,
-      "missing": ["无完成时间证据，E2E 留空"],
+      "missing": [
+        "无完成时间证据，E2E 留空"
+      ],
       "e2e_index": 3,
-      "e2e_total": 3
+      "e2e_total": 3,
+      "e2e_metric_version": 2,
+      "e2e_sample_eligible": false,
+      "end_source": "last_job_completed"
     },
     {
       "id": "102-cccc2222cccc2222cccc2222cccc2222cccc2222-initial",
@@ -262,7 +286,7 @@
       "duration_seconds": 900,
       "status": "failure",
       "complete": true,
-      "approximate": true,
+      "approximate": false,
       "start_source": "workflow_created",
       "critical_workflow": "Integration Tests",
       "action_url": "https://github.com/triton-lang/triton-ascend/actions/runs/3",
@@ -292,7 +316,9 @@
               "wait_seconds": 90.0,
               "measurement_error": null,
               "run_seconds": 780.0,
-              "failed_steps": ["Run integration tests"]
+              "failed_steps": [
+                "Run integration tests"
+              ]
             }
           ],
           "jobs_complete": true,
@@ -300,7 +326,9 @@
           "pr": 102,
           "pr_url": "https://github.com/triton-lang/triton-ascend/pull/102",
           "head_sha": "cccc2222cccc2222cccc2222cccc2222cccc2222",
-          "pr_evidence": null
+          "pr_evidence": null,
+          "workflow_id": 241783889,
+          "path": ".github/workflows/ci.yml"
         }
       ],
       "focus_jobs": [],
@@ -319,14 +347,19 @@
           "wait_seconds": 90.0,
           "measurement_error": null,
           "run_seconds": 780.0,
-          "failed_steps": ["Run integration tests"]
+          "failed_steps": [
+            "Run integration tests"
+          ]
         }
       ],
       "npu_data_missing": false,
       "npu_queue_seconds": 90.0,
       "missing": [],
       "e2e_index": 1,
-      "e2e_total": 2
+      "e2e_total": 2,
+      "e2e_metric_version": 2,
+      "e2e_sample_eligible": true,
+      "end_source": "last_job_completed"
     },
     {
       "id": "102-dddd3333dddd3333dddd3333dddd3333dddd3333-initial",
@@ -343,7 +376,7 @@
       "duration_seconds": 120,
       "status": "running",
       "complete": false,
-      "approximate": true,
+      "approximate": false,
       "start_source": "workflow_created",
       "critical_workflow": "Integration Tests",
       "action_url": "https://github.com/triton-lang/triton-ascend/actions/runs/4",
@@ -381,7 +414,9 @@
           "pr": 102,
           "pr_url": "https://github.com/triton-lang/triton-ascend/pull/102",
           "head_sha": "dddd3333dddd3333dddd3333dddd3333dddd3333",
-          "pr_evidence": null
+          "pr_evidence": null,
+          "workflow_id": 241783889,
+          "path": ".github/workflows/ci.yml"
         }
       ],
       "focus_jobs": [],
@@ -407,17 +442,22 @@
       "npu_queue_seconds": 30.0,
       "missing": [],
       "e2e_index": 2,
-      "e2e_total": 2
+      "e2e_total": 2,
+      "e2e_metric_version": 2,
+      "e2e_sample_eligible": false,
+      "end_source": "last_job_completed"
     }
   ],
   "summary": {
     "prs": 2,
     "batches": 5,
-    "valid": 3,
-    "median": 600,
-    "p90": 840,
-    "approximate": 5,
+    "valid": 2,
+    "median": 750,
+    "p90": 870,
+    "approximate": 1,
     "incomplete": 1,
     "api_calls": 0
-  }
+  },
+  "e2e_metric_version": 2,
+  "e2e_metric": "integration_tests_workflow_e2e"
 }

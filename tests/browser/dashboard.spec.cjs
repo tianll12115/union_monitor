@@ -132,7 +132,7 @@ test('keyboard opens a batch into the unified detail modal and Escape closes it'
   const point=page.getByRole('button',{name:/E2E 详情/}).first();
   await point.press('Enter');
   await expect(page.locator('#detail')).toBeVisible();
-  await expect(page.locator('#detail [data-role="evidence"]')).toContainText('Triton 门禁批次');
+  await expect(page.locator('#detail [data-role="evidence"]')).toContainText('Integration Tests E2E');
   await page.keyboard.press('Escape');
   await expect(page.locator('#detail')).toBeHidden();
 });
@@ -142,7 +142,7 @@ test('attention row opens the unified detail modal and closing returns to the da
   await page.getByRole('button',{name:'查看全部批次',exact:true}).click();
   await page.locator('#triton-view .row-main .status').first().click();
   await expect(page.locator('#detail')).toBeVisible();
-  await expect(page.locator('#detail [data-role="evidence"]')).toContainText('Triton 门禁批次');
+  await expect(page.locator('#detail [data-role="evidence"]')).toContainText('Integration Tests E2E');
   await page.locator('#closeDetail').click();
   await expect(page.locator('#detail')).toBeHidden();
   await expect(page.locator('#triton-view .row-main').first()).toBeVisible();

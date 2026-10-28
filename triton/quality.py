@@ -42,10 +42,11 @@ def validate(runs, payload):
     for run in runs:
         pair=(run.get("id"), int(run.get("run_attempt") or 1))
         attempt=pair[1]
-        key=("rerun", *pair) if attempt>1 else (("initial", run.get("pr"), run.get("head_sha")) if run.get("pr") else ("unresolved", *pair))
+        version2 = payload.get('e2e_metric_version') == 2
+        key=("run", *pair) if version2 else (("rerun", *pair) if attempt>1 else (("initial", run.get("pr"), run.get("head_sha")) if run.get("pr") else ("unresolved", *pair)))
         source_keys[pair]=key
         try:
-            start=stamp(run.get("trigger_at")) if run.get("trigger_exact") else stamp(run.get("run_started_at") if attempt>1 else run.get("created_at"))
+            start=stamp(run.get("run_started_at") if attempt>1 else run.get("created_at")) if version2 else (stamp(run.get("trigger_at")) if run.get("trigger_exact") else stamp(run.get("run_started_at") if attempt>1 else run.get("created_at")))
         except (ValueError,TypeError,AttributeError):
             start=None
         group=source_groups.setdefault(key, {"exact": [], "derived": []})
@@ -146,7 +147,7 @@ def validate(runs, payload):
             errors.append(f"batch {batch['id']}: invalid timestamp"); b_start=b_end=None
         if b_start and b_end and b_end<b_start:
             errors.append(f"batch {batch['id']}: end before start")
-        if b_start and b_end and b_end>=b_start and batch.get("status") in ("success","failure"):
+        if b_start and b_end and b_end>=b_start and batch.get("status") in ("success","failure") and not (payload.get('e2e_metric_version') == 2 and batch.get('duration_seconds') is None and batch.get('e2e_sample_eligible') is False):
             # REQ-019 (A09): a completed sample's duration is its start-to-end
             # span — finite, non-negative and consistent; nulls, bools, strings,
             # negatives or invented spans are contract failures, not measurements.
@@ -161,9 +162,52 @@ def validate(runs, payload):
             value=batch.get("duration_seconds")
             if not valid_seconds(value) or abs(value-observed)>1:
                 errors.append(f"batch {batch['id']}: running batch must report only the observed span to as_of")
+    if payload.get('e2e_metric_version') == 2 and as_of is not None:
+        errors.extend(validate_run_metrics(runs, payload))
     report={"passed":not errors,"errors":errors,"warnings":warnings,"runs":len(runs),"batches":len(payload['batches']),
             "npu_points":sum(b.get('npu_queue_seconds') is not None for b in payload['batches'])}
     return report
+
+
+def validate_run_metrics(runs, payload):
+    """Independent source reconciliation, not a call to the builder's measurement."""
+    sources={(r.get('id'), int(r.get('run_attempt') or 1)):r for r in runs}
+    errors=[]; seen=set(); as_of=stamp(payload['window_end'])
+    for b in payload['batches']:
+        ws=b.get('workflows') or []
+        pair=(ws[0].get('id'), int(ws[0].get('attempt') or 1)) if len(ws)==1 else None
+        if pair not in sources or pair in seen:
+            errors.append(f"batch {b['id']}: expected unique source run/attempt")
+            continue
+        seen.add(pair); r=sources[pair]; attempt=pair[1]
+        def read(value):
+            try:
+                result=stamp(value)
+                return result if result and result.tzinfo else None
+            except (ValueError,TypeError,AttributeError):
+                return None
+        start=read(r.get('created_at') if attempt==1 else r.get('run_started_at'))
+        jobs=[j for j in r.get('jobs',[]) if j.get('conclusion')!='skipped']
+        ends=[read(j.get('completed_at')) for j in jobs]
+        end=max(ends) if (r.get('status')=='completed' and r.get('jobs_complete') and jobs and all(ends)
+                          and all(j.get('status')=='completed' for j in jobs)) else None
+        observed=as_of if r.get('status')!='completed' else end
+        valid=bool(start and observed and start<=observed<=as_of)
+        if r.get('status')=='completed' and start:
+            valid=valid and all(not read(j.get('started_at')) or
+                                (read(j.get('completed_at')) and start<=read(j['started_at'])<=read(j['completed_at'])) for j in jobs)
+        seconds=(observed-start).total_seconds() if valid else None
+        eligible=bool(r.get('pr') and r.get('workflow_id')==241783889
+                      and (r.get('path') or '').split('@')[0]=='.github/workflows/ci.yml'
+                      and r.get('status')=='completed' and attempt==1 and seconds is not None
+                      and r.get('conclusion') in ('success','failure','timed_out','action_required','startup_failure'))
+        actual=(read(b.get('start_at')),read(b.get('end_at')),b.get('duration_seconds'),b.get('action_url'),b.get('e2e_sample_eligible'))
+        url=r.get('html_url')
+        url=url.split('/attempts/')[0]+f'/attempts/{attempt}' if url else None
+        expected=(start,end,seconds,url,eligible)
+        if actual!=expected or b.get('e2e_metric_version')!=2 or ws[0].get('url')!=url:
+            errors.append(f"batch {b['id']}: source run/attempt duration, qualification or provenance mismatch")
+    return errors
 
 
 def fingerprint(payload):

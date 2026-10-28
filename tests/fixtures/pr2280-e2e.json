@@ -1,0 +1,94 @@
+[
+  {
+    "id": 40269159120,
+    "name": "Integration Tests",
+    "workflow_id": 241783889,
+    "path": ".github/workflows/ci.yml",
+    "head_sha": "ec023b92f1de677444c6420be5736b803f2c14bf",
+    "created_at": "2026-10-26T04:27:22Z",
+    "updated_at": "2026-10-26T04:52:59Z",
+    "run_started_at": "2026-10-26T04:27:22Z",
+    "status": "completed",
+    "conclusion": "success",
+    "run_attempt": 1,
+    "html_url": "https://github.com/triton-lang/triton-ascend/actions/runs/40269159120",
+    "pr": 2280,
+    "pr_url": "https://github.com/triton-lang/triton-ascend/pull/2280",
+    "pr_title": "PR 2280 frozen regression",
+    "base_branch": "main-dev",
+    "jobs_complete": true,
+    "jobs": [
+      {
+        "id": 121398016013,
+        "name": "runner-preparation / prepare",
+        "created_at": "2026-10-26T04:27:23Z",
+        "started_at": "2026-10-26T04:27:26Z",
+        "completed_at": "2026-10-26T04:27:28Z",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/triton-lang/triton-ascend/actions/runs/40269159120/job/121398016013"
+      },
+      {
+        "id": 121398039160,
+        "name": "integration-tests-ascend / integration-tests-ascend (linux-aarch64-a3-800i-4, py3.11)",
+        "created_at": "2026-10-26T04:27:29Z",
+        "started_at": "2026-10-26T04:30:34Z",
+        "completed_at": "2026-10-26T04:45:36Z",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/triton-lang/triton-ascend/actions/runs/40269159120/job/121398039160"
+      },
+      {
+        "id": 121398039204,
+        "name": "integration-tests-ascend / integration-tests-ascend (linux-amd64-a5-2, py3.12)",
+        "created_at": "2026-10-26T04:27:29Z",
+        "started_at": "2026-10-26T04:29:26Z",
+        "completed_at": "2026-10-26T04:52:58Z",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/triton-lang/triton-ascend/actions/runs/40269159120/job/121398039204"
+      },
+      {
+        "id": 121398039207,
+        "name": "integration-tests-ascend / integration-tests-ascend (linux-aarch64-a3-800i-4, py3.10)",
+        "created_at": "2026-10-26T04:27:29Z",
+        "started_at": "2026-10-26T04:32:14Z",
+        "completed_at": "2026-10-26T04:47:02Z",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/triton-lang/triton-ascend/actions/runs/40269159120/job/121398039207"
+      }
+    ]
+  },
+  {
+    "id": 40632628654,
+    "name": "Auto labeling",
+    "workflow_id": 324438875,
+    "path": ".github/workflows/auto-labeling.yml",
+    "head_sha": "ec023b92f1de677444c6420be5736b803f2c14bf",
+    "created_at": "2026-10-28T04:29:41Z",
+    "updated_at": "2026-10-28T04:29:50Z",
+    "run_started_at": "2026-10-28T04:29:41Z",
+    "status": "completed",
+    "conclusion": "success",
+    "run_attempt": 1,
+    "html_url": "https://github.com/triton-lang/triton-ascend/actions/runs/40632628654",
+    "pr": 2280,
+    "pr_url": "https://github.com/triton-lang/triton-ascend/pull/2280",
+    "pr_title": "PR 2280 frozen regression",
+    "base_branch": "main-dev",
+    "jobs_complete": true,
+    "jobs": [
+      {
+        "id": 122632308860,
+        "name": "label",
+        "created_at": "2026-10-28T04:29:42Z",
+        "started_at": "2026-10-28T04:29:44Z",
+        "completed_at": "2026-10-28T04:29:50Z",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/triton-lang/triton-ascend/actions/runs/40632628654/job/122632308860"
+      }
+    ]
+  }
+]

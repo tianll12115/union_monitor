@@ -2,7 +2,7 @@ const {test, expect} = require('./error-guard');
 
 function fixture() {
   return {
-    window_start: '2026-10-23T00:00:00Z', window_end: '2026-10-26T00:00:00Z',
+    e2e_metric_version: 2, window_start: '2026-10-23T00:00:00Z', window_end: '2026-10-26T00:00:00Z',
     collected_at: '2026-10-26T00:00:00Z',
     batches: [0, 60, 600].map((value, i) => ({
       id: `scatter-${i}`, pr: 100 + i, title: `scatter batch ${i}`, sha: `abcdef${i}`,
@@ -20,6 +20,36 @@ function fixture() {
     })),
   };
 }
+
+test('[E2E-V2-001] overlapping true-coordinate points expose every run and same-PR submission history', async ({page}) => {
+  const data=fixture();
+  data.batches.forEach((b,i)=>{b.pr=2280;b.action_name='Integration Tests';b.sha=i===2?'second-sha':'first-sha';b.workflows[0].name='Integration Tests';});
+  Object.assign(data.batches[1],{start_at:data.batches[0].start_at,duration_seconds:data.batches[0].duration_seconds});
+  await ready(page,'',data);
+  const chart=page.locator('[data-role="chart"]');
+  await expect(chart.locator('.anchor-lead,.anchor-tick')).toHaveCount(0);
+  const positions=await chart.locator('.mark-hit').evaluateAll(ms=>ms.map(m=>[m.dataset.x,m.dataset.y,m.dataset.anchorX,m.dataset.anchorY]));
+  for(const [x,y,ax,ay] of positions){expect(x).toBe(ax);expect(y).toBe(ay);}
+  expect(positions[0]).toEqual(positions[1]);
+  await chart.locator('.mark-hit[data-i="1"]').click();
+  await expect(page.locator('#detail')).toContainText('重叠位置：2 条记录');
+  await expect(page.locator('[aria-label="PR 提交历史"]')).toContainText('2 个 SHA');
+  await page.locator('.pr-history').first().locator('[data-history-id="scatter-0"]').click();
+  await expect(page.locator('#detail .detail-footer a')).toHaveAttribute('href',data.batches[0].action_url);
+  await page.locator('[aria-label="PR 提交历史"] details').last().locator('summary').click();
+  await page.locator('[aria-label="PR 提交历史"] [data-history-id="scatter-2"]').click();
+  await expect(page.locator('#detail .detail-footer a')).toHaveAttribute('href',data.batches[2].action_url);
+  await expect(page.locator('#detail .detail-meta')).toContainText('second-');
+});
+
+test('[E2E-V2-002] old commit spans are visibly excluded while NPU evidence remains', async ({page}) => {
+  const data=fixture();delete data.e2e_metric_version;
+  await ready(page,'',data);
+  await expect(page.locator('[data-role="chart"] .mark-hit')).toHaveCount(0);
+  await expect(page.locator('[data-role="npuChart"] .mark-hit')).toHaveCount(3);
+  await expect(page.locator('#triton-view')).toContainText('旧口径数据尚未重新采集');
+  await expect(page.locator('[data-role="kE2eN"]')).toContainText('n=0');
+});
 
 async function ready(page, query = '', data = fixture()) {
   await page.route('**/data/triton.json*', route => route.fulfill({json: data}));

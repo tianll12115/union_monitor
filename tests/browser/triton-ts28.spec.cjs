@@ -196,8 +196,13 @@ test('[TS28-005] resize keeps the same visible PR group and no stale highlight s
   await ready(page);
   await page.locator('[data-role="chart"] .mark-hit[data-i="0"]').hover();
   await expect(page.locator('[data-role="tip"]')).toBeVisible();
-  await page.setViewportSize({ width: 1180, height: 900 });
-  await page.waitForTimeout(120);
+  /* Dispatch the browser resize event without moving the pointer: this is the
+     exact "layout changed, identity did not" branch TS28-005 AC3 protects. A
+     real viewport change can synthesize a pointerleave first, which would test
+     the 180ms close path instead of highlight reuse. */
+  await page.evaluate(() => window.dispatchEvent(new Event('resize')));
+  await page.waitForFunction(() => [...document.querySelectorAll('[data-role="chart"] .mark-hit .dot')]
+    .some(d => d.getAttribute('r') === '7'));
   const radii = await page.locator('[data-role="chart"] .mark-hit').evaluateAll(ms =>
     ms.map(m => ({ i: m.dataset.i, r: m.querySelector('.dot').getAttribute('r') })).filter(row => row.r === '7').map(row => row.i).sort());
   expect(radii).toEqual(['0', '1', '2']);

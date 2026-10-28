@@ -1209,7 +1209,10 @@
     showAllBtn.onclick = () => { showAll = !showAll; unknownTime = false; renderRows(); };
     unknownTimeBtn.onclick = () => { unknownTime = !unknownTime; showAll = false; renderRows(); };
     exportBtn.onclick = exportBatches;
-    const onResize = () => scheduleRedraw();
+    /* TS28-005 AC3: a resize must not race the 180ms leave timer. A layout
+       change can synthesize a pointerleave even though the user is still on the
+       mark; cancel any pending close so the valid PR group survives the redraw. */
+    const onResize = () => { clearTimeout(tipTimer); scheduleRedraw(); };
     window.addEventListener('resize', onResize);
 
     /* ---- 初始化 ---- */

@@ -1,0 +1,4652 @@
+{
+  "charts": [
+    {
+      "box": {
+        "height": 370,
+        "width": 1610
+      },
+      "marks": [
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "1946",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2730 第 2/2 次 E2E fc3ea05",
+          "x": "87.86444444444444",
+          "y": "285.3727520787229"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "1966",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2674 第 10/10 次 E2E 8f1398b",
+          "x": "126.59592592592593",
+          "y": "190.00261048922505"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "1989",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2809 第 1/1 次 E2E 6524bed",
+          "x": "234.45222222222222",
+          "y": "272.71778785209375"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2026",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2812 第 1/1 次 E2E 647433f",
+          "x": "885.4370370370369",
+          "y": "281.37644758610315"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2045",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2813 第 1/1 次 E2E 647433f",
+          "x": "890.3807407407406",
+          "y": "281.7927293040844"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2088",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2737 第 8/12 次 E2E 529106b",
+          "x": "916.9444444444445",
+          "y": "278.2127065294459"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2108",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2786 第 10/12 次 E2E 990660d",
+          "x": "917.5885185185185",
+          "y": "272.80104419569"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2123",
+          "kind": "e2e",
+          "label": "观测详情：未关联 PR · Run #40614472231 · attempt 1 · 83950d2",
+          "x": "918.4762962962963",
+          "y": "282.95831811443185"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2167",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2786 第 11/12 次 E2E 9187dce",
+          "x": "953.9351851851852",
+          "y": "279.04526996540835"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2199",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2561 第 5/5 次 E2E 65a9243",
+          "x": "965.1803703703704",
+          "y": "280.1276024321595"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2205",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2816 第 1/2 次 E2E 121fb4d",
+          "x": "971.5688888888889",
+          "y": "275.0489654727886"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2211",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2692 第 3/4 次 E2E 9e9f831",
+          "x": "979.5937037037037",
+          "y": "280.71039683733323"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2221",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2808 第 5/8 次 E2E 9747ce0",
+          "x": "995.9566666666666",
+          "y": "216.228358722042"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2224",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2816 第 2/2 次 E2E d11b8ec",
+          "x": "1005.1651851851852",
+          "y": "239.24873772640353"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2249",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2793 第 2/2 次 E2E 8484dc1",
+          "x": "1030.8062962962963",
+          "y": "206.73713555207013"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2319",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2545 第 9/13 次 E2E f20a007",
+          "x": "1077.2666666666667",
+          "y": "138.42530563135168"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2333",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2785 第 2/4 次 E2E bc7c403",
+          "x": "1091.5581481481481",
+          "y": "264.267268977075"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2339",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2823 第 1/1 次 E2E ca1fe96",
+          "x": "1115.2322222222224",
+          "y": "275.50687536256794"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2348",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2824 第 1/4 次 E2E 0868775",
+          "x": "1116.3811111111113",
+          "y": "234.21172893883076"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2355",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2810 第 3/6 次 E2E f2c4a15",
+          "x": "1137.3744444444444",
+          "y": "280.58551232193884"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2362",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2825 第 1/2 次 E2E 85e2fd6",
+          "x": "1155.7740740740742",
+          "y": "281.0434222117182"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2435",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2545 第 13/13 次 E2E c797b09",
+          "x": "1207.5262962962963",
+          "y": "138.88321552113104"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2455",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2824 第 3/4 次 E2E 4c8ab81",
+          "x": "1233.1325925925926",
+          "y": "237.33384182368994"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2463",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2822 第 2/4 次 E2E 17f221a",
+          "x": "1237.1885185185185",
+          "y": "268.30520164149283"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2519",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2822 第 3/4 次 E2E 0c3cb9d",
+          "x": "1268.8700000000001",
+          "y": "271.21917366736136"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2524",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2692 第 4/4 次 E2E 952c95a",
+          "x": "1273.1696296296295",
+          "y": "271.427314526352"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2547",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2828 第 1/1 次 E2E 1c7c331",
+          "x": "1285.8944444444444",
+          "y": "278.87875727821586"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2554",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2273 第 4/4 次 E2E f12ca6a",
+          "x": "1286.2774074074075",
+          "y": "274.7575682702018"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2577",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2822 第 4/4 次 E2E e23540b",
+          "x": "1303.0755555555556",
+          "y": "269.42916228004214"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2583",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2819 第 3/4 次 E2E 7823c69",
+          "x": "1304.6248148148147",
+          "y": "282.4171518810562"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2595",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2647 第 2/2 次 E2E e12ea5b",
+          "x": "1314.7733333333333",
+          "y": "279.54480802698583"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2603",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2731 第 5/5 次 E2E 737e92b",
+          "x": "1316.4096296296298",
+          "y": "267.8889199235116"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2609",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2820 第 2/3 次 E2E 1d48972",
+          "x": "1321.214074074074",
+          "y": "279.04526996540835"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2613",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2267 第 2/2 次 E2E 50ee56c",
+          "x": "1339.282962962963",
+          "y": "244.7852845755538"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2621",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2276 第 2/3 次 E2E 7111d58",
+          "x": "1339.8225925925926",
+          "y": "281.0850503835163"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2641",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2824 第 4/4 次 E2E 18961c3",
+          "x": "1341.9114814814816",
+          "y": "236.5429065595256"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2704",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2820 第 3/3 次 E2E f99aa3c",
+          "x": "1373.4537037037037",
+          "y": "264.18401263347874"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2712",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2276 第 3/3 次 E2E cdf4eac",
+          "x": "1382.6274074074074",
+          "y": "277.25525857808907"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2735",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2832 第 1/2 次 E2E b00e5b2",
+          "x": "1401.6188888888887",
+          "y": "278.92038545001395"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2740",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2833 第 1/2 次 E2E a8146d3",
+          "x": "1402.611111111111",
+          "y": "284.29041961197174"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2748",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2834 第 1/1 次 E2E 4ded968",
+          "x": "1410.7577777777778",
+          "y": "286.78810991985904"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2756",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2808 第 8/8 次 E2E adab120",
+          "x": "1412.9337037037037",
+          "y": "274.13314569322995"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2766",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2832 第 2/2 次 E2E d204e6c",
+          "x": "1426.6507407407407",
+          "y": "281.00179403992007"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2772",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2825 第 2/2 次 E2E f66921c",
+          "x": "1431.9948148148148",
+          "y": "276.3394387985304"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2788",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2810 第 5/6 次 E2E 2c7fb19",
+          "x": "1437.7740740740742",
+          "y": "279.7529488859764"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2795",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2819 第 4/4 次 E2E 9ed8e02",
+          "x": "1443.327037037037",
+          "y": "284.0822787529811"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2812",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2810 第 6/6 次 E2E 7916953",
+          "x": "1470.4651851851852",
+          "y": "286.62159723266655"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2824",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2833 第 2/2 次 E2E e284713",
+          "x": "1481.5537037037036",
+          "y": "283.0415744580281"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2836",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2838 第 1/1 次 E2E 70e0b43",
+          "x": "1504.3225925925926",
+          "y": "287.6206733558215"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2842",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2839 第 1/1 次 E2E 814bbf8",
+          "x": "1504.4096296296298",
+          "y": "290.36813269449755"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2864",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2738 第 12/12 次 E2E 4cfb0c0",
+          "x": "1526.2907407407408",
+          "y": "272.50964699310316"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2912",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2044 第 1/1 次 E2E b5e423f",
+          "x": "1537.118148148148",
+          "y": "276.880605031906"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(160, 106, 21)",
+              "fill": "var(--warn)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "1954",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2674 第 9/10 次 E2E a76e2ec",
+          "x": "111.99111111111111",
+          "y": "292.1165159100187"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "1961",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2808 第 3/8 次 E2E d2271e0",
+          "x": "119.7025925925926",
+          "y": "220.0165223556711"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(160, 106, 21)",
+              "fill": "var(--warn)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "1974",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2004 第 7/10 次 E2E 00cf054",
+          "x": "211.84",
+          "y": "322.4218249790516"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "1981",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2004 第 8/10 次 E2E 81a7a7b",
+          "x": "212.7625925925926",
+          "y": "290.9509270996713"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2019",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2811 第 1/1 次 E2E 7983097",
+          "x": "879.71",
+          "y": "286.20531551468537"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2032",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2004 第 9/10 次 E2E 6dc5a2c",
+          "x": "888.1177777777777",
+          "y": "317.42644436327697"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2037",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2808 第 4/8 次 E2E f8e9f7b",
+          "x": "889.4407407407407",
+          "y": "296.4874739488215"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(160, 106, 21)",
+              "fill": "var(--warn)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2056",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2786 第 8/12 次 E2E 38d5d84",
+          "x": "910.8518518518518",
+          "y": "317.59295705046947"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(160, 106, 21)",
+              "fill": "var(--warn)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2069",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2786 第 9/12 次 E2E c303887",
+          "x": "913.6022222222222",
+          "y": "317.01016264529574"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2100",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2738 第 10/12 次 E2E 3d2c512",
+          "x": "917.0662962962962",
+          "y": "277.5050276088778"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(160, 106, 21)",
+              "fill": "var(--warn)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2133",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2443 第 8/10 次 E2E 4965933",
+          "x": "935.8314814814814",
+          "y": "293.11559203317364"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2140",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2810 第 1/6 次 E2E 8e320e1",
+          "x": "937.728888888889",
+          "y": "275.67338804976043"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2150",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2443 第 9/10 次 E2E e317cc2",
+          "x": "949.6355555555556",
+          "y": "238.66594332122986"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2172",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2737 第 9/12 次 E2E 8ac0144",
+          "x": "953.9351851851852",
+          "y": "278.08782201405154"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2180",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2738 第 11/12 次 E2E 4e164ff",
+          "x": "953.9525925925925",
+          "y": "282.2090110220656"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2217",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2615 第 1/1 次 E2E 4f2b0c4",
+          "x": "988.7674074074074",
+          "y": "213.89718110134714"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2237",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2766 第 9/11 次 E2E acf7961",
+          "x": "1006.0007407407408",
+          "y": "209.94250478052555"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2243",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2817 第 1/2 次 E2E d781216",
+          "x": "1009.0644444444445",
+          "y": "239.37362224179793"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(160, 106, 21)",
+              "fill": "var(--warn)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2255",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2819 第 1/4 次 E2E e5f6860",
+          "x": "1031.902962962963",
+          "y": "232.71311475409837"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2261",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2820 第 1/3 次 E2E 09578b3",
+          "x": "1034.4618518518519",
+          "y": "216.3948714092345"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(160, 106, 21)",
+              "fill": "var(--warn)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2286",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2545 第 7/13 次 E2E 5ebe5e6",
+          "x": "1048.2833333333333",
+          "y": "265.8075113336055"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2295",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2819 第 2/4 次 E2E d47b93f",
+          "x": "1066.5088888888888",
+          "y": "242.99527318823453"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2298",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2822 第 1/4 次 E2E f814432",
+          "x": "1068.441111111111",
+          "y": "247.86576928861484"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(160, 106, 21)",
+              "fill": "var(--warn)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2303",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2545 第 8/13 次 E2E e69f0be",
+          "x": "1069.0503703703703",
+          "y": "304.85473648024407"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2326",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2810 第 2/6 次 E2E 7a2ea63",
+          "x": "1078.1022222222223",
+          "y": "261.4781814666008"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2395",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2545 第 10/13 次 E2E a9dcd87",
+          "x": "1184.6529629629629",
+          "y": "318.34226414283563"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(160, 106, 21)",
+              "fill": "var(--warn)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2410",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2545 第 11/13 次 E2E 2015dbb",
+          "x": "1194.401111111111",
+          "y": "300.5254066132394"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(160, 106, 21)",
+              "fill": "var(--warn)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2422",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2545 第 12/13 次 E2E 0194241",
+          "x": "1205.071851851852",
+          "y": "319.1748275787981"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(160, 106, 21)",
+              "fill": "var(--warn)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2443",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2824 第 2/4 次 E2E 8c6ec14",
+          "x": "1224.515925925926",
+          "y": "304.6465956212535"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(160, 106, 21)",
+              "fill": "var(--warn)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2448",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2826 第 1/2 次 E2E 0dd01be",
+          "x": "1226.1696296296295",
+          "y": "51.21428571428578"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2474",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2785 第 3/4 次 E2E 537e161",
+          "x": "1240.078148148148",
+          "y": "280.41899963474634"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(160, 106, 21)",
+              "fill": "var(--warn)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2496",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2273 第 3/4 次 E2E 40d5a88",
+          "x": "1265.754074074074",
+          "y": "276.5059514857229"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(160, 106, 21)",
+              "fill": "var(--warn)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2533",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2808 第 6/8 次 E2E fadcc4f",
+          "x": "1279.4711111111112",
+          "y": "305.3126463700234"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2539",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2731 第 4/5 次 E2E 737e92b",
+          "x": "1284.4322222222222",
+          "y": "278.54573190383087"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2561",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2172 第 1/3 次 E2E ad91b07",
+          "x": "1287.9137037037037",
+          "y": "259.3551447048966"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2568",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2808 第 7/8 次 E2E 0986959",
+          "x": "1287.9833333333333",
+          "y": "259.77142642287777"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(160, 106, 21)",
+              "fill": "var(--warn)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2590",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2647 第 1/2 次 E2E c09285c",
+          "x": "1309.2029629629628",
+          "y": "311.8482693423286"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2625",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2829 第 1/3 次 E2E 5181e8d",
+          "x": "1340.4144444444444",
+          "y": "263.80935908729566"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2632",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2826 第 2/2 次 E2E d200d1c",
+          "x": "1340.867037037037",
+          "y": "243.7029521088026"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2654",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2830 第 1/1 次 E2E aae5599",
+          "x": "1344.574814814815",
+          "y": "279.7529488859764"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2667",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2004 第 10/10 次 E2E 8c78e83",
+          "x": "1346.2285185185185",
+          "y": "288.4116086199858"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(160, 106, 21)",
+              "fill": "var(--warn)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2672",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2831 第 1/6 次 E2E 41861c9",
+          "x": "1350.5977777777778",
+          "y": "308.226618395892"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(160, 106, 21)",
+              "fill": "var(--warn)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2681",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2831 第 2/6 次 E2E a8508a8",
+          "x": "1357.8914814814814",
+          "y": "314.34595965021595"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2691",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2831 第 3/6 次 E2E d655cea",
+          "x": "1362.3999999999999",
+          "y": "274.2996583804224"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2700",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2172 第 2/3 次 E2E d218d70",
+          "x": "1363.5837037037038",
+          "y": "283.9157660657886"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(160, 106, 21)",
+              "fill": "var(--warn)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2719",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2766 第 10/11 次 E2E 6300032",
+          "x": "1396.2574074074075",
+          "y": "323.67067013299527"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2728",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2766 第 11/11 次 E2E ac26e73",
+          "x": "1397.0059259259258",
+          "y": "253.8185978557463"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(160, 106, 21)",
+              "fill": "var(--warn)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2782",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2810 第 4/6 次 E2E fc28a13",
+          "x": "1437.2518518518518",
+          "y": "324.253464538169"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2818",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2836 第 1/3 次 E2E be3858f",
+          "x": "1474.73",
+          "y": "283.8741378939905"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2829",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2837 第 1/1 次 E2E 3f42f45",
+          "x": "1494.7833333333333",
+          "y": "283.0415744580281"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2848",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2840 第 1/1 次 E2E fd83e44",
+          "x": "1520.1981481481482",
+          "y": "293.9897836409342"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(160, 106, 21)",
+              "fill": "var(--warn)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2883",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2737 第 10/12 次 E2E 1f38476",
+          "x": "1526.2907407407408",
+          "y": "303.73077584169476"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2885",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2786 第 12/12 次 E2E 54fbd57",
+          "x": "1526.2907407407408",
+          "y": "281.5845884450938"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(160, 106, 21)",
+              "fill": "var(--warn)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2902",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2737 第 11/12 次 E2E 54fbd57",
+          "x": "1535.36",
+          "y": "278.75387276282146"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(160, 106, 21)",
+              "fill": "var(--warn)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2925",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2831 第 5/6 次 E2E 2c44d3c",
+          "x": "1543.2455555555555",
+          "y": "327.9583718282019"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(51, 104, 159)",
+              "fill": "var(--info)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2927",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2831 第 6/6 次 E2E 2c44d3c",
+          "x": "1543.2455555555555",
+          "y": "220.9739703070279"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(51, 104, 159)",
+              "fill": "var(--info)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2934",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2836 第 3/3 次 E2E be3858f",
+          "x": "1546.1351851851853",
+          "y": "227.88424682551621"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(51, 104, 159)",
+              "fill": "var(--info)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2945",
+          "kind": "e2e",
+          "label": "E2E 详情：PR #2737 第 12/12 次 E2E 4f49dbb",
+          "x": "1554.2644444444445",
+          "y": "247.32460305523927"
+        }
+      ],
+      "medianLines": 1,
+      "role": "chart"
+    },
+    {
+      "box": {
+        "height": 72,
+        "width": 1606
+      },
+      "marks": [],
+      "medianLines": 0,
+      "role": "navigator"
+    },
+    {
+      "box": {
+        "height": 370,
+        "width": 1610
+      },
+      "marks": [
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "1946",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2730 第 2/2 次 E2E fc3ea05",
+          "x": "80.88243055555556",
+          "y": "324.0396320690438"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "1966",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2674 第 10/10 次 E2E 8f1398b",
+          "x": "119.79417824074073",
+          "y": "51.21428571428572"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "1989",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2809 第 1/1 次 E2E 6524bed",
+          "x": "228.15246527777776",
+          "y": "270.2079642667878"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2026",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2812 第 1/1 次 E2E 647433f",
+          "x": "882.1671296296296",
+          "y": "320.81266560678324"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2045",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2813 第 1/1 次 E2E 647433f",
+          "x": "887.1338425925925",
+          "y": "324.3329926565221"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2088",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2737 第 8/12 次 E2E 529106b",
+          "x": "913.8211805555555",
+          "y": "316.2655765008706"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2096",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2738 第 1/1 次 E2E 3d2c512",
+          "x": "913.943599537037",
+          "y": "319.199182375653"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2108",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2786 第 10/12 次 E2E 990660d",
+          "x": "914.4682523148148",
+          "y": "316.85229767582706"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2111",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2786 第 1/1 次 E2E 990660d",
+          "x": "914.4682523148148",
+          "y": "324.0396320690438"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2123",
+          "kind": "npu",
+          "label": "NPU 排队详情：未关联 PR · Run #40614472231 · attempt 1 · 83950d2",
+          "x": "915.3601620370371",
+          "y": "317.7323794382618"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2161",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2786 第 1/1 次 E2E 9187dce",
+          "x": "950.9840856481482",
+          "y": "71.60284654402301"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2167",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2786 第 11/12 次 E2E 9187dce",
+          "x": "950.9840856481482",
+          "y": "324.1863123627829"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2175",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2737 第 1/1 次 E2E 8ac0144",
+          "x": "950.9840856481482",
+          "y": "63.24206980089332"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2185",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2738 第 1/1 次 E2E 4e164ff",
+          "x": "951.001574074074",
+          "y": "121.76750700280112"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2199",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2561 第 5/5 次 E2E 65a9243",
+          "x": "962.2816087962964",
+          "y": "324.0396320690438"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2205",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2816 第 1/2 次 E2E 121fb4d",
+          "x": "968.6998611111111",
+          "y": "322.7195094253918"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2211",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2692 第 3/4 次 E2E 9e9f831",
+          "x": "976.7620254629629",
+          "y": "324.0396320690438"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2221",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2808 第 5/8 次 E2E 9747ce0",
+          "x": "993.2011458333333",
+          "y": "264.6341131047013"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2224",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2816 第 2/2 次 E2E d11b8ec",
+          "x": "1002.4525231481482",
+          "y": "306.8780377015671"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2249",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2793 第 2/2 次 E2E 8484dc1",
+          "x": "1028.212974537037",
+          "y": "118.68722083427966"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2315",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2545 第 1/1 次 E2E f20a007",
+          "x": "1074.8895833333333",
+          "y": "288.1029601029601"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2319",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2545 第 9/13 次 E2E f20a007",
+          "x": "1074.8895833333333",
+          "y": "301.5975471269589"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2333",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2785 第 2/4 次 E2E bc7c403",
+          "x": "1089.2475810185183",
+          "y": "264.0473919297449"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2339",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2823 第 1/1 次 E2E ca1fe96",
+          "x": "1113.0318402777777",
+          "y": "300.7174653645242"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2348",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2824 第 1/4 次 E2E 0868775",
+          "x": "1114.186076388889",
+          "y": "324.1863123627829"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2355",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2810 第 3/6 次 E2E f2c4a15",
+          "x": "1135.2771180555555",
+          "y": "324.0396320690438"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2362",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2825 第 1/2 次 E2E 85e2fd6",
+          "x": "1153.7623842592593",
+          "y": "324.1863123627829"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2429",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2545 第 1/1 次 E2E c797b09",
+          "x": "1205.7554745370371",
+          "y": "322.42614883791356"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2435",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2545 第 13/13 次 E2E c797b09",
+          "x": "1205.7554745370371",
+          "y": "323.3062306003483"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2455",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2824 第 3/4 次 E2E 4c8ab81",
+          "x": "1231.480949074074",
+          "y": "323.8929517753047"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2463",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2822 第 2/4 次 E2E 17f221a",
+          "x": "1235.5557523148148",
+          "y": "324.3329926565221"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2491",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2827 第 1/1 次 E2E ecef7b3",
+          "x": "1263.9219791666667",
+          "y": "324.0396320690438"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2519",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2822 第 3/4 次 E2E 0c3cb9d",
+          "x": "1267.3846875",
+          "y": "324.3329926565221"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2524",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2692 第 4/4 次 E2E 952c95a",
+          "x": "1271.7043287037036",
+          "y": "323.4529108940874"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2547",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2828 第 1/1 次 E2E 1c7c331",
+          "x": "1284.4883680555556",
+          "y": "323.8929517753047"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2554",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2273 第 4/4 次 E2E f12ca6a",
+          "x": "1284.873113425926",
+          "y": "323.8929517753047"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2577",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2822 第 4/4 次 E2E e23540b",
+          "x": "1301.7494444444444",
+          "y": "324.1863123627829"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2583",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2819 第 3/4 次 E2E 7823c69",
+          "x": "1303.305914351852",
+          "y": "320.66598531304413"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2595",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2647 第 2/2 次 E2E e12ea5b",
+          "x": "1313.5016666666668",
+          "y": "323.7462714815656"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2603",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2731 第 5/5 次 E2E 737e92b",
+          "x": "1315.1455787037037",
+          "y": "324.1863123627829"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2609",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2820 第 2/3 次 E2E 1d48972",
+          "x": "1319.9723842592593",
+          "y": "323.5995911878265"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2613",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2267 第 2/2 次 E2E 50ee56c",
+          "x": "1338.1253703703703",
+          "y": "323.8929517753047"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2621",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2276 第 2/3 次 E2E 7111d58",
+          "x": "1338.667511574074",
+          "y": "323.1595503066091"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2641",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2824 第 4/4 次 E2E 18961c3",
+          "x": "1340.766122685185",
+          "y": "324.1863123627829"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2704",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2820 第 3/3 次 E2E f99aa3c",
+          "x": "1372.455150462963",
+          "y": "324.0396320690438"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2712",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2276 第 3/3 次 E2E cdf4eac",
+          "x": "1381.6715509259259",
+          "y": "324.1863123627829"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2735",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2832 第 1/2 次 E2E b00e5b2",
+          "x": "1400.751423611111",
+          "y": "323.4529108940874"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2740",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2833 第 1/2 次 E2E a8146d3",
+          "x": "1401.748263888889",
+          "y": "324.4796729502612"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2748",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2834 第 1/1 次 E2E 4ded968",
+          "x": "1409.9328472222223",
+          "y": "323.4529108940874"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2756",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2808 第 8/8 次 E2E adab120",
+          "x": "1412.118900462963",
+          "y": "323.7462714815656"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2766",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2832 第 2/2 次 E2E d204e6c",
+          "x": "1425.8997800925924",
+          "y": "322.42614883791356"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2772",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2825 第 2/2 次 E2E f66921c",
+          "x": "1431.2687268518519",
+          "y": "323.8929517753047"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2788",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2810 第 5/6 次 E2E 2c7fb19",
+          "x": "1437.0748842592593",
+          "y": "324.6263532440003"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2795",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2819 第 4/4 次 E2E 9ed8e02",
+          "x": "1442.6536921296297",
+          "y": "323.8929517753047"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2801",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2827 第 1/1 次 E2E feeff28",
+          "x": "1445.7841203703704",
+          "y": "324.3329926565221"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2812",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2810 第 6/6 次 E2E 7916953",
+          "x": "1469.918148148148",
+          "y": "321.69274736921795"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2824",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2833 第 2/2 次 E2E e284713",
+          "x": "1481.058275462963",
+          "y": "324.0396320690438"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2836",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2838 第 1/1 次 E2E 70e0b43",
+          "x": "1503.933136574074",
+          "y": "324.0396320690438"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2842",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2839 第 1/1 次 E2E 814bbf8",
+          "x": "1504.0205787037037",
+          "y": "324.4796729502612"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2864",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2738 第 12/12 次 E2E 4cfb0c0",
+          "x": "1526.0035300925927",
+          "y": "318.02574002574005"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(37, 114, 75)",
+              "fill": "var(--ok)",
+              "radius": "3.2"
+            }
+          ],
+          "index": "2912",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2044 第 1/1 次 E2E b5e423f",
+          "x": "1536.8813310185185",
+          "y": "324.4796729502612"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(160, 106, 21)",
+              "fill": "var(--warn)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "1954",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2674 第 9/10 次 E2E a76e2ec",
+          "x": "105.12138888888889",
+          "y": "322.27946854417445"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "1961",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2808 第 3/8 次 E2E d2271e0",
+          "x": "112.86876157407409",
+          "y": "112.82000908471497"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(160, 106, 21)",
+              "fill": "var(--warn)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "1974",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2004 第 7/10 次 E2E 00cf054",
+          "x": "205.435",
+          "y": "322.8661897191309"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "1981",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2004 第 8/10 次 E2E 81a7a7b",
+          "x": "206.36188657407408",
+          "y": "324.3329926565221"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2019",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2811 第 1/1 次 E2E 7983097",
+          "x": "876.4134375",
+          "y": "324.0396320690438"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2032",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2004 第 9/10 次 E2E 6dc5a2c",
+          "x": "884.8603472222222",
+          "y": "322.7195094253918"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2037",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2808 第 4/8 次 E2E f8e9f7b",
+          "x": "886.1894675925926",
+          "y": "324.1863123627829"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(160, 106, 21)",
+              "fill": "var(--warn)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2050",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2786 第 1/1 次 E2E 38d5d84",
+          "x": "907.7002314814814",
+          "y": "324.3329926565221"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(160, 106, 21)",
+              "fill": "var(--warn)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2056",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2786 第 8/12 次 E2E 38d5d84",
+          "x": "907.7002314814814",
+          "y": "324.0396320690438"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(160, 106, 21)",
+              "fill": "var(--warn)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2068",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2786 第 1/1 次 E2E c303887",
+          "x": "910.4634027777777",
+          "y": "324.3329926565221"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(160, 106, 21)",
+              "fill": "var(--warn)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2069",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2786 第 9/12 次 E2E c303887",
+          "x": "910.4634027777777",
+          "y": "324.3329926565221"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2083",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2737 第 1/1 次 E2E 529106b",
+          "x": "913.8211805555555",
+          "y": "318.4657809069574"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2100",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2738 第 10/12 次 E2E 3d2c512",
+          "x": "913.943599537037",
+          "y": "316.55893708834884"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(160, 106, 21)",
+              "fill": "var(--warn)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2133",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2443 第 8/10 次 E2E 4965933",
+          "x": "932.7961226851852",
+          "y": "323.3062306003483"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2140",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2810 第 1/6 次 E2E 8e320e1",
+          "x": "934.7023611111111",
+          "y": "323.3062306003483"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2150",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2443 第 9/10 次 E2E e317cc2",
+          "x": "946.6644444444445",
+          "y": "324.1863123627829"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2171",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2786 第 1/1 次 E2E 9187dce",
+          "x": "950.9840856481482",
+          "y": "324.4796729502612"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2172",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2737 第 9/12 次 E2E 8ac0144",
+          "x": "950.9840856481482",
+          "y": "324.1863123627829"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2176",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2737 第 1/1 次 E2E 8ac0144",
+          "x": "950.9840856481482",
+          "y": "324.1863123627829"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2180",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2738 第 11/12 次 E2E 4e164ff",
+          "x": "951.001574074074",
+          "y": "321.54606707547885"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2181",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2738 第 1/1 次 E2E 4e164ff",
+          "x": "951.001574074074",
+          "y": "324.1863123627829"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2217",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2615 第 1/1 次 E2E 4f2b0c4",
+          "x": "985.9784259259259",
+          "y": "219.60326292679235"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2237",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2766 第 9/11 次 E2E acf7961",
+          "x": "1003.2919675925925",
+          "y": "312.30520856991444"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2243",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2817 第 1/2 次 E2E d781216",
+          "x": "1006.3699305555556",
+          "y": "135.1154137330608"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(160, 106, 21)",
+              "fill": "var(--warn)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2255",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2819 第 1/4 次 E2E e5f6860",
+          "x": "1029.3147453703705",
+          "y": "86.27087591793475"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2261",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2820 第 1/3 次 E2E 09578b3",
+          "x": "1031.8855439814815",
+          "y": "104.89927322280263"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(160, 106, 21)",
+              "fill": "var(--warn)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2283",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2545 第 1/1 次 E2E 5ebe5e6",
+          "x": "1045.7713541666667",
+          "y": "215.34953440835795"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(160, 106, 21)",
+              "fill": "var(--warn)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2286",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2545 第 7/13 次 E2E 5ebe5e6",
+          "x": "1045.7713541666667",
+          "y": "209.33564236505413"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2295",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2819 第 2/4 次 E2E d47b93f",
+          "x": "1064.0817361111112",
+          "y": "267.12767809826636"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2298",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2822 第 1/4 次 E2E f814432",
+          "x": "1066.022951388889",
+          "y": "241.89866757513818"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(160, 106, 21)",
+              "fill": "var(--warn)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2300",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2545 第 1/1 次 E2E e69f0be",
+          "x": "1066.6350462962962",
+          "y": "324.4796729502612"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(160, 106, 21)",
+              "fill": "var(--warn)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2303",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2545 第 8/13 次 E2E e69f0be",
+          "x": "1066.6350462962962",
+          "y": "313.77201150730565"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2326",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2810 第 2/6 次 E2E 7a2ea63",
+          "x": "1075.7290277777777",
+          "y": "301.744227420698"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(160, 106, 21)",
+              "fill": "var(--warn)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2391",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2545 第 1/1 次 E2E a9dcd87",
+          "x": "1182.7756828703705",
+          "y": "324.1863123627829"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2395",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2545 第 10/13 次 E2E a9dcd87",
+          "x": "1182.7756828703705",
+          "y": "322.57282913165267"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(160, 106, 21)",
+              "fill": "var(--warn)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2410",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2545 第 11/13 次 E2E 2015dbb",
+          "x": "1192.5692013888888",
+          "y": "323.4529108940874"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(160, 106, 21)",
+              "fill": "var(--warn)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2411",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2545 第 1/1 次 E2E 2015dbb",
+          "x": "1192.5692013888888",
+          "y": "324.4796729502612"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(160, 106, 21)",
+              "fill": "var(--warn)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2422",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2545 第 12/13 次 E2E 0194241",
+          "x": "1203.2896064814815",
+          "y": "323.8929517753047"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(160, 106, 21)",
+              "fill": "var(--warn)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2443",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2824 第 2/4 次 E2E 8c6ec14",
+          "x": "1222.8241782407408",
+          "y": "319.9325838443485"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(160, 106, 21)",
+              "fill": "var(--warn)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2448",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2826 第 1/2 次 E2E 0dd01be",
+          "x": "1224.4855787037036",
+          "y": "324.3329926565221"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2474",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2785 第 3/4 次 E2E 537e161",
+          "x": "1238.4588310185184",
+          "y": "320.81266560678324"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(160, 106, 21)",
+              "fill": "var(--warn)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2496",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2273 第 3/4 次 E2E 40d5a88",
+          "x": "1264.2542592592592",
+          "y": "324.3329926565221"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(160, 106, 21)",
+              "fill": "var(--warn)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2533",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2808 第 6/8 次 E2E fadcc4f",
+          "x": "1278.035138888889",
+          "y": "322.8661897191309"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2539",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2731 第 4/5 次 E2E 737e92b",
+          "x": "1283.0193402777777",
+          "y": "320.66598531304413"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2561",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2172 第 1/3 次 E2E ad91b07",
+          "x": "1286.517025462963",
+          "y": "324.0396320690438"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2568",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2808 第 7/8 次 E2E 0986959",
+          "x": "1286.5869791666667",
+          "y": "323.5995911878265"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(160, 106, 21)",
+              "fill": "var(--warn)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2590",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2647 第 1/2 次 E2E c09285c",
+          "x": "1307.9053703703703",
+          "y": "321.9861079566962"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2625",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2829 第 1/3 次 E2E 5181e8d",
+          "x": "1339.2621180555557",
+          "y": "318.9058217881747"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2632",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2826 第 2/2 次 E2E d200d1c",
+          "x": "1339.7168171296296",
+          "y": "324.1863123627829"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2654",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2830 第 1/1 次 E2E aae5599",
+          "x": "1343.4418518518519",
+          "y": "324.0396320690438"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2667",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2004 第 10/10 次 E2E 8c78e83",
+          "x": "1345.1032523148149",
+          "y": "324.1863123627829"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(160, 106, 21)",
+              "fill": "var(--warn)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2672",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2831 第 1/6 次 E2E 41861c9",
+          "x": "1349.4928472222223",
+          "y": "324.0396320690438"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(160, 106, 21)",
+              "fill": "var(--warn)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2681",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2831 第 2/6 次 E2E a8508a8",
+          "x": "1356.8204976851853",
+          "y": "324.4796729502612"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2691",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2831 第 3/6 次 E2E d655cea",
+          "x": "1361.35",
+          "y": "323.4529108940874"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2700",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2172 第 2/3 次 E2E d218d70",
+          "x": "1362.539212962963",
+          "y": "323.8929517753047"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(160, 106, 21)",
+              "fill": "var(--warn)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2719",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2766 第 10/11 次 E2E 6300032",
+          "x": "1395.364988425926",
+          "y": "324.4796729502612"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2728",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2766 第 11/11 次 E2E ac26e73",
+          "x": "1396.1169907407407",
+          "y": "324.3329926565221"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(160, 106, 21)",
+              "fill": "var(--warn)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2782",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2810 第 4/6 次 E2E fc28a13",
+          "x": "1436.5502314814814",
+          "y": "326.53319706260885"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2818",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2836 第 1/3 次 E2E be3858f",
+          "x": "1474.2028125",
+          "y": "323.4529108940874"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2829",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2837 第 1/1 次 E2E 3f42f45",
+          "x": "1494.3494791666667",
+          "y": "324.0396320690438"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2848",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2840 第 1/1 次 E2E fd83e44",
+          "x": "1519.8825810185185",
+          "y": "323.5995911878265"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2868",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2738 第 1/1 次 E2E 4cfb0c0",
+          "x": "1526.0035300925927",
+          "y": "322.7195094253918"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(51, 104, 159)",
+              "fill": "var(--info)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2879",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2786 第 1/1 次 E2E 54fbd57",
+          "x": "1526.0035300925927",
+          "y": "324.4796729502612"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2880",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2786 第 1/1 次 E2E 54fbd57",
+          "x": "1526.0035300925927",
+          "y": "322.42614883791356"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(160, 106, 21)",
+              "fill": "var(--warn)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2881",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2737 第 1/1 次 E2E 1f38476",
+          "x": "1526.0035300925927",
+          "y": "321.39938678173974"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(160, 106, 21)",
+              "fill": "var(--warn)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2883",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2737 第 10/12 次 E2E 1f38476",
+          "x": "1526.0035300925927",
+          "y": "304.38447270800214"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2885",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2786 第 12/12 次 E2E 54fbd57",
+          "x": "1526.0035300925927",
+          "y": "306.8780377015671"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(191, 64, 56)",
+              "fill": "var(--danger)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2899",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2737 第 1/1 次 E2E 54fbd57",
+          "x": "1535.115",
+          "y": "324.4796729502612"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(160, 106, 21)",
+              "fill": "var(--warn)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2902",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2737 第 11/12 次 E2E 54fbd57",
+          "x": "1535.115",
+          "y": "324.0396320690438"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(51, 104, 159)",
+              "fill": "var(--info)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2927",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2831 第 6/6 次 E2E 2c44d3c",
+          "x": "1543.0372569444444",
+          "y": "323.8929517753047"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(51, 104, 159)",
+              "fill": "var(--info)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2945",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2737 第 12/12 次 E2E 4f49dbb",
+          "x": "1554.1074305555555",
+          "y": "323.8929517753047"
+        },
+        {
+          "circles": [
+            {
+              "computedFill": "rgba(0, 0, 0, 0)",
+              "fill": null,
+              "radius": "8"
+            },
+            {
+              "computedFill": "rgb(51, 104, 159)",
+              "fill": "var(--info)",
+              "radius": "4.2"
+            }
+          ],
+          "index": "2947",
+          "kind": "npu",
+          "label": "NPU 排队详情：PR #2737 第 1/1 次 E2E 4f49dbb",
+          "x": "1554.1074305555555",
+          "y": "324.6263532440003"
+        }
+      ],
+      "medianLines": 1,
+      "role": "npuChart"
+    }
+  ],
+  "text": "M\n监控中心\nUBSCORE × TRITON\n社区\nUBSCore\nTriton-Ascend\n 每日数据快照\nGitCode × Jenkins × GitHub Actions\n每日自动采集更新\n查看代码仓 \n监控中心 / Triton-Ascend / 门禁效率趋势\n快照采集 UBS 2026-10-28 14:58:51 · TRITON 2026-10-28 20:01:46\n 全部目标分支\n重新加载快照\nTriton-Ascend 工程效能\n\nTriton-Ascend · Integration Tests 单次运行效率\n\n门禁采集窗口 · 上海时间\n2026-10-25 → 2026-10-28\n采集于 2026-10-28 20:01:46\nIntegration Tests E2E\n41.53 minP90\nP50 20.39 min\nn=84\n按批次起点选区 · 成功/失败批次的有效 E2E · 兼作“耗时偏长”阈值\nNPU 最长排队\n7.27 minP90\nP50 0.50 min\nn=101\n包含 NPU Job 的批次 · 取最长 NPU 排队\n全局筛选\n合入分支：全部\n清除\n成功 783\n失败 113\n执行中 12\n取消 101\n筛选会同步更新全部指标、图表和列表\nIntegration Tests E2E\n\n每点为一次 Integration Tests；创建至最后 job 完成，含排队。重跑前置排队未知时仅展示观测值。点击查看 PR 提交历史。\n\n全部\n耗时偏长\n失败\n执行中\n124.11 min\n93.09 min\n62.06 min\n31.03 min\n0.00 min\n10/27 20:01\n10/28 00:01\n10/28 04:01\n10/28 08:01\n10/28 12:01\n10/28 16:01\n10/28 20:01\n图内 P90 41.53 min\n六小时桶中位数\n选区范围\n1.0 天\n有效样本\n84 次\n平均（图内）\n25.03 min\nP50（图内）\n20.39 min\nP90（图内）\n41.53 min\n耗时偏长阈值（页级 P90）\n41.53 min\n成功\n失败\n取消\n执行中\n图内 P90\n六小时桶中位数\n拖动或键盘选择时间范围 · 两张趋势图联动\n10/27 20:01 — 10/28 20:01\n10/25 20:01\n10/28 20:01\n快速选择\n6 小时\n12 小时\n24 小时\n48 小时\n72 小时\n1.0 天\nNPU Job 排队时长\n\n每点为一次包含 NPU Job 的运行，纵轴取其子任务中最长排队时长。\n\n全部\n失败\n执行中\n35.22 min\n26.42 min\n17.61 min\n8.81 min\n0.00 min\n10/27 20:01\n10/28 00:01\n10/28 04:01\n10/28 08:01\n10/28 12:01\n10/28 16:01\n10/28 20:01\n图内 P90 7.27 min\n六小时桶中位数\n11 个批次的 NPU 明细缺失或时间戳异常，未计入统计；缺失不代表没有排队。\n选区范围\n1.0 天\n有效样本\n101 次\n平均排队\n3.22 min\nP50\n0.50 min\nP90\n7.27 min\n成功\n失败\n取消\n执行中\n图内 P90\n六小时桶中位数\n需要关注的 PR\n\n优先显示超过 P90（按页级范围 84 个有效完成样本计算）、执行中和失败的批次；理由计数可重叠，列表按稳定批次去重、每批次一行多标签。\n\n导出批次 CSV\n查看全部批次\n时间未知\n关注批次\n158\nPR #2545\nf20a007\n[Sync](feat) merge feature/simd-simt-compile-mode branch with main\n耗时偏长\nchj-2025 · feature/simd-simt-compile-mode-sync-main-v2 → feature/simd-simt-compile-mode\n成功\n10/28 11:52\n75.90 min\n最后结束：Integration Tests\nPR #2545\nc797b09\n[Sync](feat) merge feature/simd-simt-compile-mode branch with main\n耗时偏长\nchj-2025 · feature/simd-simt-compile-mode-sync-main-v2 → feature/simd-simt-compile-mode\n成功\n10/28 13:57\n75.72 min\n最后结束：Integration Tests\nPR #2674\n8f1398b\n[ssbuffer](fix) hoist and unify redirected output …\n耗时偏长\nolivervnc · splitif-hoist → main-dev\n成功\n10/27 20:42\n55.25 min\n最后结束：Integration Tests\nPR #2793\n8484dc1\n[TritonToLinalg](feat) Support noinline func\n耗时偏长\nkingsirvince · 1026_main_dev_nolinine → main-dev\n成功\n10/28 11:08\n48.55 min\n最后结束：Integration Tests\nPR #2766\nacf7961\n[ssbuffer](feat) outline start end sync and reuse\n耗时偏长 · 失败\nlrf22 · sync-enhance → main-dev\n失败\n10/28 10:44\n47.27 min\n最后结束：Integration Tests\nPR #2615\n4f2b0c4\n[TritonToLinalg](fix) keep the index operand of reduce-with-index ops\n耗时偏长 · 失败\nli-lizhe · fix/2530-useindexinput → main\n失败\n10/28 10:28\n45.68 min\n最后结束：Integration Tests\nPR #2808\n9747ce0\nTla sync\n耗时偏长\nmqzy · tla-sync → main-dev\n成功\n10/28 10:34\n44.75 min\n最后结束：Integration Tests\nPR #2820\n09578b3\n[ZeroValuePropagationPass](feat) fold all-zero statements at TTIR level\n耗时偏长 · 失败\nlu2038 · fix/ta-zero-value-propagation → main\n失败\n10/28 11:11\n44.68 min\n最后结束：Integration Tests\nPR #2808\nd2271e0\nTla sync\n耗时偏长 · 失败\nmqzy · tla-sync → main-dev\n失败\n10/27 20:35\n43.23 min\n最后结束：Integration Tests\nPR #2738\n4cfb0c0\n[ci](fix) consume upstream-style dependency pins\n执行中\nrobellliu-dev · feat/workflows-read-bom → main\n执行中\n10/28 19:02\n已观测 59.08 minE2E 排除：辅助检查，不计入 Integration Tests E2E\n仍在等待 / 执行：Release Triton Ascend Images\nPR #2786\n54fbd57\n[docs](fix) align LLVM examples and dependency consumers\n执行中\nrobellliu-dev · fix/hardcode-followup → main\n执行中\n10/28 19:02\n已观测 59.08 minE2E 排除：辅助检查，不计入 Integration Tests E2E\n仍在等待 / 执行：Release Triton Ascend Images\nPR #2786\n54fbd57\n[docs](fix) align LLVM examples and dependency consumers\n执行中\nrobellliu-dev · fix/hardcode-followup → main\n执行中\n10/28 19:02\n已观测 59.08 minE2E 排除：辅助检查，不计入 Integration Tests E2E\n仍在等待 / 执行：LLVM Build\nPR #2786\n54fbd57\n[docs](fix) align LLVM examples and dependency consumers\n执行中\nrobellliu-dev · fix/hardcode-followup → main\n执行中\n10/28 19:02\n已观测 59.08 minE2E 排除：辅助检查，不计入 Integration Tests E2E\n仍在等待 / 执行：Wheels\nPR #2831\n2c44d3c\n[DynamicReuse](test) add test cases for automatic constexpr reuse\n执行中\nWuTYSFG · feat_reuse → main-dev\n执行中\n10/28 19:18\n已观测 42.85 minE2E 排除：执行中观测\n仍在等待 / 执行：Integration Tests\nPR #2836\nbe3858f · 重跑\n[Launcher](fix) Initialize lock workspaces in stream order\n执行中\nliufengsheng-beep · main-dev → main-dev\n执行中\n10/28 19:21\n已观测 40.08 min*E2E 排除：执行中观测\n仍在等待 / 执行：Integration Tests\nPR #2737\n4f49dbb\n[build](feat) unify dependency pins and consumers with upstream\n执行中\nrobellliu-dev · feat/deps-bom-single-source → main\n执行中\n10/28 19:29\n已观测 32.30 minE2E 排除：辅助检查，不计入 Integration Tests E2E\n仍在等待 / 执行：Wheels\nPR #2737\n4f49dbb\n[build](feat) unify dependency pins and consumers with upstream\n执行中\nrobellliu-dev · feat/deps-bom-single-source → main\n执行中\n10/28 19:29\n已观测 32.30 minE2E 排除：辅助检查，不计入 Integration Tests E2E\n仍在等待 / 执行：DynamicCVPipeline PreCheck Tests\nPR #2737\n4f49dbb\n[build](feat) unify dependency pins and consumers with upstream\n执行中\nrobellliu-dev · feat/deps-bom-single-source → main\n执行中\n10/28 19:29\n已观测 32.30 minE2E 排除：辅助检查，不计入 Integration Tests E2E\n仍在等待 / 执行：LLVM Build\nPR #2737\n4f49dbb\n[build](feat) unify dependency pins and consumers with upstream\n执行中\nrobellliu-dev · feat/deps-bom-single-source → main\n执行中\n10/28 19:29\n已观测 32.30 minE2E 排除：执行中观测\n仍在等待 / 执行：Integration Tests\nPR #2737\n4f49dbb\n[build](feat) unify dependency pins and consumers with upstream\n执行中\nrobellliu-dev · feat/deps-bom-single-source → main\n执行中\n10/28 19:29\n已观测 32.30 minE2E 排除：辅助检查，不计入 Integration Tests E2E\n仍在等待 / 执行：Release Triton Ascend Images\nPR #2737\n4f49dbb\n[build](feat) unify dependency pins and consumers with upstream\n执行中\nrobellliu-dev · feat/deps-bom-single-source → main\n执行中\n10/28 19:29\n已观测 32.30 minE2E 排除：辅助检查，不计入 Integration Tests E2E\n仍在等待 / 执行：Documentation\nPR #2808\nd2271e0\nTla sync\n失败\nmqzy · tla-sync → main-dev\n失败\n10/27 20:35\n已观测 0.08 minE2E 排除：辅助检查，不计入 Integration Tests E2E\n最后结束：PR Title Check\nPR #2808\nd2271e0\nTla sync\n失败\nmqzy · tla-sync → main-dev\n失败\n10/27 20:35\n已观测 1.28 minE2E 排除：辅助检查，不计入 Integration Tests E2E\n最后结束：Pre-Commit Check\nPR #2004\n00cf054\n[WIP]Mne\n失败\nHsyy04 · mne → main-dev\n失败\n10/27 22:04\n已观测 0.13 minE2E 排除：辅助检查，不计入 Integration Tests E2E\n最后结束：PR Title Check\nPR #2004\n81a7a7b\n[WIP]Mne\n失败\nHsyy04 · mne → main-dev\n失败\n10/27 22:05\n已观测 1.55 minE2E 排除：辅助检查，不计入 Integration Tests E2E\n最后结束：Pre-Commit Check\nPR #2004\n81a7a7b\n[WIP]Mne\n失败\nHsyy04 · mne → main-dev\n失败\n10/27 22:05\n已观测 0.10 minE2E 排除：辅助检查，不计入 Integration Tests E2E\n最后结束：PR Title Check\nPR #2004\n81a7a7b\n[WIP]Mne\n失败\nHsyy04 · mne → main-dev\n失败\n10/27 22:05\n14.83 min\n最后结束：Integration Tests\nPR #2004\n81a7a7b\n[WIP]Mne\n失败\nHs",
+  "url": "https://tianll12115.github.io/union_monitor/#projects/triton/engineering?from=1793102506000&to=1793188906000"
+}

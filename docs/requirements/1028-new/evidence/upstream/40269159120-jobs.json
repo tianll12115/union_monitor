@@ -1,0 +1,527 @@
+{
+  "total_count": 4,
+  "jobs": [
+    {
+      "id": 121398016013,
+      "run_id": 40269159120,
+      "workflow_name": "Integration Tests",
+      "head_branch": "fix/dot-scaled-optional-rhs",
+      "run_url": "https://api.github.com/repos/triton-lang/triton-ascend/actions/runs/40269159120",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOQ0N-7c8AAAAcQ-K4DQ",
+      "head_sha": "ec023b92f1de677444c6420be5736b803f2c14bf",
+      "url": "https://api.github.com/repos/triton-lang/triton-ascend/actions/jobs/121398016013",
+      "html_url": "https://github.com/triton-lang/triton-ascend/actions/runs/40269159120/job/121398016013",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-10-26T04:27:23Z",
+      "started_at": "2026-10-26T04:27:26Z",
+      "completed_at": "2026-10-26T04:27:28Z",
+      "name": "runner-preparation / prepare",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-10-26T04:27:26Z",
+          "completed_at": "2026-10-26T04:27:27Z"
+        },
+        {
+          "name": "Decide pre-submit integration test enablement",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-10-26T04:27:27Z",
+          "completed_at": "2026-10-26T04:27:27Z"
+        },
+        {
+          "name": "Decide manual trigger integration test enablement",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 3,
+          "started_at": "2026-10-26T04:27:27Z",
+          "completed_at": "2026-10-26T04:27:27Z"
+        },
+        {
+          "name": "Checkout post-submit commits",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 4,
+          "started_at": "2026-10-26T04:27:27Z",
+          "completed_at": "2026-10-26T04:27:27Z"
+        },
+        {
+          "name": "Detect if build deps (e.g. LLVM hash) changed",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 5,
+          "started_at": "2026-10-26T04:27:27Z",
+          "completed_at": "2026-10-26T04:27:27Z"
+        },
+        {
+          "name": "Detect if enough time has passed since last post-submit run",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 6,
+          "started_at": "2026-10-26T04:27:27Z",
+          "completed_at": "2026-10-26T04:27:27Z"
+        },
+        {
+          "name": "Decide whether to run integration tests post-submit",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 7,
+          "started_at": "2026-10-26T04:27:27Z",
+          "completed_at": "2026-10-26T04:27:27Z"
+        },
+        {
+          "name": "Prepare runner matrix",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-10-26T04:27:27Z",
+          "completed_at": "2026-10-26T04:27:27Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9,
+          "started_at": "2026-10-26T04:27:27Z",
+          "completed_at": "2026-10-26T04:27:27Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/triton-lang/triton-ascend/check-runs/121398016013",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "runner_id": 1000135097,
+      "runner_name": "GitHub Actions 1000135097",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    },
+    {
+      "id": 121398039160,
+      "run_id": 40269159120,
+      "workflow_name": "Integration Tests",
+      "head_branch": "fix/dot-scaled-optional-rhs",
+      "run_url": "https://api.github.com/repos/triton-lang/triton-ascend/actions/runs/40269159120",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOQ0N-7c8AAAAcQ-MSeA",
+      "head_sha": "ec023b92f1de677444c6420be5736b803f2c14bf",
+      "url": "https://api.github.com/repos/triton-lang/triton-ascend/actions/jobs/121398039160",
+      "html_url": "https://github.com/triton-lang/triton-ascend/actions/runs/40269159120/job/121398039160",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-10-26T04:27:29Z",
+      "started_at": "2026-10-26T04:30:34Z",
+      "completed_at": "2026-10-26T04:45:36Z",
+      "name": "integration-tests-ascend / integration-tests-ascend (linux-aarch64-a3-800i-4, py3.11)",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-10-26T04:30:36Z",
+          "completed_at": "2026-10-26T04:30:45Z"
+        },
+        {
+          "name": "Initialize containers",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-10-26T04:30:45Z",
+          "completed_at": "2026-10-26T04:31:03Z"
+        },
+        {
+          "name": "Checkout",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-10-26T04:31:03Z",
+          "completed_at": "2026-10-26T04:31:17Z"
+        },
+        {
+          "name": "Add git safe directory",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-10-26T04:31:17Z",
+          "completed_at": "2026-10-26T04:31:20Z"
+        },
+        {
+          "name": "Cache build dependencies",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-10-26T04:31:20Z",
+          "completed_at": "2026-10-26T04:32:42Z"
+        },
+        {
+          "name": "Download and install Bisheng compiler",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-10-26T04:32:42Z",
+          "completed_at": "2026-10-26T04:32:56Z"
+        },
+        {
+          "name": "Build and install triton-ascend",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-10-26T04:32:56Z",
+          "completed_at": "2026-10-26T04:34:31Z"
+        },
+        {
+          "name": "CCache stats",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-10-26T04:34:31Z",
+          "completed_at": "2026-10-26T04:34:36Z"
+        },
+        {
+          "name": "Run unit tests on NPU",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9,
+          "started_at": "2026-10-26T04:34:36Z",
+          "completed_at": "2026-10-26T04:45:05Z"
+        },
+        {
+          "name": "Run compiler unit and MLIR tests",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10,
+          "started_at": "2026-10-26T04:45:05Z",
+          "completed_at": "2026-10-26T04:45:21Z"
+        },
+        {
+          "name": "Post Cache build dependencies",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 18,
+          "started_at": "2026-10-26T04:45:21Z",
+          "completed_at": "2026-10-26T04:45:24Z"
+        },
+        {
+          "name": "Post Checkout",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 19,
+          "started_at": "2026-10-26T04:45:24Z",
+          "completed_at": "2026-10-26T04:45:29Z"
+        },
+        {
+          "name": "Stop containers",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 20,
+          "started_at": "2026-10-26T04:45:29Z",
+          "completed_at": "2026-10-26T04:45:30Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 21,
+          "started_at": "2026-10-26T04:45:30Z",
+          "completed_at": "2026-10-26T04:45:30Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/triton-lang/triton-ascend/check-runs/121398039160",
+      "labels": [
+        "linux-aarch64-a3-800i-4",
+        "cn12-001"
+      ],
+      "runner_id": 58090,
+      "runner_name": "linux-aarch64-a3-800i-4-cn12-001-bzq9x-runner-pfvrb",
+      "runner_group_id": 1,
+      "runner_group_name": "Default"
+    },
+    {
+      "id": 121398039204,
+      "run_id": 40269159120,
+      "workflow_name": "Integration Tests",
+      "head_branch": "fix/dot-scaled-optional-rhs",
+      "run_url": "https://api.github.com/repos/triton-lang/triton-ascend/actions/runs/40269159120",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOQ0N-7c8AAAAcQ-MSpA",
+      "head_sha": "ec023b92f1de677444c6420be5736b803f2c14bf",
+      "url": "https://api.github.com/repos/triton-lang/triton-ascend/actions/jobs/121398039204",
+      "html_url": "https://github.com/triton-lang/triton-ascend/actions/runs/40269159120/job/121398039204",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-10-26T04:27:29Z",
+      "started_at": "2026-10-26T04:29:26Z",
+      "completed_at": "2026-10-26T04:52:58Z",
+      "name": "integration-tests-ascend / integration-tests-ascend (linux-amd64-a5-2, py3.12)",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-10-26T04:29:26Z",
+          "completed_at": "2026-10-26T04:29:29Z"
+        },
+        {
+          "name": "Initialize containers",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-10-26T04:29:29Z",
+          "completed_at": "2026-10-26T04:29:40Z"
+        },
+        {
+          "name": "Checkout",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-10-26T04:29:40Z",
+          "completed_at": "2026-10-26T04:29:51Z"
+        },
+        {
+          "name": "Add git safe directory",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-10-26T04:29:51Z",
+          "completed_at": "2026-10-26T04:29:53Z"
+        },
+        {
+          "name": "Cache build dependencies",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-10-26T04:29:53Z",
+          "completed_at": "2026-10-26T04:32:22Z"
+        },
+        {
+          "name": "Download and install Bisheng compiler",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-10-26T04:32:22Z",
+          "completed_at": "2026-10-26T04:32:40Z"
+        },
+        {
+          "name": "Build and install triton-ascend",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-10-26T04:32:40Z",
+          "completed_at": "2026-10-26T04:33:45Z"
+        },
+        {
+          "name": "CCache stats",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-10-26T04:33:45Z",
+          "completed_at": "2026-10-26T04:33:50Z"
+        },
+        {
+          "name": "Run unit tests on NPU",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9,
+          "started_at": "2026-10-26T04:33:50Z",
+          "completed_at": "2026-10-26T04:52:45Z"
+        },
+        {
+          "name": "Run compiler unit and MLIR tests",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10,
+          "started_at": "2026-10-26T04:52:45Z",
+          "completed_at": "2026-10-26T04:52:48Z"
+        },
+        {
+          "name": "Post Cache build dependencies",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 18,
+          "started_at": "2026-10-26T04:52:48Z",
+          "completed_at": "2026-10-26T04:52:49Z"
+        },
+        {
+          "name": "Post Checkout",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 19,
+          "started_at": "2026-10-26T04:52:49Z",
+          "completed_at": "2026-10-26T04:52:51Z"
+        },
+        {
+          "name": "Stop containers",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 20,
+          "started_at": "2026-10-26T04:52:51Z",
+          "completed_at": "2026-10-26T04:52:51Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 21,
+          "started_at": "2026-10-26T04:52:51Z",
+          "completed_at": "2026-10-26T04:52:51Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/triton-lang/triton-ascend/check-runs/121398039204",
+      "labels": [
+        "linux-amd64-a5-2"
+      ],
+      "runner_id": 58079,
+      "runner_name": "linux-amd64-a5-2-hl2d7-runner-xnxdb",
+      "runner_group_id": 1,
+      "runner_group_name": "Default"
+    },
+    {
+      "id": 121398039207,
+      "run_id": 40269159120,
+      "workflow_name": "Integration Tests",
+      "head_branch": "fix/dot-scaled-optional-rhs",
+      "run_url": "https://api.github.com/repos/triton-lang/triton-ascend/actions/runs/40269159120",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOQ0N-7c8AAAAcQ-MSpw",
+      "head_sha": "ec023b92f1de677444c6420be5736b803f2c14bf",
+      "url": "https://api.github.com/repos/triton-lang/triton-ascend/actions/jobs/121398039207",
+      "html_url": "https://github.com/triton-lang/triton-ascend/actions/runs/40269159120/job/121398039207",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-10-26T04:27:29Z",
+      "started_at": "2026-10-26T04:32:14Z",
+      "completed_at": "2026-10-26T04:47:02Z",
+      "name": "integration-tests-ascend / integration-tests-ascend (linux-aarch64-a3-800i-4, py3.10)",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-10-26T04:32:16Z",
+          "completed_at": "2026-10-26T04:32:25Z"
+        },
+        {
+          "name": "Initialize containers",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-10-26T04:32:25Z",
+          "completed_at": "2026-10-26T04:32:43Z"
+        },
+        {
+          "name": "Checkout",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-10-26T04:32:43Z",
+          "completed_at": "2026-10-26T04:32:53Z"
+        },
+        {
+          "name": "Add git safe directory",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-10-26T04:32:53Z",
+          "completed_at": "2026-10-26T04:32:54Z"
+        },
+        {
+          "name": "Cache build dependencies",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-10-26T04:32:54Z",
+          "completed_at": "2026-10-26T04:34:17Z"
+        },
+        {
+          "name": "Download and install Bisheng compiler",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-10-26T04:34:17Z",
+          "completed_at": "2026-10-26T04:34:31Z"
+        },
+        {
+          "name": "Build and install triton-ascend",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-10-26T04:34:31Z",
+          "completed_at": "2026-10-26T04:36:29Z"
+        },
+        {
+          "name": "CCache stats",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-10-26T04:36:29Z",
+          "completed_at": "2026-10-26T04:36:33Z"
+        },
+        {
+          "name": "Run unit tests on NPU",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9,
+          "started_at": "2026-10-26T04:36:33Z",
+          "completed_at": "2026-10-26T04:46:46Z"
+        },
+        {
+          "name": "Run compiler unit and MLIR tests",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10,
+          "started_at": "2026-10-26T04:46:46Z",
+          "completed_at": "2026-10-26T04:46:51Z"
+        },
+        {
+          "name": "Post Cache build dependencies",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 18,
+          "started_at": "2026-10-26T04:46:51Z",
+          "completed_at": "2026-10-26T04:46:53Z"
+        },
+        {
+          "name": "Post Checkout",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 19,
+          "started_at": "2026-10-26T04:46:53Z",
+          "completed_at": "2026-10-26T04:46:57Z"
+        },
+        {
+          "name": "Stop containers",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 20,
+          "started_at": "2026-10-26T04:46:57Z",
+          "completed_at": "2026-10-26T04:46:57Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 21,
+          "started_at": "2026-10-26T04:46:57Z",
+          "completed_at": "2026-10-26T04:46:57Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/triton-lang/triton-ascend/check-runs/121398039207",
+      "labels": [
+        "linux-aarch64-a3-800i-4",
+        "cn12-001"
+      ],
+      "runner_id": 58091,
+      "runner_name": "linux-aarch64-a3-800i-4-cn12-001-bzq9x-runner-d9rkx",
+      "runner_group_id": 1,
+      "runner_group_name": "Default"
+    }
+  ]
+}

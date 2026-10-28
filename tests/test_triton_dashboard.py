@@ -11,8 +11,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 from unittest.mock import patch
 
+import triton.dashboard as dashboard
 from triton.dashboard import (
     GitHub,
+    augment_focus_jobs,
     build_batches,
     build_payload,
     collect,
@@ -254,12 +256,33 @@ class HtmlEvidenceTests(unittest.TestCase):
         self.assertEqual(jobs[0]["key"], "a3-py310")
         self.assertEqual(jobs[0]["url"], "https://github.com/triton-lang/triton-ascend/actions/runs/9/job/101")
 
-    def test_job_header_derives_queue_and_execution_duration(self):
+    def test_job_header_derives_execution_but_never_borrows_run_creation_as_job_creation(self):
         source = '''<span>succeeded <relative-time datetime="2026-09-20T08:23:30Z"></relative-time> in 13m 58s</span>'''
-        job = parse_job_header(source, "2026-09-20T08:09:07Z", "2026-09-20T09:00:00Z")
+        job = parse_job_header(source, "2026-09-20T09:00:00Z")
         self.assertEqual(job["run_seconds"], 838)
-        self.assertEqual(job["wait_seconds"], 25)
         self.assertEqual(job["status"], "completed")
+        # TS28-007: the fragment has no job.created_at; workflow/attempt queue
+        # must never masquerade as the runner queue.
+        self.assertIsNone(job["wait_seconds"])
+
+    def test_focus_job_header_without_created_at_keeps_wait_empty(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "run-pages").mkdir()
+            (root / "job-headers").mkdir()
+            (root / "run-pages" / "9.html").write_text(
+                '<a href="/triton-lang/triton-ascend/actions/runs/9/job/101"><strong>'
+                'integration-tests-ascend (linux-aarch64-a3-800i-4, py3.10)</strong></a>',
+                encoding="utf-8")
+            (root / "job-headers" / "101.html").write_text(
+                '<span>succeeded <relative-time datetime="2026-09-20T08:23:30Z">'
+                '</relative-time> in 13m 58s</span>', encoding="utf-8")
+            with patch.object(dashboard, "EVIDENCE", root):
+                jobs = augment_focus_jobs([{"id": 9, "created_at": "2026-09-20T08:09:07Z"}],
+                                          "2026-09-20T09:00:00Z")
+        focus = jobs[0]["focus_jobs"][0]
+        self.assertEqual(focus["run_seconds"], 838)
+        self.assertIsNone(focus["wait_seconds"])
 
 
 class AttemptIdentityTests(unittest.TestCase):

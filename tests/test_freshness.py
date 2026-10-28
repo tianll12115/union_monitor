@@ -154,7 +154,7 @@ class SyntheticTreeTests(unittest.TestCase):
                          {'cases': {'freshnessSlots': 19}, 'total': 19,
                           'node_status': 'ok', 'mismatches': {}})
         self.assertEqual(report['source_contracts'],
-                         {'checked': 36, 'missing': []})
+                         {'checked': 37, 'missing': []})
         self.assertEqual(report['baseline']['status'], 'not_applicable')
 
     def test_tampered_slots_hours_exit_one(self):

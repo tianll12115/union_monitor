@@ -43,7 +43,13 @@ const sampleEligible = (row, metric = 'e2e') => !!row
     return [nextStart, nextEnd];
   }
 
-  function spreadPoints(points, threshold, bounds) {
+  /* TA-002: anti-collision layout must never silently replace the data-driven
+     anchor. layoutPoints keeps the true (x, y) position as `anchor` and reports
+     the visually spread `dot` plus an `offset` flag; a leader line can then be
+     drawn from the anchor so the spread position is never mistaken for the
+     measured value. The spread algorithm only resolves collisions — it does not
+     change statistics, tooltips, details or CSV values. */
+  function layoutPoints(points, threshold, bounds) {
     const placed = [];
     return points.map(point => {
       let candidate = { x: point.x, y: point.y }, step = 0;
@@ -58,8 +64,39 @@ const sampleEligible = (row, metric = 'e2e') => !!row
         };
       }
       placed.push(candidate);
-      return candidate;
+      return { anchor: { x: point.x, y: point.y }, dot: candidate, offset: candidate.x !== point.x || candidate.y !== point.y };
     });
+  }
+
+  /* Backward-compatible alias: callers that only need the spread dot positions
+     still get the collision-resolved dots (never the true anchors). */
+  function spreadPoints(points, threshold, bounds) {
+    return layoutPoints(points, threshold, bounds).map(point => point.dot);
+  }
+
+  /* TA-001: the left margin must leave room for the complete y-axis labels.
+     A label is right-anchored at (marginLeft - anchorOffset); its left edge sits
+     at marginLeft - anchorOffset - width, so the margin grows until that edge
+     stays >= pad inside the SVG. */
+  function yAxisMarginLeft(labels, opts) {
+    const o = opts || {};
+    const charWidth = o.charWidth != null ? o.charWidth : 7;
+    const anchorOffset = o.anchorOffset != null ? o.anchorOffset : 8;
+    const pad = o.pad != null ? o.pad : 6;
+    const min = o.min != null ? o.min : 50;
+    const longest = Math.max(0, ...(labels || []).map(s => String(s).length * charWidth));
+    return Math.max(min, longest + anchorOffset + pad);
+  }
+
+  /* TA-011: the navigator's pointer→time reverse mapping must use the same
+     inset padding as the drawing transform (drawNavigator maps the domain onto
+     [padding.l, width - padding.r], not the whole rect). */
+  function navTimeAt(clientX, rectLeft, rectWidth, domainStart, domainEnd, inset) {
+    const p = inset || { l: 4, r: 4 };
+    const plotW = rectWidth - p.l - p.r;
+    if (!Number.isFinite(plotW) || plotW <= 0) return domainStart;
+    const x = Math.max(p.l, Math.min(rectWidth - p.r, clientX - rectLeft));
+    return domainStart + (x - p.l) / plotW * (domainEnd - domainStart);
   }
 
   function percentile(values, q) {
@@ -125,12 +162,13 @@ const sampleEligible = (row, metric = 'e2e') => !!row
     return (kind === 'npu' ? 'NPU 排队详情：PR #' : 'E2E 详情：PR #') + pr + ' ' + attempt + ' ' + sha;
   }
 
-  function circleMark(batch, cx, cy, index, color, kind) {
+  function circleMark(batch, cx, cy, index, color, kind, anchor) {
     const radius = batch.status === 'success' ? 3.2 : 4.2;
-    return `<g class="mark-hit" data-i="${index}" data-kind="${kind || 'e2e'}" role="button" tabindex="0" aria-label="${markLabel(batch, kind)}" transform="translate(${cx} ${cy})"><circle class="hit-area" r="8"/><circle class="dot" r="${radius}" fill="${color}"/></g>`;
+    const ax = anchor ? ` data-anchor-x="${anchor.x}" data-anchor-y="${anchor.y}"` : ` data-anchor-x="${cx}" data-anchor-y="${cy}"`;
+    return `<g class="mark-hit" data-i="${index}" data-kind="${kind || 'e2e'}" data-x="${cx}" data-y="${cy}"${ax} role="button" tabindex="0" aria-label="${markLabel(batch, kind)}" transform="translate(${cx} ${cy})"><circle class="hit-area" r="8"/><circle class="dot" r="${radius}" fill="${color}"/></g>`;
   }
 
-  return { selectWindow, windowForHours, moveWindow, spreadPoints, chartStats, filterBranches, dashboardStats, circleMark, markLabel, validDuration, sampleEligible, e2eIdentityKnown, startSourceLabel };
+  return { selectWindow, windowForHours, moveWindow, spreadPoints, layoutPoints, yAxisMarginLeft, navTimeAt, chartStats, filterBranches, dashboardStats, circleMark, markLabel, validDuration, sampleEligible, e2eIdentityKnown, startSourceLabel };
 });
 
 /* ---- T8 additions (appended; the prefix above is the original module plus

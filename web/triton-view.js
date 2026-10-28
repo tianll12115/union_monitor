@@ -98,11 +98,45 @@
     const batches = payload && Array.isArray(payload.batches) ? payload.batches : null;
     const domainStart = payload ? +new Date(payload.window_start) : NaN;
     const domainEnd = payload ? +new Date(payload.window_end) : NaN;
-    if (!batches || !batches.length || !Number.isFinite(domainStart) || !Number.isFinite(domainEnd) || domainEnd <= domainStart) {
-      container.innerHTML = '<div class="empty">暂无 Triton 门禁数据</div>';
+    const windowValid = Number.isFinite(domainStart) && Number.isFinite(domainEnd) && domainEnd > domainStart;
+    /* TA-010: 合法零数据、缺字段/非法时间窗、请求失败必须给出不同语义，
+       不得共用一句"暂无数据"，也不得吞掉来源、窗口与采集时间的可核对性。 */
+    if (batches == null) {
+      container.innerHTML = '<div class="empty" data-role="tritonEmpty" data-state="invalid">Triton 数据缺失或格式无效：没有可用的 batches 数组。</div>';
+      return;
+    }
+    if (!windowValid) {
+      container.innerHTML = '<div class="empty" data-role="tritonEmpty" data-state="invalid">Triton 时间窗无效：window_end 必须晚于 window_start，且两者都能解析为时间。</div>';
+      return;
+    }
+    if (!batches.length) {
+      mountEmptyZero(payload, container);
       return;
     }
     mount(payload, container, domainStart, domainEnd, prevState, routeChanged);
+  }
+
+  /* TA-010-AC2: a legal zero keeps the source/window/collection context and a
+     zero-row CSV export so an empty page is still auditable and downloadable. */
+  function mountEmptyZero(payload, container) {
+    const win = (Number.isFinite(+new Date(payload.window_start)) && Number.isFinite(+new Date(payload.window_end)))
+      ? `${fmtDate(payload.window_start)} — ${fmtDate(payload.window_end)}（上海时间）` : '—';
+    const collected = payload.collected_at ? fmtDate(payload.collected_at) : '—';
+    container.innerHTML = `<section class="panel">
+      <div class="panel-head"><div><h2>Triton-Ascend 门禁效率 <span class="count">0</span></h2><p data-role="boundary">合法零数据：统计窗口 ${win} · 采集完成 ${collected} · 来源 ${esc(payload.repo || 'triton-lang/triton-ascend')}。不是解析失败，也不是请求失败。</p></div></div>
+      <div class="empty" data-role="tritonEmpty" data-state="empty">合法零数据：统计窗口内没有可展示的批次，但来源、窗口与采集时间仍可核对。</div>
+      <div class="panel-foot"><button type="button" class="button" data-role="exportBatches"><svg class="icon" aria-hidden="true"><use href="#i-download"/></svg>导出零行 CSV</button><span data-role="exportNote"></span></div>
+    </section>`;
+    const btn = container.querySelector('[data-role="exportBatches"]');
+    const note = container.querySelector('[data-role="exportNote"]');
+    if (btn) btn.onclick = async () => {
+      try {
+        const file = await root.Metrics.saveCsv([csvFields], 'triton-batches.csv');
+        if (note) note.textContent = '已下载：' + (file.name || 'triton-batches.csv') + '（仅表头，0 行数据）';
+      } catch (err) {
+        if (note) note.textContent = '导出失败：' + (err && err.message ? err.message : err);
+      }
+    };
   }
 
   function skeleton() {
@@ -111,6 +145,8 @@
       <span><i style="background:var(--danger)"></i>失败</span>
       <span><i style="background:var(--warn)"></i>取消</span>
       <span><i style="background:var(--info)"></i>执行中</span>
+      <span><i class="ref-swatch ref-p90"></i>图内 P90</span>
+      <span><i class="ref-swatch ref-median"></i>六小时桶中位数</span>
     </div>`;
     return `
 <div class="notice" data-role="freshness" role="status" hidden></div>
@@ -131,7 +167,7 @@
 </section>
 <section class="section">
   <div class="panel-head">
-    <div><h2>PR E2E 执行时长</h2><p>每个点代表一次提交或一次手动重跑触发的 E2E；时间范围由下方导航器统一控制。</p></div>
+    <div><h2>PR E2E 执行时长</h2><p>每个点代表同一 PR+提交的 E2E 观测跨度（可能聚合多个独立 workflow run）或一次手动重跑；时间范围由下方导航器统一控制。</p></div>
     <div class="controls" data-role="e2eFilters">
       <button type="button" class="chip active" data-filter="all">全部</button>
       <button type="button" class="chip" data-filter="slow" title="以页级范围（分支×时间窗）的 P90 为阈值">耗时偏长</button>
@@ -251,8 +287,11 @@
     const currentSummary = () => core.dashboardStats(pageSet());
     const searchPool = () => pageSet().filter(b => core.matchesQuery(b, searchInput.value));
     /* EC-008-AC03: 起点未知但有来源身份（action_url 或 workflow）的批次不进入时间选区S，
-       但可在同页"时间未知(n)"入口找到；不计入选区分位数，详情与导出标注时间未知。 */
-    const unknownTimePool = () => D.batches.filter(b => !b.start_at && (b.action_url || (b.workflows && b.workflows.length)));
+       但可在同页"时间未知(n)"入口找到；不计入选区分位数，详情与导出标注时间未知。
+       TA-009: 未知时间仅豁免时间选窗，不豁免分支与搜索约束——列表与导出都遵守所选分支和搜索词。 */
+    const unknownTimeBranchPool = () => core.filterBranches(D.batches, selectedBranches)
+      .filter(b => !b.start_at && (b.action_url || (b.workflows && b.workflows.length)));
+    const unknownTimePool = () => unknownTimeBranchPool().filter(b => core.matchesQuery(b, searchInput.value));
     /* ADR-007: 列表与下载复用同一个排序后的 L —— 导出集合与当前可见列表严格一致，
        不再让默认关注子集与"全部搜索结果"下载集合分叉（关注批次一行去重、理由合并）。 */
     const attentionEntries = () => {
@@ -281,6 +320,31 @@
     const footerText = () => {
       const s = currentSummary();
       return `${s.batches} BATCHES · ${s.prs} PR · 当前筛选范围 · 采集于 ${fmtDate(D.collected_at)}`;
+    };
+
+    /* TA-005: the boundary line discloses the statistical window, the creation
+       discovery cutoff, the collection completion time and any lookback / non-atomic
+       observation notes, so a reader can tell "as of when" without inventing it. */
+    const boundaryText = () => {
+      const s = currentSummary();
+      const disc = D.discovery || {};
+      const parts = [];
+      if (Number.isFinite(+new Date(D.window_start)) && Number.isFinite(+new Date(D.window_end))) {
+        parts.push(`统计窗口 ${fmtDate(D.window_start)} — ${fmtDate(D.window_end)}（上海时间）`);
+      }
+      if (disc.fetch_window_end != null && Number.isFinite(+new Date(disc.fetch_window_end))) {
+        parts.push(`创建发现截至 ${fmtDate(disc.fetch_window_end)}`);
+      }
+      if (D.collected_at != null && Number.isFinite(+new Date(D.collected_at))) {
+        parts.push(`采集完成 ${fmtDate(D.collected_at)}`);
+      }
+      if (disc.fetch_window_end != null && D.collected_at != null && Number.isFinite(+new Date(disc.fetch_window_end)) && Number.isFinite(+new Date(D.collected_at))) {
+        const gapMin = Math.round((+new Date(D.collected_at) - +new Date(disc.fetch_window_end)) / 60000);
+        parts.push(`发现截止与采集完成相差 ${gapMin} 分钟`);
+      }
+      if (disc.boundary_note) parts.push(String(disc.boundary_note));
+      parts.push(`${s.approximate} 个批次使用近似起点，${s.incomplete} 个批次存在明细或关联缺口`);
+      return parts.join('；') + '。';
     };
 
     /* ADR-012: every state change is mirrored into the hash so a copied link
@@ -347,18 +411,26 @@
     function draw() {
       const threshold = currentSummary().p90;
       const rows = e2eRows(threshold);
-      const W = chartSvg.clientWidth || 900, H = 370, m = { l: 50, r: 22, t: 18, b: 42 };
-      chartSvg.setAttribute('viewBox', `0 0 ${W} ${H}`);
-      const range = Math.max(viewEnd - viewStart, 1);
       const stats = core.chartStats(rows);
       const max = Math.max(stats.max * 1.12, 300);
+      /* TA-001: the left margin is sized from the complete y-axis labels so the
+         leftmost label's bounding box stays inside the SVG (never clipped). */
+      const yLabels = [0, 1, 2, 3, 4].map(i => dur(max * (1 - i / 4)));
+      const m = { l: core.yAxisMarginLeft(yLabels), r: 22, t: 18, b: 42 };
+      /* TA-003: never draw into a stale/too-narrow width; defer until layout settles
+         so viewBox always matches the final drawing size and plotWidth stays > 0. */
+      const measuredW = chartSvg.clientWidth;
+      if (!Number.isFinite(measuredW) || measuredW < m.l + m.r + 1) { scheduleRedraw(); return; }
+      const W = measuredW, H = 370;
+      chartSvg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+      const range = Math.max(viewEnd - viewStart, 1);
       const x = t => m.l + (+new Date(t) - viewStart) / range * (W - m.l - m.r);
       const y = v => H - m.b - v / max * (H - m.t - m.b);
       let out = '';
-      for (let i = 0; i <= 4; i++) {
-        const yy = m.t + i * (H - m.t - m.b) / 4, val = max * (1 - i / 4);
-        out += `<line class="gridline" x1="${m.l}" x2="${W - m.r}" y1="${yy}" y2="${yy}"/><text class="axis" x="${m.l - 8}" y="${yy + 3}" text-anchor="end">${dur(val)}</text>`;
-      }
+      yLabels.forEach((label, i) => {
+        const yy = m.t + i * (H - m.t - m.b) / 4;
+        out += `<line class="gridline" x1="${m.l}" x2="${W - m.r}" y1="${yy}" y2="${yy}"/><text class="axis" x="${m.l - 8}" y="${yy + 3}" text-anchor="end">${label}</text>`;
+      });
       /* REQ-031 AC01/AC02: 刻度数随绘图区实际宽度自适应（core.axisTicks）；首末标签
          锚定绘图区两端（start/end），杜绝越界裁切，中间标签保持居中锚点。
          压缩刻度只减少标签，不改变散点的时间映射或统计。 */
@@ -369,7 +441,12 @@
         const xx = first ? m.l : last ? W - m.r : m.l + (i * plotW) / (ticks.length - 1);
         out += `<text class="axis" x="${xx}" y="${H - 13}" text-anchor="${first ? 'start' : last ? 'end' : 'middle'}">${fmtDate(t)}</text>`;
       });
-      if (stats.p90 != null) out += `<line class="p90-line" x1="${m.l}" x2="${W - m.r}" y1="${y(stats.p90)}" y2="${y(stats.p90)}"/>`;
+      /* TA-013: the reference lines carry an explicit, readable name and their
+         sample scope so they are never mistaken for an SLA or the page threshold. */
+      if (stats.p90 != null) {
+        const py = y(stats.p90);
+        out += `<line class="p90-line" x1="${m.l}" x2="${W - m.r}" y1="${py}" y2="${py}"/><title>图内 P90（当前图内已完成样本）</title><text class="ref-label" x="${W - m.r}" y="${py - 4}" text-anchor="end">图内 P90 ${dur(stats.p90)}</text>`;
+      }
       const bins = [];
       for (let a = viewStart; a < viewEnd; a += 6 * HOUR) {
         const vals = rows.filter(b => +new Date(b.start_at) >= a && +new Date(b.start_at) < a + 6 * HOUR && core.sampleEligible(b))
@@ -379,12 +456,21 @@
           bins.push([x(Math.min(a + 3 * HOUR, viewEnd)), y(mid)]);
         }
       }
-      if (bins.length > 1) out += `<path class="median-line" d="${bins.map((p, i) => (i ? 'L' : 'M') + p.join(',')).join(' ')}"/>`;
+      if (bins.length > 1) {
+        out += `<path class="median-line" d="${bins.map((p, i) => (i ? 'L' : 'M') + p.join(',')).join(' ')}"/><title>六小时桶中位数</title><text class="ref-label" x="${m.l}" y="${bins[0][1] - 4}">六小时桶中位数</text>`;
+      }
       /* REQ-017: batches without a valid observed duration are not plotted at a fake 0. */
       const ordered = rows.filter(b => core.validDuration(b.duration_seconds)).slice().sort((a, b) => (a.status === 'success' ? 0 : 1) - (b.status === 'success' ? 0 : 1));
       const raw = ordered.map(b => ({ x: x(b.start_at), y: y(b.duration_seconds || 0) }));
-      const visual = core.spreadPoints(raw, 12, { minX: m.l, maxX: W - m.r, minY: m.t, maxY: H - m.b });
-      ordered.forEach((b, i) => { out += core.circleMark(b, visual[i].x, visual[i].y, D.batches.indexOf(b), fillFor(b.status), 'e2e'); });
+      /* TA-002: keep the true anchor; only the collision-resolved dot moves, and a
+         leader line plus an anchor tick show where the measured value really sits. */
+      const layout = core.layoutPoints(raw, 12, { minX: m.l, maxX: W - m.r, minY: m.t, maxY: H - m.b });
+      ordered.forEach((b, i) => {
+        const l = layout[i];
+        if (l.offset) out += `<line class="anchor-lead" x1="${l.anchor.x}" y1="${l.anchor.y}" x2="${l.dot.x}" y2="${l.dot.y}"/>`;
+        out += `<circle class="anchor-tick" cx="${l.anchor.x}" cy="${l.anchor.y}" r="1.5"/>`;
+        out += core.circleMark(b, l.dot.x, l.dot.y, D.batches.indexOf(b), fillFor(b.status), 'e2e', l.anchor);
+      });
       chartSvg.innerHTML = out;
       paintMarks(chartSvg);
       const thresholdStat = `<div class="selection-stat metric"><span>耗时偏长阈值（页级 P90）</span><strong>${dur(threshold)}</strong></div>`;
@@ -401,18 +487,22 @@
         ? `${missing} 个批次的 NPU 明细缺失或时间戳异常，未计入统计；缺失不代表没有排队。`
         : '排队时长按 GitHub Job 创建至开始时间计算。';
       const rows = npuRows();
-      const W = npuChartSvg.clientWidth || 900, H = 370, m = { l: 50, r: 22, t: 18, b: 42 };
-      npuChartSvg.setAttribute('viewBox', `0 0 ${W} ${H}`);
-      const range = Math.max(viewEnd - viewStart, 1);
       const stats = core.chartStats(rows, 'npu');
       const max = Math.max(stats.max * 1.12, 60);
+      const yLabels = [0, 1, 2, 3, 4].map(i => dur(max * (1 - i / 4)));
+      const m = { l: core.yAxisMarginLeft(yLabels), r: 22, t: 18, b: 42 };
+      const measuredW = npuChartSvg.clientWidth;
+      if (!Number.isFinite(measuredW) || measuredW < m.l + m.r + 1) { scheduleRedraw(); return; }
+      const W = measuredW, H = 370;
+      npuChartSvg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+      const range = Math.max(viewEnd - viewStart, 1);
       const x = t => m.l + (+new Date(t) - viewStart) / range * (W - m.l - m.r);
       const y = v => H - m.b - v / max * (H - m.t - m.b);
       let out = '';
-      for (let i = 0; i <= 4; i++) {
-        const yy = m.t + i * (H - m.t - m.b) / 4, val = max * (1 - i / 4);
-        out += `<line class="gridline" x1="${m.l}" x2="${W - m.r}" y1="${yy}" y2="${yy}"/><text class="axis" x="${m.l - 8}" y="${yy + 3}" text-anchor="end">${dur(val)}</text>`;
-      }
+      yLabels.forEach((label, i) => {
+        const yy = m.t + i * (H - m.t - m.b) / 4;
+        out += `<line class="gridline" x1="${m.l}" x2="${W - m.r}" y1="${yy}" y2="${yy}"/><text class="axis" x="${m.l - 8}" y="${yy + 3}" text-anchor="end">${label}</text>`;
+      });
       /* REQ-031 AC01/AC02: 刻度数随绘图区实际宽度自适应（core.axisTicks）；首末标签
          锚定绘图区两端（start/end），杜绝越界裁切，中间标签保持居中锚点。
          压缩刻度只减少标签，不改变散点的时间映射或统计。 */
@@ -423,7 +513,11 @@
         const xx = first ? m.l : last ? W - m.r : m.l + (i * plotW) / (ticks.length - 1);
         out += `<text class="axis" x="${xx}" y="${H - 13}" text-anchor="${first ? 'start' : last ? 'end' : 'middle'}">${fmtDate(t)}</text>`;
       });
-      if (stats.p90 != null) out += `<line class="p90-line" x1="${m.l}" x2="${W - m.r}" y1="${y(stats.p90)}" y2="${y(stats.p90)}"/>`;
+      /* TA-013: reference lines are named and scoped; never an SLA. */
+      if (stats.p90 != null) {
+        const py = y(stats.p90);
+        out += `<line class="p90-line" x1="${m.l}" x2="${W - m.r}" y1="${py}" y2="${py}"/><title>图内 P90（当前图内有效排队样本）</title><text class="ref-label" x="${W - m.r}" y="${py - 4}" text-anchor="end">图内 P90 ${dur(stats.p90)}</text>`;
+      }
       const bins = [];
       for (let a = viewStart; a < viewEnd; a += 6 * HOUR) {
         const vals = rows.filter(b => +new Date(b.start_at) >= a && +new Date(b.start_at) < a + 6 * HOUR && core.sampleEligible(b, 'npu'))
@@ -433,11 +527,18 @@
           bins.push([x(Math.min(a + 3 * HOUR, viewEnd)), y(mid)]);
         }
       }
-      if (bins.length > 1) out += `<path class="median-line" d="${bins.map((p, i) => (i ? 'L' : 'M') + p.join(',')).join(' ')}"/>`;
+      if (bins.length > 1) {
+        out += `<path class="median-line" d="${bins.map((p, i) => (i ? 'L' : 'M') + p.join(',')).join(' ')}"/><title>六小时桶中位数</title><text class="ref-label" x="${m.l}" y="${bins[0][1] - 4}">六小时桶中位数</text>`;
+      }
       const ordered = rows.slice().sort((a, b) => (a.status === 'success' ? 0 : 1) - (b.status === 'success' ? 0 : 1));
       const raw = ordered.map(b => ({ x: x(b.start_at), y: y(b.npu_queue_seconds) }));
-      const visual = core.spreadPoints(raw, 12, { minX: m.l, maxX: W - m.r, minY: m.t, maxY: H - m.b });
-      ordered.forEach((b, i) => { out += core.circleMark(b, visual[i].x, visual[i].y, D.batches.indexOf(b), fillFor(b.status), 'npu'); });
+      const layout = core.layoutPoints(raw, 12, { minX: m.l, maxX: W - m.r, minY: m.t, maxY: H - m.b });
+      ordered.forEach((b, i) => {
+        const l = layout[i];
+        if (l.offset) out += `<line class="anchor-lead" x1="${l.anchor.x}" y1="${l.anchor.y}" x2="${l.dot.x}" y2="${l.dot.y}"/>`;
+        out += `<circle class="anchor-tick" cx="${l.anchor.x}" cy="${l.anchor.y}" r="1.5"/>`;
+        out += core.circleMark(b, l.dot.x, l.dot.y, D.batches.indexOf(b), fillFor(b.status), 'npu', l.anchor);
+      });
       npuChartSvg.innerHTML = out;
       paintMarks(npuChartSvg);
       npuStats.innerHTML = stats.count
@@ -448,7 +549,9 @@
 
     function drawNavigator() {
       const rows = branchPool();
-      const W = navSvg.clientWidth || 900, H = 72, p = { l: 4, r: 4, t: 6, b: 19 };
+      const measuredW = navSvg.clientWidth;
+      if (!Number.isFinite(measuredW) || measuredW < 10) { scheduleRedraw(); return; }
+      const W = measuredW, H = 72, p = { l: 4, r: 4, t: 6, b: 19 };
       const domain = domainEnd - domainStart;
       const x = t => p.l + (t - domainStart) / domain * (W - p.l - p.r);
       const plotH = H - p.t - p.b;
@@ -491,6 +594,12 @@
     }
 
     const redrawAll = () => { draw(); drawNpu(); drawNavigator(); };
+    /* TA-003: resize handlers defer to the next animation frame so clientWidth is
+       read after the final layout, not during an in-flight CSS/layout transition. */
+    const raf = typeof requestAnimationFrame === 'function' ? requestAnimationFrame : fn => setTimeout(fn, 0);
+    const caf = typeof cancelAnimationFrame === 'function' ? cancelAnimationFrame : id => clearTimeout(id);
+    let redrawRaf = 0;
+    const scheduleRedraw = () => { caf(redrawRaf); redrawRaf = raf(redrawAll); };
 
     function updateSummary() {
       const s = currentSummary(), pool = pageSet();
@@ -501,7 +610,7 @@
       kNpuP90.textContent = dur(npu.p90);
       kNpuP50.textContent = 'P50 ' + dur(npu.p50);
       kNpuN.textContent = 'n=' + npu.count + (npu.count > 0 && npu.count < 10 ? ' · 样本不足' : '');
-      boundaryEl.textContent = `${s.approximate} 个批次使用近似起点，${s.incomplete} 个批次存在明细或关联缺口。`;
+      boundaryEl.textContent = boundaryText();
       const counts = { success: 0, failure: 0, running: 0, cancelled: 0 };
       pool.forEach(b => { if (counts[b.status] != null) counts[b.status] += 1; });
       statusPillsEl.innerHTML = ['success', 'failure', 'running', 'cancelled']
@@ -535,7 +644,7 @@
           ? `<div class="tip-job"><a href="${esc(j.url)}" target="_blank" rel="noopener">${label} ↗</a><span>${j.status === 'completed' ? (j.conclusion === 'success' ? '完成' : '异常') : esc(j.status)}</span><span>排队 ${dur(j.wait_seconds)} · 执行 ${dur(j.run_seconds)}</span></div>`
           : `<div class="tip-job"><b>${label}</b><span class="missing">未触发或未发现该任务</span></div>`;
       }).join('');
-      return `<div class="tip-head"><a href="${esc(b.action_url || (b.workflows && b.workflows[0] && b.workflows[0].url) || '#')}" target="_blank" rel="noopener">打开本次 GitHub Actions ↗</a><span>${statusLabels[b.status] || esc(b.status)} · ${dur(b.duration_seconds)}</span><button type="button" class="tip-close" aria-label="关闭详情"><svg class="icon" aria-hidden="true"><use href="#i-x"/></svg></button></div><div class="tip-title">${esc(core.markLabel(b, 'e2e'))}</div><div class="tip-summary">${identityHtml(b)} · ${b.start_at ? fmtDate(b.start_at) + ' · ' + core.startSourceLabel(b) : core.startSourceLabel(b)}</div><div class="tip-actions"><div class="tip-label">本次 E2E 的 GitHub Actions</div>${actions}</div><div class="tip-jobs"><div class="tip-label">重点任务</div>${jobs}</div><div class="tip-hint">点击任一链接进入对应 GitHub Actions；点击散点可固定卡片。</div>`;
+      return `<div class="tip-head"><a href="${esc(b.action_url || (b.workflows && b.workflows[0] && b.workflows[0].url) || '#')}" target="_blank" rel="noopener">打开本次 GitHub Actions ↗</a><span>${statusLabels[b.status] || esc(b.status)} · ${dur(b.duration_seconds)}</span><button type="button" class="tip-close" aria-label="关闭详情"><svg class="icon" aria-hidden="true"><use href="#i-x"/></svg></button></div><div class="tip-title">${esc(core.markLabel(b, 'e2e'))}</div><div class="tip-summary">${identityHtml(b)} · ${b.start_at ? fmtDate(b.start_at) + ' · ' + core.startSourceLabel(b) : core.startSourceLabel(b)}${b.aggregation_note ? `<div class="sub">${esc(b.aggregation_note)}</div>` : ''}</div><div class="tip-actions"><div class="tip-label">本次 E2E 的 GitHub Actions</div>${actions}</div><div class="tip-jobs"><div class="tip-label">重点任务</div>${jobs}</div><div class="tip-hint">点击任一链接进入对应 GitHub Actions；点击散点可固定卡片。</div>`;
     }
 
     function npuTipHtml(b) {
@@ -578,7 +687,7 @@
         const b = D.batches[+mark.dataset.i];
         if (!b) return;
         const html = mark.dataset.kind === 'npu' ? npuTipHtml : tipHtml;
-        mark.onmouseenter = e => { clearTimeout(tipTimer); placeTip(e, b, html); };
+        mark.onmouseenter = e => { clearTimeout(tipTimer); if (!tipPinned) placeTip(e, b, html); };
         mark.onmousemove = e => { if (!tipPinned) placeTip(e, b, html); };
         mark.onmouseleave = () => { if (!tipPinned) tipTimer = setTimeout(() => hideTip(mark), 180); };
         mark.onclick = e => { e.stopPropagation(); hideTip(); if (mark.dataset.kind !== 'npu' && root.openTritonDetail) openDetail(b); else { tipPinned = true; lastPinnedMark = mark; placeTip(e, b, html); } };
@@ -632,7 +741,8 @@
       syncUrl();
       const summary = currentSummary();
       const unknownPool = unknownTimePool();
-      unknownTimeBtn.textContent = `时间未知${unknownPool.length ? `(${unknownPool.length})` : ''}`;
+      const unknownBranchPool = unknownTimeBranchPool();
+      unknownTimeBtn.textContent = `时间未知${unknownBranchPool.length ? `(${unknownBranchPool.length})` : ''}`;
       unknownTimeBtn.classList.toggle('active', unknownTime);
       showAllBtn.textContent = showAll ? '返回关注列表' : '查看全部批次';
       /* REQ-028 AC03: the innerHTML swaps below destroy the focused row;
@@ -734,6 +844,8 @@
         window_start: D.window_start, window_end: D.window_end, analysis_scope: scope,
         batches: pool.map(b => ({ id: b.id, pr: b.pr ?? null,
           workflow_attempts: (b.workflows || []).map(w => ({ run_id: w.id, attempt: w.attempt || 1 })),
+          workflow_run_count: b.workflow_run_count != null ? b.workflow_run_count : (b.workflows || []).length,
+          aggregation_note: b.aggregation_note || null,
           e2e_sample_eligible: core.sampleEligible(b), e2e_exclusion_reason: b.e2e_exclusion_reason || (b.pr == null ? 'unresolved_pr_batch_identity' : core.sampleEligible(b) ? null : 'non_sample_result') })) };
       try {
         const file = await root.Metrics.saveCsv(rows, 'triton-batches.csv');
@@ -778,10 +890,12 @@
       updateGlobal();
     };
 
+    /* TA-011: pointer→time reverse mapping reuses the same inset padding as
+       drawNavigator, so a click at a screen position lands on the same instant
+       the drawing placed at that position. */
     const navTime = e => {
       const rect = navSvg.getBoundingClientRect();
-      const x = Math.max(0, Math.min(rect.width, e.clientX - rect.left));
-      return domainStart + x / rect.width * (domainEnd - domainStart);
+      return core.navTimeAt(e.clientX, rect.left, rect.width, domainStart, domainEnd, { l: 4, r: 4 });
     };
     navSvg.onpointerdown = e => {
       e.preventDefault();
@@ -832,7 +946,7 @@
     showAllBtn.onclick = () => { showAll = !showAll; unknownTime = false; renderRows(); };
     unknownTimeBtn.onclick = () => { unknownTime = !unknownTime; showAll = false; renderRows(); };
     exportBtn.onclick = exportBatches;
-    const onResize = () => redrawAll();
+    const onResize = () => scheduleRedraw();
     window.addEventListener('resize', onResize);
 
     /* ---- 初始化 ---- */

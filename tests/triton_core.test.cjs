@@ -1,6 +1,6 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const { selectWindow, windowForHours, moveWindow, spreadPoints, chartStats, filterBranches, dashboardStats, circleMark, markLabel, validDuration, startSourceLabel } = require('../web/triton-core.js');
+const { selectWindow, windowForHours, moveWindow, layoutPoints, yAxisMarginLeft, navTimeAt, chartStats, filterBranches, dashboardStats, circleMark, markLabel, validDuration, startSourceLabel } = require('../web/triton-core.js');
 const fs = require('node:fs');
 const path = require('node:path');
 
@@ -22,13 +22,45 @@ test('windowForHours and moveWindow clamp against the domain', () => {
   assert.deepEqual(moveWindow(domainStart, domainEnd, domainStart, domainStart + 86400000, -43200000), [domainStart, domainStart + 86400000]);
 });
 
-test('spreadPoints offsets overlapping marks and stays inside the plot bounds', () => {
-  const spread = spreadPoints([{x:10,y:10},{x:11,y:11},{x:40,y:40}], 4);
-  assert.deepEqual(spread[0], {x:10,y:10});
-  assert.notDeepEqual(spread[1], {x:11,y:11}, 'overlapping marks should receive a small visual offset');
-  assert.deepEqual(spread[2], {x:40,y:40});
-  const bounded = spreadPoints([{x:10,y:100},{x:10,y:100},{x:10,y:100}], 12, { minX: 0, maxX: 100, minY: 10, maxY: 100 });
-  assert.ok(bounded.every(point => point.y >= 10 && point.y <= 100), 'spread marks must stay inside the plot baseline');
+test('layoutPoints keeps the true anchor while only the collision-resolved dot moves', () => {
+  const layout = layoutPoints([{x:10,y:10},{x:11,y:11},{x:40,y:40}], 4);
+  assert.deepEqual(layout[0].anchor, {x:10,y:10}, 'first mark anchors at its true position');
+  assert.deepEqual(layout[0].dot, {x:10,y:10});
+  assert.equal(layout[0].offset, false);
+  assert.notDeepEqual(layout[1].dot, {x:11,y:11}, 'overlapping marks still receive a visual spread');
+  assert.deepEqual(layout[1].anchor, {x:11,y:11}, 'but the true anchor never moves');
+  assert.equal(layout[1].offset, true);
+  assert.deepEqual(layout[2].anchor, {x:40,y:40});
+  const bounded = layoutPoints([{x:10,y:100},{x:10,y:100},{x:10,y:100}], 12, { minX: 0, maxX: 100, minY: 10, maxY: 100 });
+  assert.ok(bounded.every(point => point.dot.y >= 10 && point.dot.y <= 100), 'spread dots must stay inside the plot baseline');
+  assert.ok(bounded.every(point => point.anchor.x === 10 && point.anchor.y === 100), 'anchors are never clamped away from their data position');
+});
+
+test('yAxisMarginLeft grows until the longest right-anchored label fits inside the SVG', () => {
+  assert.equal(yAxisMarginLeft([]), 50, 'no labels keep the minimum margin');
+  assert.equal(yAxisMarginLeft(['0.00 min']), 8 * 7 + 8 + 6, 'short labels fit their own width + anchor + pad');
+  const long = '3308.76 min';
+  const margin = yAxisMarginLeft([long]);
+  assert.ok(margin >= long.length * 7 + 8 + 6, 'margin covers label width + anchor offset + pad');
+  // The label's left edge (right-anchored at margin-8) must sit at >= pad.
+  assert.ok(margin - 8 - long.length * 7 >= 6);
+  // The widest label wins.
+  assert.ok(yAxisMarginLeft(['0.00 min', long]) >= long.length * 7 + 8 + 6);
+});
+
+test('navTimeAt shares the drawing inset so pointer reverse-mapping matches the plot', () => {
+  const domainStart = 0, domainEnd = 1000;
+  assert.equal(navTimeAt(0, 0, 100, domainStart, domainEnd, {l:4,r:4}), 0);
+  assert.equal(navTimeAt(4, 0, 100, domainStart, domainEnd, {l:4,r:4}), 0, 'the left inset maps to the domain start');
+  assert.equal(navTimeAt(96, 0, 100, domainStart, domainEnd, {l:4,r:4}), 1000, 'the right inset maps to the domain end');
+  assert.equal(navTimeAt(50, 0, 100, domainStart, domainEnd, {l:4,r:4}), 500, 'the midpoint stays the midpoint');
+});
+
+test('circleMark exposes the dot and true anchor as data attributes', () => {
+  const mark = circleMark({ status: 'success' }, 30, 40, 0, 'var(--ok)', 'e2e', { x: 20, y: 40 });
+  assert.match(mark, /data-x="30" data-y="40"/);
+  assert.match(mark, /data-anchor-x="20" data-anchor-y="40"/);
+  assert.match(mark, /transform="translate\(30 40\)"/);
 });
 
 test('chartStats measures completed batches and keeps a readable empty scale', () => {

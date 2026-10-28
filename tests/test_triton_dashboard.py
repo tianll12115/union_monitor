@@ -105,6 +105,31 @@ class BatchAggregationTests(unittest.TestCase):
         self.assertEqual(batch["duration_seconds"], 31 * 60)
         self.assertEqual(batch["critical_workflow"], "Slow")
 
+    def test_pr_sha_span_discloses_cross_trigger_aggregation(self):
+        # TA-004: two attempt-1 workflows for the same PR+SHA created nine hours
+        # apart must not be silently presented as one gate trigger; the batch
+        # carries the merged-run count, the creation span and a disclosure.
+        rows = [
+            run(1, "Integration Tests", "abc", "2026-09-22T00:01:00Z", "2026-09-22T00:11:00Z"),
+            run(2, "Auto labeling", "abc", "2026-09-22T09:01:00Z", "2026-09-22T09:04:00Z"),
+        ]
+        batch = build_batches(rows, "2026-09-23T00:00:00Z")[0]
+        self.assertEqual(batch["workflow_run_count"], 2)
+        self.assertEqual(batch["aggregation_span_seconds"], 9 * 3600)
+        self.assertIn("聚合 2 个独立 workflow run", batch["aggregation_note"])
+        self.assertIn("未还原单次门禁", batch["aggregation_note"])
+
+    def test_single_run_batch_has_no_aggregation_note(self):
+        rows = [run(1, "Integration Tests", "abc", "2026-09-22T00:01:00Z", "2026-09-22T00:11:00Z")]
+        batch = build_batches(rows, "2026-09-23T00:00:00Z")[0]
+        self.assertEqual(batch["workflow_run_count"], 1)
+        self.assertIsNone(batch["aggregation_note"])
+
+    def test_rerun_batch_is_not_flagged_as_cross_trigger(self):
+        rows = [run(1, "Integration Tests", "abc", "2026-09-22T00:01:00Z", "2026-09-22T00:11:00Z", attempt=2)]
+        batch = build_batches(rows, "2026-09-23T00:00:00Z")[0]
+        self.assertIsNone(batch["aggregation_note"])
+
     def test_batch_exposes_focus_jobs_for_chart_cards(self):
         row = run(1, "Integration Tests", "abc", "2026-09-22T00:01:00Z", "2026-09-22T00:11:00Z")
         row["focus_jobs"] = [{"key":"a3-py310","name":"A3 py3.10","url":"https://github.com/job/1","wait_seconds":25,"run_seconds":838}]

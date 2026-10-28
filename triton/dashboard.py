@@ -311,6 +311,18 @@ def build_batches(runs, as_of, window_start=None):
                 "event":r.get("event"), "pr":r.get("pr"), "pr_url":r.get("pr_url"), "head_sha":r.get("head_sha"), "pr_evidence":r.get("pr_evidence"),
             })
         first = rows[0]
+        run_times = sorted(dt(r.get("created_at")) for r in rows if dt(r.get("created_at")))
+        aggregation_note = None
+        aggregation_span = 0
+        # TA-004: an attempt-1 PR+SHA group may aggregate workflows triggered by
+        # different pushes across hours/days. We do not invent a unique trigger
+        # split; instead we disclose the count and creation span so the point is
+        # never misread as a single gate trigger.
+        if len(rows) > 1 and key[2] in ("initial", "unresolved"):
+            aggregation_span = int((run_times[-1] - run_times[0]).total_seconds()) if len(run_times) > 1 else 0
+            span_text = f"（首尾创建相隔 {aggregation_span} 秒，可能含多个独立触发）" if aggregation_span else ""
+            aggregation_note = (f"同一 PR+提交下聚合 {len(rows)} 个独立 workflow run{span_text}"
+                                "；本点按 PR+SHA 观测跨度聚合，未还原单次门禁。")
         base_branch=next((r.get("base_branch") for r in rows if r.get("base_branch")),None)
         npu_jobs=[job for workflow in workflows for job in workflow["jobs"] if _is_npu_job(job)]
         npu_waits=[job["wait_seconds"] for job in npu_jobs if job.get("wait_seconds") is not None]
@@ -334,6 +346,7 @@ def build_batches(runs, as_of, window_start=None):
             "critical_workflow": critical.get("name"),
             "action_url": action.get("html_url"), "action_name": action.get("name") or "GitHub Actions",
             "workflows": workflows, "focus_jobs":focus_jobs, "npu_jobs":npu_jobs,
+            "workflow_run_count": len(rows), "aggregation_span_seconds": aggregation_span, "aggregation_note": aggregation_note,
             "npu_data_missing": npu_missing, "npu_queue_seconds":max(npu_waits) if npu_waits and not npu_missing else None, "missing": missing,
         })
     batches.sort(key=lambda b: b["start_at"] or "")

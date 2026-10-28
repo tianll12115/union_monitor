@@ -354,7 +354,8 @@ APP_CONTRACTS = [
     ('close_button', "$('closeDetail').onclick=()=>{closeDetailContext();syncRecordsUrl('replace');};"),
     ('close_cleanup',
      "addEventListener('close',()=>{if(!$('detail').open){detailPR=null;"
-     'detailSnapshot=null;detailRepo=null;detailChoice=null;tritonDetailBatch=null;if(!closingForNavigation)syncRecordsUrl(\'replace\');}});'),
+     'detailSnapshot=null;detailRepo=null;detailChoice=null;tritonDetailBatch=null;'
+     'if(window.TritonView?.clearDetailBatch)window.TritonView.clearDetailBatch();if(!closingForNavigation)syncRecordsUrl(\'replace\');}});'),
     ('route_context_cleanup',
      "function closeDetailContext(){if($('detail').open){closingForNavigation=true;try{$('detail').close();}finally{closingForNavigation=false;}}"
      'detailPR=null;detailRepo=null;detailSnapshot=null;detailChoice=null;tritonDetailBatch=null;'
@@ -364,7 +365,7 @@ APP_CONTRACTS = [
      'getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||'
      "e.clientY<r.top||e.clientY>r.bottom){closeDetailContext();syncRecordsUrl('replace');}}"),
     ('route_switch_close',
-     "if((detailPR||$('detail').open)&&(domain!=='ubs'||!repo||"
+     "if(!(prevView==='triton'&&domain==='triton')&&(detailPR||$('detail').open)&&(domain!=='ubs'||!repo||"
      "currentRepository!==detailRepo))closeDetailContext();"),
     ('max_e2e_fn',
      "function maxE2E(prs){const p=Metrics.sortPRs(prs,'e2e')[0],"

@@ -16,6 +16,16 @@ test('opening a Triton batch resets both retained dialog scroll positions', () =
   assert.match(app.element('detailBody').innerHTML, /PR #7/);
 });
 
+test('TA-012: the Triton detail appends the exact source value and unit beside each display value', () => {
+  const app = createApp();
+  app.run("openTritonDetail({id:'b',pr:7,status:'success',duration_seconds:7,workflows:[],focus_jobs:[{key:'a3-py310',wait_seconds:0.6,run_seconds:7,status:'completed',conclusion:'success'}]})");
+  const html = app.element('detailBody').innerHTML;
+  assert.match(html, /源精确值 7\.000 s/, 'E2E exact seconds are shown for a 7s batch');
+  assert.match(html, /（600 ms）/, 'sub-second wait is shown in milliseconds, not coerced to zero');
+  assert.match(html, /（7\.000 s）/, 'job run seconds keep their exact source unit');
+  assert.doesNotMatch(html, /源精确值 —/, 'a present duration never renders a missing exact value');
+});
+
 test('project Triton route opens its available trend view rather than the workbench', () => {
   const app = createApp();
   app.run("navigate('#projects/triton/trends')");

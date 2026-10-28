@@ -214,6 +214,10 @@ input[type=search]:focus{border-color:var(--accent)}
 .swatch-tick{width:2px;height:12px;border:0;background:var(--ink);margin-left:12px}
 .swatch-dot{width:8px;height:8px;border-radius:50%;background:var(--chart-mean);border:0;margin-left:10px}
 .swatch-median{border-top:2px solid var(--text-3);opacity:.7}
+/* TA-013: 图内参考线在 legend 中给出可识别名称，不依赖单一颜色区分。 */
+.section .legend i.ref-swatch{width:14px;height:0;border-radius:0;background:none}
+.ref-swatch.ref-p90{border-top:2px dashed var(--chart-p90)}
+.ref-swatch.ref-median{border-top:2px solid var(--text-3);opacity:.7}
 
 /* ---------- 14. Charts (shared SVG vocabulary) ---------- */
 .trend{height:211px;padding:0 15px;position:relative}
@@ -234,6 +238,11 @@ input[type=search]:focus{border-color:var(--accent)}
 .hit-area{fill:transparent;pointer-events:all}
 .mark-hit:hover .dot{r:6;opacity:1}
 .mark-hit:focus-visible .hit-area{stroke:var(--accent);stroke-width:2}
+/* TA-002: 真实数据锚点与通向防碰撞展开点的引导线，明确显示测量值所在。 */
+.anchor-lead{stroke:var(--text-3);stroke-width:1;stroke-dasharray:2 2;opacity:.55;fill:none;pointer-events:none}
+.anchor-tick{fill:var(--ink);opacity:.85;pointer-events:none}
+/* TA-013: 图内参考线的可读名称标签。 */
+.ref-label{fill:var(--text-3);font-size:10px;font-family:var(--font-ui);pointer-events:none}
 .chart-tip{position:absolute;top:8px;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:var(--r-control);box-shadow:0 8px 24px rgba(29,37,48,.14);padding:8px 10px;font-size:12px;line-height:1.7;pointer-events:none;white-space:nowrap;z-index:5;font-variant-numeric:tabular-nums}
 .chart-tip b{color:var(--accent);font-family:var(--font-num);font-weight:600}
 

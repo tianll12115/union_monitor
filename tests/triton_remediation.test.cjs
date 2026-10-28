@@ -95,6 +95,11 @@ test('auxiliary workflow duration cannot distort Integration Tests axis or plott
   assert.doesNotMatch(chart,/data-i="2"/);
   assert.match(chart,/>12\.32 min<\/text>/);
   assert.doesNotMatch(h.container.innerHTML,/E2E 从提交事件/);
+  data.batches[2].pr=null;
+  data.batches[2].e2e_exclusion_reason='unresolved_pr_batch_identity';
+  data.batches[2].is_integration_tests=false;
+  h.view.render(data,h.container);
+  assert.doesNotMatch(h.node('[data-role="chart"]').innerHTML,/data-i="2"/);
 });
 
 test('TA-005: the boundary line discloses window, discovery cutoff and collection time', () => {

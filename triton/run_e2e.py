@@ -44,7 +44,7 @@ def measurement(row, as_of):
                 end_at=end.astimezone(timezone.utc).isoformat().replace('+00:00', 'Z') if end else None,
                 duration_seconds=duration, start_source=start_source,
                 e2e_sample_eligible=reason is None, e2e_exclusion_reason=reason,
-                e2e_metric_version=2, end_source='last_job_completed' if end else None)
+                e2e_metric_version=2, is_integration_tests=target, end_source='last_job_completed' if end else None)
 
 
 def build_run_batches(runs, as_of, window_start=None):
@@ -75,6 +75,6 @@ def build_run_batches(runs, as_of, window_start=None):
     result.sort(key=lambda b: (b['start_at'] or '', b['id']))
     for b in result:
         peers = [p for p in result if b.get('pr') is not None and p.get('pr') == b['pr']
-                 and p.get('e2e_exclusion_reason') != 'outside_integration_tests']
+                 and p.get('is_integration_tests') is True]
         b.update(e2e_index=peers.index(b) + 1 if b in peers else 1, e2e_total=len(peers) if b in peers else 1)
     return result

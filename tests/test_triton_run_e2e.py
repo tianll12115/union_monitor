@@ -69,6 +69,11 @@ class RunE2ETests(unittest.TestCase):
         self.assertFalse(b['e2e_sample_eligible'])
         self.assertEqual(b['e2e_exclusion_reason'], 'outside_integration_tests')
 
+    def test_unresolved_auxiliary_still_has_explicit_non_integration_scope(self):
+        b=payload([source(name='Auto labeling',pr=None)])['batches'][0]
+        self.assertIs(b.get('is_integration_tests'),False)
+        self.assertFalse(b['e2e_sample_eligible'])
+
     def test_rerun_does_not_bill_gap_and_discloses_unknown_queue_start(self):
         row = source(run_attempt=2, run_started_at='2026-10-26T04:40:00Z')
         row['jobs'][0]['started_at'] = '2026-10-26T04:40:00Z'
@@ -83,7 +88,7 @@ class RunE2ETests(unittest.TestCase):
         self.assertTrue(validate(rows, data)['passed'])
         for field, value in [('action_url', 'https://github.com/example/actions/runs/999'),
                              ('end_at', '2026-10-28T04:29:50Z'), ('duration_seconds', 172949),
-                             ('e2e_sample_eligible', False)]:
+                             ('e2e_sample_eligible', False),('is_integration_tests',False)]:
             with self.subTest(field=field):
                 forged = copy.deepcopy(data)
                 forged['batches'][0][field] = value

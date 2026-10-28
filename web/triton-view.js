@@ -392,7 +392,7 @@
     }
 
     function e2eRows(threshold) {
-      return pageSet().filter(b => b.e2e_exclusion_reason !== 'outside_integration_tests' && (filter === 'all' || (filter === 'slow' && core.isSlow(b, threshold)) || b.status === filter));
+      return pageSet().filter(b => b.is_integration_tests !== false && b.e2e_exclusion_reason !== 'outside_integration_tests' && (filter === 'all' || (filter === 'slow' && core.isSlow(b, threshold)) || b.status === filter));
     }
 
     function npuRows() {

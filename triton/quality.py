@@ -205,7 +205,8 @@ def validate_run_metrics(runs, payload):
         url=r.get('html_url')
         url=url.split('/attempts/')[0]+f'/attempts/{attempt}' if url else None
         expected=(start,end,seconds,url,eligible)
-        if actual!=expected or b.get('e2e_metric_version')!=2 or ws[0].get('url')!=url:
+        target=r.get('workflow_id')==241783889 and (r.get('path') or '').split('@')[0]=='.github/workflows/ci.yml'
+        if actual!=expected or b.get('e2e_metric_version')!=2 or ws[0].get('url')!=url or b.get('is_integration_tests') is not target:
             errors.append(f"batch {b['id']}: source run/attempt duration, qualification or provenance mismatch")
     return errors
 

@@ -38,7 +38,7 @@ Triton 的历史 PR 关联读取完整的强推事件分页，并通过 GitHub C
 
 - `Data quality gate failed`：先看本次 `quality-report.json` 的 `errors`。源时间戳倒置（job 完成早于开始、run 完成早于创建）属于上游数据缺陷，会按 `source_timestamp_inversion` 隔离该次观测并记 warning，不再阻断整轮发布；其余错误仍是发布阻断项，不得通过放宽门禁换取绿灯。
 - `N workflow job lists could not be collected`：job 列表在重试（含被截断的响应体）后仍失败时，拒绝发布不完整刷新，`evidence/triton/collection-errors.json` 记录失败的 run 与原因。
-- UBS 采集报 `HTTP Error 429`：GitCode 限流，采集客户端按 `Retry-After`（上限 60 秒）退避重试；持续限流时该仓库本次记为 failed 并保留上一份快照。
+- UBS 采集报 `HTTP Error 429`：GitCode 按来源 IP 做匿名限流，窗口以分钟计。采集客户端按 `Retry-After` 退避（没有该头时从 30 秒起阶梯递增，单次上限 120 秒）；整轮结束后对仍被限流的仓库冷却 120 秒再重试一次。仍失败时该仓库记为 failed 并保留上一份快照，完整性校验会让本次 workflow 失败、不发布缺仓刷新。
 - 页面整仓 `0 批`、KPI 与明细全为 `—`：采集器只把 `openeuler-ci-bot` 与 `openeuler-bot` 发布的门禁报告当构建证据，并把 `log-ci.openeuler.openatom.cn` 的日志镜像链接归一化成 Jenkins API 地址。2026-11 起 UBSCore 门禁报告改由 `openeuler-bot` 发布且只带镜像链接，若上游再次更换账号或域名，需要同步 `collect.py` 的 `BOTS` / `LINK_RE`，否则所有 PR 都会退化成"未关联门禁"、页面只剩 PR 元数据。
 
 ## 迁移记录

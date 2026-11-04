@@ -114,5 +114,101 @@ class ClientRetryTests(unittest.TestCase):
         self.assertEqual(len(calls), 4)
 
 
+class GateReportLinkTests(unittest.TestCase):
+    """2026-11-04: the UBSCore gate moved its report to `openeuler-bot` on the
+    log mirror, so every UBS PR lost its batches while ham/ubturbo kept them."""
+
+    def test_log_mirror_links_normalise_to_the_jenkins_build_url(self):
+        cases = {
+            'https://log-ci.openeuler.openatom.cn/job/multiarch/openeuler/trigger/ubs-engine/8086/':
+                'https://ci.openeuler.openatom.cn/job/multiarch/job/openeuler/job/trigger/job/ubs-engine/8086/',
+            'https://log-ci.openeuler.openatom.cn/job/multiarch/manual-jobs/openeuler/UBSCore/pre-commit/ubs-engine/7065/':
+                'https://ci.openeuler.openatom.cn/job/multiarch/job/manual-jobs/job/openeuler/job/UBSCore/job/pre-commit/job/ubs-engine/7065/',
+            'https://log-ci.openeuler.openatom.cn/job/multiarch/openeuler/aarch64/ubs-engine/8084/console':
+                'https://ci.openeuler.openatom.cn/job/multiarch/job/openeuler/job/aarch64/job/ubs-engine/8084/',
+        }
+        for linked, expected in cases.items():
+            self.assertEqual(collect.canonical(linked), expected)
+            self.assertEqual(collect.job_path(expected).split('/')[0], 'multiarch')
+
+    def test_ci_host_and_legacy_double_slash_keep_their_identity(self):
+        self.assertEqual(collect.canonical('https://ci.openeuler.openatom.cn/job/Infra/job/docs/job/openeuler-docs-ci-step2/23661//console'),
+                         'https://ci.openeuler.openatom.cn/job/Infra/job/docs/job/openeuler-docs-ci-step2/23661/')
+        self.assertEqual(collect.canonical('https://ci.openeuler.openatom.cn/job/multiarch/job/openeuler/job/trigger/job/ham/12//console'),
+                         'https://ci.openeuler.openatom.cn/job/multiarch/job/openeuler/job/trigger/job/ham/12/')
+
+    def test_foreign_hosts_and_links_without_a_build_number_are_not_evidence(self):
+        self.assertIsNone(collect.canonical('https://ci.example.com/job/multiarch/job/trigger/job/x/job/1/'))
+        self.assertIsNone(collect.canonical('https://log-ci.openeuler.openatom.cn/job/multiarch/openeuler/trigger/ubs-engine/'))
+        self.assertEqual(collect.links('见 https://ci.example.com/job/a/job/1/'), set())
+
+    def test_a_gate_report_yields_both_report_hosts_without_duplicates(self):
+        body = ('门禁正在运行: <a href=https://log-ci.openeuler.openatom.cn/job/multiarch/openeuler/trigger/ubs-engine/8086/>'
+                'multiarch/openeuler/trigger/ubs-engine/8086</a> 以及 '
+                'https://ci.openeuler.openatom.cn/job/multiarch/job/openeuler/job/trigger/job/ubs-engine/8086/ 与 '
+                'https://ci.openeuler.openatom.cn/job/Infra/job/docs/job/openeuler-docs-ci-step2/23661//console')
+        self.assertEqual(collect.links(body), {
+            'https://ci.openeuler.openatom.cn/job/multiarch/job/openeuler/job/trigger/job/ubs-engine/8086/',
+            'https://ci.openeuler.openatom.cn/job/Infra/job/docs/job/openeuler-docs-ci-step2/23661/',
+        })
+
+    def test_discovery_accepts_the_gate_bot_and_ignores_human_links(self):
+        class Client:
+            def pages(self, url):
+                return [
+                    {'id': 1, 'user': {'login': 'openeuler-bot'},
+                     'body': '门禁入口: https://log-ci.openeuler.openatom.cn/job/multiarch/openeuler/trigger/ubs-engine/8086/'},
+                    {'id': 2, 'user': {'login': 'openeuler-bot'},
+                     'body': 'https://log-ci.openeuler.openatom.cn/job/multiarch/openeuler/aarch64/ubs-engine/8084/'},
+                    {'id': 3, 'user': {'login': 'someone'}, 'body': 'https://ci.openeuler.openatom.cn/job/fake/job/trigger/job/x/1/'},
+                ]
+        paths, comments = collect.discover_jobs(Client(), 'api', [{'number': 1765}], [])
+        self.assertEqual(sorted(paths), ['multiarch/openeuler/aarch64/ubs-engine', 'multiarch/openeuler/trigger/ubs-engine'])
+        self.assertEqual(paths['multiarch/openeuler/trigger/ubs-engine']['kind'], 'trigger')
+        self.assertEqual(paths['multiarch/openeuler/trigger/ubs-engine']['evidence'][0]['pr'], 1765)
+        self.assertEqual(paths['multiarch/openeuler/aarch64/ubs-engine']['kind'], 'arm')
+        self.assertEqual(len(comments[1765]), 3)
+
+    def test_legacy_ci_bot_reports_are_still_accepted(self):
+        class Client:
+            def pages(self, url):
+                return [{'id': 9, 'user': {'login': 'openeuler-ci-bot'},
+                         'body': 'https://ci.openeuler.openatom.cn/job/multiarch/job/openeuler/job/trigger/job/ham/40//console'}]
+        paths, _ = collect.discover_jobs(Client(), 'api', [{'number': 18}], [])
+        self.assertEqual(list(paths), ['multiarch/openeuler/trigger/ham'])
+
+
+    def test_only_gate_bots_contribute_links_and_docs_jobs_are_dropped(self):
+        self.assertIsNone(collect.bot_links({'user': {'login': 'wangwenlong7'},
+                                             'body': 'https://ci.openeuler.openatom.cn/job/a/job/1/'}))
+        self.assertEqual(collect.bot_links({'user': {'login': 'openeuler-bot'},
+                                            'body': 'https://log-ci.openeuler.openatom.cn/job/multiarch/openeuler/trigger/ubs-engine/8086/'}),
+                         {'https://ci.openeuler.openatom.cn/job/multiarch/job/openeuler/job/trigger/job/ubs-engine/8086/'})
+        self.assertEqual(collect.bot_links({'user': {'login': 'openeuler-bot'},
+                                            'body': 'https://ci.openeuler.openatom.cn/job/Infra/job/docs/job/openeuler-docs-ci-step2/23661//console'}), set())
+
+
+    def test_a_single_build_report_owns_its_children_but_a_summary_does_not(self):
+        prefix = 'https://ci.openeuler.openatom.cn/job/multiarch/job/openeuler/job/trigger/job/ubs-engine/'
+        trigger = prefix + '8086/'
+        child = 'https://ci.openeuler.openatom.cn/job/multiarch/job/openeuler/job/aarch64/job/ubs-engine/8084/'
+        other = prefix + '8050/'
+        table = ('<table><tr><td>trigger</td><td><a href=https://log-ci.openeuler.openatom.cn/job/multiarch/openeuler/trigger/'
+                 'ubs-engine/8086/>#8086</a></td></tr><tr><td>aarch64</td><td><a href=https://log-ci.openeuler.openatom.cn/job/'
+                 'multiarch/openeuler/aarch64/ubs-engine/8084/>#8084</a></td></tr></table>')
+        comments = [
+            {'user': {'login': 'openeuler-bot'}, 'body': '两条构建 ' + other + ' 与 ' + trigger},
+            {'user': {'login': 'reviewer'}, 'body': 'https://ci.openeuler.openatom.cn/job/multiarch/job/openeuler/job/trigger/job/ubs-engine/8000/'},
+        ]
+        reports, triggers = collect.gate_reports(comments, [prefix])
+        self.assertEqual(reports, {})
+        self.assertEqual(triggers, {trigger, other})
+        reports, triggers = collect.gate_reports([{'user': {'login': 'openeuler-bot'}, 'body': table}], [prefix])
+        self.assertEqual(reports, {trigger: {child}})
+        self.assertEqual(triggers, {trigger})
+        reports, triggers = collect.gate_reports([], [prefix], [other])
+        self.assertEqual((reports, triggers), ({}, {other}))
+
+
 if __name__ == '__main__':
     unittest.main()

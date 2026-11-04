@@ -18,17 +18,38 @@ from metrics import ms, in_scope, normalize_job, extract_events, match_event, me
 
 ROOT=Path(__file__).resolve().parent
 CI='https://ci.openeuler.openatom.cn/'
+# The UBSCore gate report is now posted by `openeuler-bot` and links to the
+# log mirror; `ham`/`ubturbo` reports still come from `openeuler-ci-bot` with
+# ci-host links. Both carry the same build identity.
+BOTS={'openeuler-ci-bot','openeuler-bot'}
+LINK_RE=r'https://(?:log-)?ci\.openeuler\.openatom\.cn/[^\s<>"\)]+'
 CONFIG=json.loads((ROOT/'repositories.json').read_text('utf-8'))
 ENV_KEYS=['eventType','eventAction','eventActionDetail','jobTriggerTime','prCreateTime','commentID','gitcodePullRequestId','gitcodeTargetBranch']
 TREE='number,url,timestamp,duration,result,building,actions[_class,causes[shortDescription,upstreamBuild,upstreamProject,upstreamUrl],waitingTimeMillis,blockedTimeMillis,buildableTimeMillis]'
 
 def canonical(url):
-    p=urllib.parse.urlsplit(html.unescape(url));path=re.sub('/+','/',p.path)
+    """Return the Jenkins REST URL of the build a gate report links to.
+
+    The log mirror (`log-ci`) is a browser view whose path lists the Jenkins
+    folders as flat segments; the API still lives on the ci host with one
+    `job/<name>` segment per folder. 2026-11-04: the UBSCore reports moved to
+    that mirror, so discovery matched nothing and every UBS PR lost its batches.
+    """
+    p=urllib.parse.urlsplit(html.unescape(url))
+    if p.hostname=='log-ci.openeuler.openatom.cn':
+        segments=[s for s in p.path.split('/') if s]
+        if segments[:1]==['job']:segments=segments[1:]
+        if not segments:return None
+        parts=['job/'+urllib.parse.quote(s,safe='') if not s.isdigit() else s for s in segments]
+        path='/'.join(parts)+'/'
+    elif p.hostname=='ci.openeuler.openatom.cn':
+        path=re.sub('/+','/',p.path)
+    else:return None
     m=re.match(r'(.*/\d+)/',path+'/')
-    return CI+m[1].lstrip('/')+'/' if p.hostname=='ci.openeuler.openatom.cn' and m else None
+    return CI+m[1].lstrip('/')+'/' if m else None
 
 def links(text):
-    return set(filter(None,(canonical(x) for x in re.findall(r'https://ci\.openeuler\.openatom\.cn/[^\s<>"\)]+',text))))
+    return set(filter(None,(canonical(x) for x in re.findall(LINK_RE,text))))
 
 def downstream(console):
     found={}
@@ -122,14 +143,41 @@ def discover_jobs(client, api, selected, errors):
             comments = client.pages(api+f'/pulls/{p["number"]}/comments')
             comments_by_pr[p['number']] = comments
             for c in comments:
-                if c.get('user', {}).get('login') != 'openeuler-ci-bot':continue
-                for url in links(c.get('body', '')):
+                for url in sorted(bot_links(c) or ()):
                     path = job_path(url)
                     if '/comment/' in '/'+path+'/' or path.startswith('Infra/docs/'):continue
                     paths.setdefault(path, dict(path=path,kind='trigger' if '/trigger/' in '/'+path+'/' else task_kind(url),evidence=[]))
                     if len(paths[path]['evidence']) < 3:paths[path]['evidence'].append(dict(pr=p['number'],comment_id=c.get('id'),build_url=url))
         except Exception as e:errors.append({'source':f'PR {p["number"]} comments discovery','reason':str(e)})
     return paths, comments_by_pr
+
+
+def bot_links(comment):
+    """Build links a gate bot reported, or None when the author is not a bot.
+
+    Humans may paste CI links too, so only the allowlisted report accounts are
+    evidence; docs jobs are excluded because they never gate a code change.
+    """
+    if comment.get('user',{}).get('login') not in BOTS:return None
+    return {u for u in links(comment.get('body','')) if not job_path(u).startswith('Infra/docs/')}
+
+
+def gate_reports(comments, trigger_urls, known=()):
+    """Associate one PR's gate reports with the builds that gate it.
+
+    A report that names exactly one trigger build owns the other links in the
+    same comment (its child tasks); a comment naming several builds is a build
+    summary, not an association.
+    """
+    reports={};triggers=set(known)
+    for c in comments:
+        found=bot_links(c)
+        if found is None:continue
+        roots=[u for u in found if any(u.startswith(t) for t in trigger_urls)]
+        triggers.update(roots)
+        if len(roots)==1 and '<table' in c.get('body',''):
+            reports.setdefault(roots[0],set()).update(found-set(roots))
+    return reports,triggers
 
 
 def run(args, config=None, client=None):
@@ -193,13 +241,8 @@ def run(args, config=None, client=None):
             latest_observed_submission_ms=latest_submission_ms if not logs_failed else observed_submission_ms,
             submission_time_profile=SUBMISSION_TIME_PROFILE,
         )
-        reports={};triggers=set(trigger_by_pr.get(n,[]))
-        for c in comments:
-            if c.get('user',{}).get('login')!='openeuler-ci-bot':continue
-            ls={u for u in links(c.get('body','')) if not job_path(u).startswith('Infra/docs/')};roots=[u for u in ls if any(u.startswith(t) for t in trigger_urls)]
-            triggers.update(roots)
-            if len(roots)==1 and '<table' in c.get('body',''):
-                reports.setdefault(roots[0],set()).update(ls-set(roots))
+        reports,triggered=gate_reports(comments,trigger_urls,trigger_by_pr.get(n,()))
+        triggers=set(triggered)
         batches=[]
         for u in sorted(triggers,key=lambda x:int(x.rstrip('/').split('/')[-1])):
             problems=[];complete=True

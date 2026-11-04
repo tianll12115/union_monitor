@@ -49,7 +49,7 @@ class Client:
             cached=json.loads(p.read_text('utf-8'));self.observed_at.append(cached['fetched_at'])
             return cached['body']
         if self.offline:raise RuntimeError('离线缓存缺失: '+url)
-        for attempt in range(3):
+        for attempt in range(4):
             with self.lock:
                 wait=max(0,.10-(time.monotonic()-self.last))
                 if wait:time.sleep(wait)
@@ -68,10 +68,19 @@ class Client:
                 return body
             except urllib.error.HTTPError as e:
                 if e.code in [401,403,404]:raise
-                if attempt==2:raise
+                if attempt==3:raise
+                if e.code==429:
+                    # GitCode throttles unauthenticated bursts; a 1-2 s retry
+                    # used to fail every repository of a daily refresh (2026-11-01).
+                    # Honour its Retry-After window, bounded so a run cannot hang.
+                    reset=e.headers.get('Retry-After') if e.headers else None
+                    try:delay=float(reset)
+                    except (TypeError,ValueError):delay=5*2**attempt
+                    time.sleep(max(1.0,min(delay,60.0)))
+                    continue
                 time.sleep(2**attempt)
             except (OSError,ValueError):
-                if attempt==2:raise
+                if attempt==3:raise
                 time.sleep(2**attempt)
     def pages(self,path,params=None):
         rows=[];seen=set()

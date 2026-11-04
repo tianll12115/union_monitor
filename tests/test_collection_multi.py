@@ -51,6 +51,46 @@ class CollectionTests(unittest.TestCase):
             self.assertEqual(result[-1]['status'], 'success')
 
 
+    def test_rate_limited_repositories_are_retried_after_the_cooldown(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            (root/'data').mkdir()
+            attempts = []
+            sleeps = []
+            def run(args, config, client):
+                attempts.append(config['name'])
+                if config['name'] == 'ubs-engine' and attempts.count('ubs-engine') == 1:
+                    raise OSError('HTTP Error 429: Too Many Requests')
+                return {'meta': {'repository': config['repository'], 'errors': []}}
+            args = argparse.Namespace(until='2026-09-10T00:00:00+00:00', days=30, refresh=False, offline=False, all=True, repo='ubs-engine')
+            with patch.object(collect, 'ROOT', root), patch.object(collect, 'run', run), \
+                 patch.object(collect, 'publish_index'), patch.object(collect, 'Client'), \
+                 patch('collect.time.sleep', sleeps.append):
+                result = collect.collect_many(args)
+            self.assertEqual(attempts.count('ubs-engine'), 2)
+            self.assertEqual(attempts.count('ubs-comm'), 1)
+            self.assertIn(collect.RATE_LIMIT_COOLDOWN, sleeps)
+            engine = next(r for r in result if r['name'] == 'ubs-engine')
+            self.assertEqual((engine['status'], engine['error']), ('success', None))
+
+    def test_other_failures_do_not_trigger_a_cooldown_retry(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            (root/'data').mkdir()
+            attempts, sleeps = [], []
+            def run(args, config, client):
+                attempts.append(config['name'])
+                raise OSError('repository moved')
+            args = argparse.Namespace(until='2026-09-10T00:00:00+00:00', days=30, refresh=False, offline=False, all=True, repo='ubs-engine')
+            with patch.object(collect, 'ROOT', root), patch.object(collect, 'run', run), \
+                 patch.object(collect, 'publish_index'), patch.object(collect, 'Client'), \
+                 patch('collect.time.sleep', sleeps.append):
+                result = collect.collect_many(args)
+            self.assertEqual(len(attempts), 9)
+            self.assertEqual(sleeps, [])
+            self.assertEqual({r['status'] for r in result}, {'failed'})
+
+
 class ClientRetryTests(unittest.TestCase):
     """2026-11-01: GitCode 429s failed every repository of the daily refresh."""
 
@@ -92,7 +132,19 @@ class ClientRetryTests(unittest.TestCase):
         with patch('collect.urllib.request.urlopen', fake_open), patch('collect.time.sleep', sleeps.append):
             body = client.get('https://api.gitcode.com/api/v5/repos/x/pulls')
         self.assertEqual(body, [{'id': 2}])
-        self.assertEqual([wait for wait in sleeps if wait > 1], [5.0])
+        self.assertEqual([wait for wait in sleeps if wait > 1], [30.0])
+
+    def test_a_window_without_retry_after_escalates_up_to_the_bound(self):
+        calls, sleeps = [], []
+        def fake_open(request, timeout=None):
+            calls.append(request.full_url)
+            raise urllib.error.HTTPError(request.full_url, 429, 'Too Many Requests', {}, io.BytesIO(b''))
+        client = collect.Client(self.tmp / 'cache4')
+        with patch('collect.urllib.request.urlopen', fake_open), patch('collect.time.sleep', sleeps.append):
+            with self.assertRaises(urllib.error.HTTPError):
+                client.get('https://api.gitcode.com/api/v5/repos/x/pulls')
+        self.assertEqual(len(calls), 5)
+        self.assertEqual([wait for wait in sleeps if wait > 1], [30.0, 60.0, 120.0, 120.0])
 
     def test_exhausted_retries_still_raise_the_source_failure(self):
         def fake_open(request, timeout=None):
@@ -111,7 +163,7 @@ class ClientRetryTests(unittest.TestCase):
         with patch('collect.urllib.request.urlopen', fake_open), patch('collect.time.sleep'):
             with self.assertRaises(OSError):
                 client.get('https://api.gitcode.com/api/v5/repos/x/pulls')
-        self.assertEqual(len(calls), 4)
+        self.assertEqual(len(calls), 5)
 
 
 class GateReportLinkTests(unittest.TestCase):

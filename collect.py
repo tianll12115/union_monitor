@@ -23,6 +23,7 @@ CI='https://ci.openeuler.openatom.cn/'
 # ci-host links. Both carry the same build identity.
 BOTS={'openeuler-ci-bot','openeuler-bot'}
 LINK_RE=r'https://(?:log-)?ci\.openeuler\.openatom\.cn/[^\s<>"\)]+'
+RATE_LIMIT_COOLDOWN=120.0
 CONFIG=json.loads((ROOT/'repositories.json').read_text('utf-8'))
 ENV_KEYS=['eventType','eventAction','eventActionDetail','jobTriggerTime','prCreateTime','commentID','gitcodePullRequestId','gitcodeTargetBranch']
 TREE='number,url,timestamp,duration,result,building,actions[_class,causes[shortDescription,upstreamBuild,upstreamProject,upstreamUrl],waitingTimeMillis,blockedTimeMillis,buildableTimeMillis]'
@@ -70,7 +71,7 @@ class Client:
             cached=json.loads(p.read_text('utf-8'));self.observed_at.append(cached['fetched_at'])
             return cached['body']
         if self.offline:raise RuntimeError('离线缓存缺失: '+url)
-        for attempt in range(4):
+        for attempt in range(5):
             with self.lock:
                 wait=max(0,.10-(time.monotonic()-self.last))
                 if wait:time.sleep(wait)
@@ -89,19 +90,20 @@ class Client:
                 return body
             except urllib.error.HTTPError as e:
                 if e.code in [401,403,404]:raise
-                if attempt==3:raise
+                if attempt==4:raise
                 if e.code==429:
-                    # GitCode throttles unauthenticated bursts; a 1-2 s retry
-                    # used to fail every repository of a daily refresh (2026-11-01).
-                    # Honour its Retry-After window, bounded so a run cannot hang.
+                    # GitCode throttles unauthenticated traffic per source IP and
+                    # its window lasts minutes: 2026-11-01 and 2026-11-04 both
+                    # cancelled a whole daily refresh. Honour Retry-After and
+                    # otherwise wait out an escalating window, bounded.
                     reset=e.headers.get('Retry-After') if e.headers else None
                     try:delay=float(reset)
-                    except (TypeError,ValueError):delay=5*2**attempt
-                    time.sleep(max(1.0,min(delay,60.0)))
+                    except (TypeError,ValueError):delay=30*2**attempt
+                    time.sleep(max(1.0,min(delay,120.0)))
                     continue
                 time.sleep(2**attempt)
             except (OSError,ValueError):
-                if attempt==3:raise
+                if attempt==4:raise
                 time.sleep(2**attempt)
     def pages(self,path,params=None):
         rows=[];seen=set()
@@ -319,6 +321,17 @@ def run(args, config=None, client=None):
     print(json.dumps({'prs':len(prs),'batches':sum(len(p['batches']) for p in prs),'errors':errors},ensure_ascii=False),flush=True)
     return snapshot
 
+def collect_one(args,config,entry,client):
+    print('REPOSITORY '+config['name'],flush=True)
+    try:
+        snapshot=run(args,config,client)
+        entry.update(status='partial' if snapshot['meta']['errors'] else 'success',error=None,snapshot='repos/'+config['name']+'.json',meta=snapshot['meta'])
+    except Exception as e:
+        entry.update(status='failed',error=str(e),attempted_at=datetime.now(timezone.utc).isoformat())
+        print('REPOSITORY FAILED '+config['name']+': '+str(e),flush=True)
+    return entry
+
+
 def collect_many(args):
     end=datetime.fromisoformat(args.until) if args.until else datetime.now(timezone.utc)
     if end.tzinfo is None:end=end.replace(tzinfo=timezone(timedelta(hours=8)))
@@ -332,14 +345,19 @@ def collect_many(args):
         if 'status' not in entry:entry.update(status='pending',snapshot=None,meta=None)
     for config,entry in zip(CONFIG,entries):
         if not args.all and config['name']!=args.repo:continue
-        print('REPOSITORY '+config['name'],flush=True)
-        try:
-            snapshot=run(args,config,client)
-            entry.update(status='partial' if snapshot['meta']['errors'] else 'success',error=None,snapshot='repos/'+config['name']+'.json',meta=snapshot['meta'])
-        except Exception as e:
-            entry.update(status='failed',error=str(e),attempted_at=datetime.now(timezone.utc).isoformat())
-            print('REPOSITORY FAILED '+config['name']+': '+str(e),flush=True)
+        collect_one(args,config,entry,client)
         publish_index(entries,start_ms,end_ms)
+    # A shared runner IP can exhaust GitCode's anonymous window for minutes;
+    # retrying the throttled repositories after a cooldown keeps one bad
+    # window from cancelling the whole refresh.
+    throttled=[(config,entry) for config,entry in zip(CONFIG,entries)
+               if entry['status']=='failed' and '429' in str(entry.get('error'))]
+    if throttled and not args.offline:
+        print(f'限流冷却 {RATE_LIMIT_COOLDOWN:.0f}s 后重试 {len(throttled)} 个仓库',flush=True)
+        time.sleep(RATE_LIMIT_COOLDOWN)
+        for config,entry in throttled:
+            collect_one(args,config,entry,client)
+            publish_index(entries,start_ms,end_ms)
     return entries
 
 if __name__=='__main__':

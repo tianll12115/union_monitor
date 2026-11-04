@@ -34,6 +34,12 @@ Triton 的历史 PR 关联读取完整的强推事件分页，并通过 GitHub C
 
 迁移到新仓库后，Triton 优先使用可选的 `GH_TOKEN` secret，未配置时使用该次工作流的 `github.token`。公开健康检查按当前仓库所有者和仓库名计算站点地址。每日流程同样只允许 main 部署；分支手动运行用于构建验证。Pages 需在仓库设置中选择 GitHub Actions，尚未发布时健康检查会如实失败。
 
+## 定时任务失败排查
+
+- `Data quality gate failed`：先看本次 `quality-report.json` 的 `errors`。源时间戳倒置（job 完成早于开始、run 完成早于创建）属于上游数据缺陷，会按 `source_timestamp_inversion` 隔离该次观测并记 warning，不再阻断整轮发布；其余错误仍是发布阻断项，不得通过放宽门禁换取绿灯。
+- `N workflow job lists could not be collected`：job 列表在重试（含被截断的响应体）后仍失败时，拒绝发布不完整刷新，`evidence/triton/collection-errors.json` 记录失败的 run 与原因。
+- UBS 采集报 `HTTP Error 429`：GitCode 限流，采集客户端按 `Retry-After`（上限 60 秒）退避重试；持续限流时该仓库本次记为 failed 并保留上一份快照。
+
 ## 迁移记录
 
 维护与迁移的历史与其验证记录见 [维护与迁移记录](maintenance.md)。

@@ -13,6 +13,20 @@ def stamp(value):
         return None
 
 
+def inverted_job_timestamps(jobs):
+    """True when a job claims to have finished before it started (source defect).
+
+    DQ-09/TS28-007: such a pair is contradictory evidence — never a zero-second
+    or negative execution. Callers quarantine the affected measurement and keep
+    the raw fields instead of clamping or borrowing another timestamp.
+    """
+    for job in jobs:
+        started, ended = stamp(job.get('started_at')), stamp(job.get('completed_at'))
+        if started and ended and ended < started:
+            return True
+    return False
+
+
 def measurement(row, as_of):
     """A pure source contract; a rerun without queue origin is observation only."""
     attempt = int(row.get('run_attempt') or 1)
@@ -25,19 +39,25 @@ def measurement(row, as_of):
     running = row.get('status') != 'completed'
     complete = bool(row.get('jobs_complete') and active and all(ends)
                     and all(j.get('status') == 'completed' for j in active))
+    inverted = bool(active) and inverted_job_timestamps(active)
     end = max(ends) if complete and not running else None
+    if end is not None and (inverted or (start is not None and end < start)):
+        # Contradictory source timestamps cannot prove a completion time: the
+        # value stays empty and is never clamped, borrowed or measured to now.
+        end = None
     observed_end = stamp(as_of) if running else end
     valid = bool(start and observed_end and observed_end >= start
                  and stamp(as_of) and observed_end <= stamp(as_of))
     job_times_valid = all(not stamp(j.get('started_at')) or
                           (stamp(j.get('completed_at')) and stamp(j['completed_at']) >= stamp(j['started_at']) >= start)
                           for j in active) if start and not running else True
-    duration = (observed_end - start).total_seconds() if valid and job_times_valid else None
+    duration = (observed_end - start).total_seconds() if valid and job_times_valid and not inverted else None
     target = row.get('workflow_id') == WORKFLOW_ID and (row.get('path') or '').split('@')[0] == WORKFLOW_PATH
     reason = ('unresolved_pr_batch_identity' if not row.get('pr') else
               'outside_integration_tests' if not target else
               'running_observation' if running else
               'non_sample_result' if row.get('conclusion') not in ('success', 'failure', 'timed_out', 'action_required', 'startup_failure') else
+              'source_timestamp_inversion' if inverted else
               'invalid_or_missing_duration' if duration is None else
               'rerun_queue_start_unknown' if attempt > 1 else None)
     return dict(start_at=start.astimezone(timezone.utc).isoformat().replace('+00:00', 'Z') if start else None,
@@ -67,7 +87,10 @@ def build_run_batches(runs, as_of, window_start=None):
                  approximate=attempt > 1, aggregation_note=None, workflow_run_count=1,
                  aggregation_span_seconds=0, complete=evidence['e2e_sample_eligible'])
         if evidence['duration_seconds'] is None:
-            b['missing'] = list(dict.fromkeys(b['missing'] + ['本次 job 完成时间证据不足或异常，E2E 留空']))
+            note = ('源时间戳倒置，执行时长与 E2E 均不采用'
+                    if evidence['e2e_exclusion_reason'] == 'source_timestamp_inversion'
+                    else '本次 job 完成时间证据不足或异常，E2E 留空')
+            b['missing'] = list(dict.fromkeys(b['missing'] + [note]))
         b['workflows'][0].update(url=url, run_started_at=row.get('run_started_at'),
                                  attempt_source=row.get('attempt_source'),
                                  workflow_id=row.get('workflow_id'), path=row.get('path'))

@@ -1,8 +1,18 @@
-import copy,json,shutil,tempfile,unittest
+import copy,http.client,json,shutil,tempfile,unittest
 from pathlib import Path
 from unittest.mock import patch
-from triton.dashboard import GitHub,build_batches,build_payload,collect,write_payload
+from triton.dashboard import GitHub,build_batches,build_payload,collect,summary_of,write_payload
 from triton.quality import validate,fingerprint,verify_artifacts,verify_page
+
+
+class _Response:
+    """Minimal urlopen() response: json.load(response) only needs read()."""
+    def __init__(self, payload):
+        self._raw=json.dumps(payload).encode("utf-8")
+        self.headers={}
+    def __enter__(self): return self
+    def __exit__(self, *exc): return False
+    def read(self, *args): return self._raw
 
 class QualityTests(unittest.TestCase):
     def fixture(self):
@@ -55,12 +65,42 @@ class WorkflowTimeGateTests(unittest.TestCase):
              "pr_url":"https://github.com/triton-lang/triton-ascend/pull/7","base_branch":"main",
              "pr_evidence":{"method":"m","run_id":1,"pr":7,"resolved_head_sha":"abc"}}
         row.update(overrides); return row
-    def test_inverted_workflow_time_fails_the_gate_and_never_clamps_to_zero(self):
+    def test_inverted_workflow_time_is_disclosed_not_clamped_and_does_not_block_the_refresh(self):
         row=self.run_row(updated_at="2026-09-22T01:00:00Z")
         batch=build_batches([row],"2026-09-22T03:00:00Z")[0]
         self.assertIsNone(batch["duration_seconds"])
         self.assertTrue(any("倒置" in m for m in batch["missing"]))
-        self.assertFalse(validate([row],{"batches":[batch]})["passed"])
+        p=build_payload([row],"2026-09-21T00:00:00Z","2026-09-23T00:00:00Z","2026-09-23T00:00:00Z")
+        self.assertIsNone(p["batches"][0]["duration_seconds"])
+        self.assertEqual(p["summary"]["valid"],0)
+        report=validate([row],p)
+        # DQ-09/TS28-007: an upstream run that ends before it starts is source
+        # evidence that must be quarantined and disclosed. It never becomes a
+        # zero-second sample and it never withholds the whole dashboard.
+        self.assertTrue(report["passed"],report["errors"])
+        self.assertTrue(any("源时间戳倒置" in w for w in report["warnings"]))
+
+    def test_inverted_job_execution_is_quarantined_instead_of_failing_the_gate(self):
+        job={"id":7,"name":"integration-tests-ascend (linux-amd64-a5-2, py3.12)","status":"completed",
+             "conclusion":"success","created_at":"2026-09-22T02:00:00Z",
+             "started_at":"2026-09-22T02:00:14Z","completed_at":"2026-09-22T02:00:09Z"}
+        row=self.run_row(jobs=[job],workflow_id=241783889,path=".github/workflows/ci.yml")
+        p=build_payload([row],"2026-09-21T00:00:00Z","2026-09-23T00:00:00Z","2026-09-23T00:00:00Z")
+        batch=p["batches"][0]
+        self.assertIsNone(batch["duration_seconds"])
+        self.assertIsNone(batch["end_at"])
+        self.assertFalse(batch["e2e_sample_eligible"])
+        self.assertEqual(batch["e2e_exclusion_reason"],"source_timestamp_inversion")
+        report=validate([row],p)
+        self.assertTrue(report["passed"],report["errors"])
+        self.assertTrue(any("源时间戳倒置" in w for w in report["warnings"]))
+        # The quarantine is not a licence to publish a number: a duration on
+        # contradictory evidence is still a contract failure.
+        forged=copy.deepcopy(p)
+        forged["batches"][0]["duration_seconds"]=0
+        forged["summary"]=summary_of(forged["batches"])
+        self.assertFalse(validate([row],forged)["passed"])
+
     def test_auxiliary_workflow_cannot_mask_inverted_applicable_start(self):
         bad=self.run_row(id=1,created_at="2026-09-22T00:00:00Z",trigger_at="2026-09-22T02:30:00Z",trigger_exact=True,updated_at="2026-09-22T01:00:00Z")
         aux=self.run_row(id=2,created_at="2026-09-22T00:00:00Z",trigger_at="2026-09-22T00:30:00Z",trigger_exact=True,updated_at="2026-09-22T03:00:00Z",
@@ -229,6 +269,31 @@ class GitHubContractTests(unittest.TestCase):
             with self.assertRaises(RuntimeError):
                 GitHub().pages("/pulls")
 
+    def test_truncated_response_is_retried_instead_of_becoming_a_missing_job_list(self):
+        # 2026-10-31: one truncated read (IncompleteRead) aborted the whole
+        # refresh. A short body is a transport failure, so it is retried and
+        # never downgraded to "this run has no jobs".
+        calls=[]
+        def fake_open(request, timeout=None):
+            calls.append(1)
+            if len(calls) < 3:
+                raise http.client.IncompleteRead(b"", 8889)
+            return _Response({"workflow_runs": [], "total_count": 0})
+        with patch("triton.dashboard.time.sleep"), patch("triton.dashboard.urllib.request.urlopen", fake_open):
+            data, _ = GitHub().get("/actions/runs?per_page=1")
+        self.assertEqual(data["total_count"], 0)
+        self.assertEqual(len(calls), 3)
+
+    def test_persistent_truncated_response_still_raises_after_retries(self):
+        calls=[]
+        def fake_open(request, timeout=None):
+            calls.append(1)
+            raise http.client.IncompleteRead(b"", 8889)
+        with patch("triton.dashboard.time.sleep"), patch("triton.dashboard.urllib.request.urlopen", fake_open):
+            with self.assertRaises(http.client.IncompleteRead):
+                GitHub().get("/actions/runs?per_page=1")
+        self.assertEqual(len(calls), 4)
+
     def test_collect_contract_failure_names_source_without_credentials(self):
         def fake_get(self, url):
             if url.endswith("per_page=1"): return {"message": "Server Error"}, {}
@@ -321,3 +386,39 @@ class ArtifactConsistencyTests(unittest.TestCase):
         if not (data/"triton-manifest.json").exists():
             self.skipTest("no local Triton artifacts (collect first)")
         self.assertEqual(verify_artifacts(data,evidence),[])
+
+
+class InvertedSourceEvidenceTests(unittest.TestCase):
+    """The 2026-11-02..04 outage: one upstream run whose timestamps contradict
+    each other must be quarantined and disclosed, never block the dashboard
+    (DQ-09/TS28-007) and never publish a fabricated duration."""
+
+    def rows(self):
+        return [json.loads((Path(__file__).parent/"fixtures"/"triton-inverted-run-41290449503.json")
+                           .read_text(encoding="utf-8"))]
+
+    def payload(self, rows):
+        return build_payload(rows,"2026-11-01T00:00:00Z","2026-11-02T03:00:00Z","2026-11-02T03:00:00Z")
+
+    def test_real_upstream_inversion_is_quarantined_instead_of_blocking_the_refresh(self):
+        rows=self.rows();payload=self.payload(rows)
+        batch=payload["batches"][0]
+        self.assertEqual(batch["id"],"run-41290449503-attempt-1")
+        self.assertIsNone(batch["duration_seconds"])
+        self.assertIsNone(batch["end_at"])
+        self.assertFalse(batch["e2e_sample_eligible"])
+        self.assertEqual(batch["e2e_exclusion_reason"],"source_timestamp_inversion")
+        self.assertIn("源时间戳倒置"," ".join(batch["missing"]))
+        self.assertEqual(payload["summary"]["valid"],0)
+        report=validate(rows,payload)
+        self.assertTrue(report["passed"],report["errors"])
+        self.assertTrue(any("源时间戳倒置" in w for w in report["warnings"]),report["warnings"])
+
+    def test_a_duration_derived_from_inverted_evidence_still_fails_closed(self):
+        rows=self.rows()
+        for forged in (0,1,1554):
+            with self.subTest(duration=forged):
+                payload=copy.deepcopy(self.payload(rows))
+                payload["batches"][0]["duration_seconds"]=forged
+                payload["summary"]=summary_of(payload["batches"])
+                self.assertFalse(validate(rows,payload)["passed"])

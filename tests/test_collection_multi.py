@@ -1,7 +1,10 @@
 import argparse
+import io
 import json
+import shutil
 import tempfile
 import unittest
+import urllib.error
 from pathlib import Path
 from unittest.mock import patch
 
@@ -46,6 +49,69 @@ class CollectionTests(unittest.TestCase):
             self.assertEqual(failed['meta'], {'end_ms': 1})
             self.assertEqual(failed['snapshot'], 'repos/ubs-comm.json')
             self.assertEqual(result[-1]['status'], 'success')
+
+
+class ClientRetryTests(unittest.TestCase):
+    """2026-11-01: GitCode 429s failed every repository of the daily refresh."""
+
+    class Response:
+        def __init__(self, body):
+            self._body = json.dumps(body).encode('utf-8')
+            self.headers = {'Content-Type': 'application/json'}
+        def __enter__(self): return self
+        def __exit__(self, *exc): return False
+        def read(self): return self._body
+
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp(prefix='ubs-429-'))
+        self.addCleanup(shutil.rmtree, self.tmp, ignore_errors=True)
+
+    def test_rate_limited_request_waits_for_the_advertised_window_then_succeeds(self):
+        calls, sleeps = [], []
+        def fake_open(request, timeout=None):
+            calls.append(request.full_url)
+            if len(calls) < 3:
+                raise urllib.error.HTTPError(request.full_url, 429, 'Too Many Requests',
+                                             {'Retry-After': '30'}, io.BytesIO(b''))
+            return self.Response([{'id': 1}])
+        client = collect.Client(self.tmp / 'cache')
+        with patch('collect.urllib.request.urlopen', fake_open), patch('collect.time.sleep', sleeps.append):
+            body = client.get('https://api.gitcode.com/api/v5/repos/x/pulls')
+        self.assertEqual(body, [{'id': 1}])
+        # The request throttle also sleeps; only the rate-limit waits are asserted.
+        self.assertEqual([wait for wait in sleeps if wait > 1], [30.0, 30.0])
+
+    def test_rate_limit_without_retry_after_falls_back_to_bounded_backoff(self):
+        calls, sleeps = [], []
+        def fake_open(request, timeout=None):
+            calls.append(request.full_url)
+            if len(calls) < 2:
+                raise urllib.error.HTTPError(request.full_url, 429, 'Too Many Requests', {}, io.BytesIO(b''))
+            return self.Response([{'id': 2}])
+        client = collect.Client(self.tmp / 'cache2')
+        with patch('collect.urllib.request.urlopen', fake_open), patch('collect.time.sleep', sleeps.append):
+            body = client.get('https://api.gitcode.com/api/v5/repos/x/pulls')
+        self.assertEqual(body, [{'id': 2}])
+        self.assertEqual([wait for wait in sleeps if wait > 1], [5.0])
+
+    def test_exhausted_retries_still_raise_the_source_failure(self):
+        def fake_open(request, timeout=None):
+            raise urllib.error.HTTPError(request.full_url, 429, 'Too Many Requests', {'Retry-After': '1'}, io.BytesIO(b''))
+        client = collect.Client(self.tmp / 'cache')
+        with patch('collect.urllib.request.urlopen', fake_open), patch('collect.time.sleep'):
+            with self.assertRaises(urllib.error.HTTPError):
+                client.get('https://api.gitcode.com/api/v5/repos/x/pulls')
+
+    def test_transport_errors_are_retried_and_then_raised(self):
+        calls = []
+        def fake_open(request, timeout=None):
+            calls.append(request.full_url)
+            raise OSError('connection reset')
+        client = collect.Client(self.tmp / 'cache3')
+        with patch('collect.urllib.request.urlopen', fake_open), patch('collect.time.sleep'):
+            with self.assertRaises(OSError):
+                client.get('https://api.gitcode.com/api/v5/repos/x/pulls')
+        self.assertEqual(len(calls), 4)
 
 
 if __name__ == '__main__':

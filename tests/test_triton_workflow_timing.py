@@ -162,8 +162,9 @@ class PublishedPayloadTests(unittest.TestCase):
                    jobs=[job(started_at='2026-10-28T00:05:00Z', completed_at='2026-10-28T00:04:00Z')])
         evidence = measurement(row, '2026-10-28T02:00:00Z')
         self.assertIsNone(evidence['duration_seconds'])
+        self.assertIsNone(evidence['end_at'])
         self.assertFalse(evidence['e2e_sample_eligible'])
-        self.assertEqual(evidence['e2e_exclusion_reason'], 'invalid_or_missing_duration')
+        self.assertEqual(evidence['e2e_exclusion_reason'], 'source_timestamp_inversion')
         payload = build_payload([row], '2026-10-27T00:00:00Z', '2026-10-28T02:00:00Z',
                                 '2026-10-28T02:00:00Z')
         timing = payload['batches'][0]['workflows'][0]

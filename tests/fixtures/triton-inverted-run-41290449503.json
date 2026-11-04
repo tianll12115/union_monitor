@@ -1,0 +1,73 @@
+{
+  "id": 41290449503,
+  "run_attempt": 1,
+  "event": "pull_request",
+  "name": "Integration Tests",
+  "workflow_id": 241783889,
+  "path": ".github/workflows/ci.yml",
+  "created_at": "2026-11-01T09:49:17Z",
+  "run_started_at": "2026-11-01T09:49:17Z",
+  "updated_at": "2026-11-01T09:13:49Z",
+  "status": "completed",
+  "conclusion": "success",
+  "head_sha": "cbb186135052fbbc1b02a628c0595a268b90ecec",
+  "pr": 2912,
+  "pr_title": "[TLA](feat) add native attention ops and optimized FA example",
+  "pr_url": "https://github.com/triton-lang/triton-ascend/pull/2912",
+  "base_branch": "main-dev",
+  "author": "cxtjjcz",
+  "branch": "codex/tla-flash-attention",
+  "pr_evidence": {
+    "method": "source_repository+branch+head_sha",
+    "run_id": 41290449503,
+    "pr": 2912,
+    "raw_run_sha": "cbb186135052fbbc1b02a628c0595a268b90ecec",
+    "resolved_head_sha": "cbb186135052fbbc1b02a628c0595a268b90ecec",
+    "source_repository": "cxtjjcz/triton-ascend",
+    "head_ref": "codex/tla-flash-attention"
+  },
+  "jobs_complete": true,
+  "html_url": "https://github.com/triton-lang/triton-ascend/actions/runs/41290449503",
+  "jobs": [
+    {
+      "id": 124800412531,
+      "name": "runner-preparation / prepare",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-11-01T09:49:18Z",
+      "started_at": "2026-11-01T09:49:20Z",
+      "completed_at": "2026-11-01T09:49:23Z",
+      "html_url": "https://github.com/triton-lang/triton-ascend/actions/runs/41290449503/job/124800412531"
+    },
+    {
+      "id": 124800429504,
+      "name": "integration-tests-ascend / integration-tests-ascend (linux-aarch64-a3-800i-4, py3.11)",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-11-01T09:49:23Z",
+      "started_at": "2026-11-01T09:49:49Z",
+      "completed_at": "2026-11-01T09:13:48Z",
+      "html_url": "https://github.com/triton-lang/triton-ascend/actions/runs/41290449503/job/124800429504"
+    },
+    {
+      "id": 124800429506,
+      "name": "integration-tests-ascend / integration-tests-ascend (linux-amd64-a5-2, py3.12)",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-11-01T09:49:23Z",
+      "started_at": "2026-11-01T09:49:35Z",
+      "completed_at": "2026-11-01T09:07:38Z",
+      "html_url": "https://github.com/triton-lang/triton-ascend/actions/runs/41290449503/job/124800429506"
+    },
+    {
+      "id": 124800429537,
+      "name": "integration-tests-ascend / integration-tests-ascend (linux-aarch64-a3-800i-4, py3.10)",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-11-01T09:49:23Z",
+      "started_at": "2026-11-01T09:49:51Z",
+      "completed_at": "2026-11-01T09:11:37Z",
+      "html_url": "https://github.com/triton-lang/triton-ascend/actions/runs/41290449503/job/124800429537"
+    }
+  ]
+}

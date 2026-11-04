@@ -115,6 +115,19 @@ class RunE2ETests(unittest.TestCase):
             row=source();row['jobs'][0]['completed_at']=end
             self.assertIsNone(payload([row])['batches'][0]['duration_seconds'])
 
+    def test_inverted_job_timestamps_quarantine_the_end_and_the_reason(self):
+        # DQ-09: a job that ends before it starts proves nothing about when the
+        # attempt finished, so the end stays empty instead of being borrowed.
+        row=source();row['jobs'][0]['completed_at']='2026-10-26T04:27:30Z'
+        b=payload([row])['batches'][0]
+        self.assertIsNone(b['duration_seconds'])
+        self.assertIsNone(b['end_at'])
+        self.assertIsNone(b['end_source'])
+        self.assertFalse(b['e2e_sample_eligible'])
+        self.assertEqual(b['e2e_exclusion_reason'],'source_timestamp_inversion')
+        self.assertIn('源时间戳倒置'," ".join(b['missing']))
+        self.assertTrue(validate([row],payload([row]))['passed'])
+
     def test_duplicate_identity_is_idempotent_and_window_uses_each_run_start(self):
         old=source(2,created_at='2026-10-25T00:00:00Z')
         future=source(3,created_at='2026-10-29T00:00:00Z')

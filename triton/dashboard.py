@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import csv
 import html
+import http.client
 import json
 import hashlib
 import math
@@ -482,6 +483,14 @@ class GitHub:
                 # Transient transport failures (SSL EOF, connection reset) are
                 # retried like 5xx: a dropped TLS read is not a data gap, and it
                 # must never be reported as a missing job list (REQ-018/UDR-004).
+                if attempt < 3:
+                    time.sleep(2 ** attempt); continue
+                raise
+            except http.client.HTTPException as exc:
+                # A truncated response body (IncompleteRead) or a malformed
+                # status line is a transport failure too. It is not an OSError,
+                # so without this clause one short read aborted a whole refresh
+                # (2026-10-31: "IncompleteRead(0 bytes read, 8889 more expected)").
                 if attempt < 3:
                     time.sleep(2 ** attempt); continue
                 raise

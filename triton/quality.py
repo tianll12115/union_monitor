@@ -91,7 +91,13 @@ def validate(runs, payload):
                 if not created or not updated:
                     errors.append(prefix+": completed workflow missing created_at/updated_at")
                 elif updated<created:
-                    errors.append(prefix+": completed workflow ends before its start")
+                    # DQ-09/TS28-007: an upstream run that reports completion
+                    # before creation is contradictory source evidence, not a
+                    # reason to withhold the whole dashboard for days. It is
+                    # quarantined — no duration is derived from it, no zero is
+                    # fabricated and it stays out of the completed percentiles —
+                    # and the anomaly is disclosed as a warning instead.
+                    warnings.append(prefix+": 源时间戳倒置（完成早于创建），E2E 不纳入完成分位数")
                 elif applicable is not None and updated<applicable:
                     errors.append(prefix+": completed workflow ends before its applicable start")
                 elif as_of is not None and updated>as_of:
@@ -119,7 +125,12 @@ def validate(runs, payload):
                 if job.get("status")=="completed" and (not started or not ended): errors.append(key+"completed job missing timestamps")
                 if started and created and started<created:
                     warnings.append(key+"source timestamps inverted; excluded from queue statistics")
-                if ended and started and ended<started: errors.append(key+"negative execution time")
+                if ended and started and ended<started:
+                    # DQ-09/TS28-007: a job that "finished" before it started is
+                    # contradictory source evidence. It is quarantined (no
+                    # execution duration, no E2E sample) and disclosed, never
+                    # clamped to zero and never a reason to block the refresh.
+                    warnings.append(key+"源时间戳倒置（完成早于开始），执行时长不采用且不纳入 E2E 分位数")
             except (ValueError,TypeError): errors.append(key+"invalid timestamp")
     for batch in payload["batches"]:
         for workflow in batch.get("workflows",[]):
@@ -189,8 +200,14 @@ def validate_run_metrics(runs, payload):
         start=read(r.get('created_at') if attempt==1 else r.get('run_started_at'))
         jobs=[j for j in r.get('jobs',[]) if j.get('conclusion')!='skipped']
         ends=[read(j.get('completed_at')) for j in jobs]
-        end=max(ends) if (r.get('status')=='completed' and r.get('jobs_complete') and jobs and all(ends)
-                          and all(j.get('status')=='completed' for j in jobs)) else None
+        # DQ-09: recompute the same quarantine the builder applies, so a batch
+        # that publishes a duration from contradictory timestamps still fails
+        # while a quarantined batch (end/duration absent) reconciles exactly.
+        from .run_e2e import inverted_job_timestamps
+        inverted=inverted_job_timestamps(jobs)
+        end=None if inverted else (max(ends) if (r.get('status')=='completed' and r.get('jobs_complete') and jobs and all(ends)
+                          and all(j.get('status')=='completed' for j in jobs)
+                          and (start is None or max(ends) >= start)) else None)
         observed=as_of if r.get('status')!='completed' else end
         valid=bool(start and observed and start<=observed<=as_of)
         if r.get('status')=='completed' and start:

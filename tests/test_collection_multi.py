@@ -73,6 +73,29 @@ class CollectionTests(unittest.TestCase):
             engine = next(r for r in result if r['name'] == 'ubs-engine')
             self.assertEqual((engine['status'], engine['error']), ('success', None))
 
+    def test_single_repository_does_not_retry_previous_unselected_rate_limit(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            (root/'data').mkdir()
+            previous = {'name': 'ubs-comm', 'status': 'failed',
+                        'error': 'HTTP Error 429: Too Many Requests'}
+            (root/'data/repositories.json').write_text(json.dumps({'repositories': [previous]}))
+            attempts, sleeps = [], []
+            def run(args, config, client):
+                attempts.append(config['name'])
+                return {'meta': {'errors': []}}
+            args = argparse.Namespace(until='2026-09-10T00:00:00+00:00', days=30,
+                                      refresh=False, offline=False, all=False, repo='ubs-engine')
+            with patch.object(collect, 'ROOT', root), patch.object(collect, 'run', run), \
+                 patch.object(collect, 'publish_index'), patch.object(collect, 'Client'), \
+                 patch('collect.time.sleep', sleeps.append):
+                result = collect.collect_many(args)
+            self.assertEqual(attempts, ['ubs-engine'])
+            self.assertEqual(sleeps, [])
+            unselected = next(r for r in result if r['name'] == 'ubs-comm')
+            self.assertEqual(unselected['status'], previous['status'])
+            self.assertEqual(unselected['error'], previous['error'])
+
     def test_other_failures_do_not_trigger_a_cooldown_retry(self):
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)

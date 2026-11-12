@@ -84,6 +84,8 @@ def require_keys(payload: dict, keys, source: str) -> None:
 
 
 def safe_snapshot_path(snapshot: str, repo_name: str) -> PurePosixPath:
+    if not isinstance(snapshot, str) or any(c in snapshot for c in ('\\', ':', '\0')):
+        raise DevDataError(f"repository {repo_name!r}: unsafe snapshot path {snapshot!r}")
     path = PurePosixPath(snapshot)
     if path.is_absolute() or ".." in path.parts or not path.parts:
         raise DevDataError(f"repository {repo_name!r}: unsafe snapshot path {snapshot!r}")
@@ -188,7 +190,7 @@ def run_offline(written: list) -> None:
     for entry in index_payload["repositories"]:
         snapshot = entry.get("snapshot")
         if snapshot:
-            needed.append(PurePosixPath(snapshot).as_posix())
+            needed.append(safe_snapshot_path(snapshot, entry.get("name", "unknown")).as_posix())
 
     missing = [name for name in needed if not fixture(name).is_file()]
     if missing:

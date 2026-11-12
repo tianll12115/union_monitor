@@ -64,7 +64,9 @@ def normalize_job(raw):
     actions=raw.get('actions',[])
     q=next((a for a in actions if 'waitingTimeMillis' in a),{})
     keys=['waitingTimeMillis','blockedTimeMillis','buildableTimeMillis']
-    queue=sum(q[k] for k in keys) if all(isinstance(q.get(k),(int,float)) for k in keys) else None
+    queue=sum(q[k] for k in keys) if all(
+        isinstance(q.get(k),(int,float)) and not isinstance(q[k],bool)
+        and math.isfinite(q[k]) and q[k]>=0 for k in keys) else None
     start=raw.get('timestamp');duration=raw.get('duration');running=raw.get('building',False) or raw.get('result') is None
     end=start+duration if start is not None and duration is not None and not running else None
     return dict(url=raw.get('url'),number=raw.get('number'),result=raw.get('result'),building=running,

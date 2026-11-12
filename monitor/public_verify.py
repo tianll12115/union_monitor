@@ -14,6 +14,7 @@ from __future__ import annotations
 import hashlib
 import time
 from datetime import datetime, timezone
+from urllib.error import HTTPError
 
 try:
     import urllib.request
@@ -44,6 +45,10 @@ def _default_fetch(timeout):
                 return response.read()
         except TransientFetchError:
             raise
+        except HTTPError as exc:
+            exc.close()
+            error_type = TransientFetchError if exc.code in (408, 429) or exc.code >= 500 else PermanentFetchError
+            raise error_type(f"{url}: HTTP {exc.code}") from exc
         except Exception as exc:  # network/timeout/parse failures are retryable
             raise TransientFetchError(f"{url}: {exc!r}") from exc
 

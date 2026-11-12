@@ -1,5 +1,6 @@
 """Changed executable lines must be measured, with coverage strictly above 80%."""
 import tempfile
+import subprocess
 import unittest
 from pathlib import Path
 from unittest.mock import patch
@@ -8,6 +9,40 @@ from scripts import verify_changed_coverage as gate
 
 
 class ChangedCoverageTests(unittest.TestCase):
+    def test_real_git_quoted_unicode_paths_require_coverage(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            subprocess.run(['git', 'init', '-q', str(root)], check=True)
+            names = ['web/测试.js', 'web/space name.py']
+            (root / 'web').mkdir()
+            for name in names:
+                (root / name).write_text('raise RuntimeError()\n', encoding='utf-8')
+            subprocess.run(['git', '-C', str(root), 'add', '.'], check=True)
+            diff = subprocess.check_output(
+                ['git', '-C', str(root), '-c', 'core.quotepath=true', 'diff',
+                 '--cached', '--unified=0'], encoding='utf-8')
+            changes = gate.changed_lines(diff)
+            self.assertEqual(changes, {name: {1} for name in names})
+            with self.assertRaisesRegex(ValueError, 'No coverage evidence'):
+                gate.evaluate(changes, {})
+
+    def test_quoted_special_paths_decode_git_c_escapes(self):
+        names = {r'"b/web/tab\tname.js"': 'web/tab\tname.js',
+                 r'"b/web/quote\"name.js"': 'web/quote"name.js',
+                 r'"b/web/slash\\name.js"': 'web/slash\\name.js',
+                 r'"b/web/line\nname.js"': 'web/line\nname.js',
+                 r'"b/web/测试.js"': 'web/测试.js'}
+        for quoted, decoded in names.items():
+            with self.subTest(path=quoted):
+                self.assertEqual(gate.changed_lines('+++ ' + quoted + '\n@@ -0,0 +1 @@\n'),
+                                 {decoded: {1}})
+
+    def test_malformed_quoted_paths_fail_closed(self):
+        for header in ['"b/web/a.js', r'"b/web/unknown\x.js"', r'"b/web/\777.js"',
+                       r'"b/web/\377.js"']:
+            with self.subTest(header=header), self.assertRaises(ValueError):
+                gate.changed_lines('+++ ' + header + '\n@@ -0,0 +1 @@\n')
+
     def test_diff_collects_added_ranges_and_ignores_deletions_and_test_files(self):
         diff = '+++ b/web/a.js\n@@ -2,2 +2,3 @@\n+++ b/tests/a.test.cjs\n@@ -0,0 +1 @@\n+++ /dev/null\n@@ -1 +0,0 @@\n'
         self.assertEqual(gate.changed_lines(diff), {'web/a.js': {2, 3, 4}})

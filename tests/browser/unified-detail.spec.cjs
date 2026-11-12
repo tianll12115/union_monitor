@@ -108,6 +108,27 @@ test('[BASIC-006] list and batch entities converge on one detail; representative
   await expect(dialog).toBeHidden();
 });
 
+test('explicit batch deep link opens only its batch even when the representative precedes it', async ({ page }) => {
+  await serveUbs(page, fixture());
+  const batch = 'https://ci.openeuler.openatom.cn/job/ubs-engine/key/3/';
+  await page.goto('./#projects/ubs/records?repository=ubs-engine&pr=100&batch=' + encodeURIComponent(batch));
+  const dialog = page.locator('#detail');
+  await expect(dialog).toBeVisible();
+  await expect(dialog.locator('details[open]')).toHaveCount(1);
+  await expect(dialog.locator('details[open]')).toHaveAttribute('data-batch-url', batch);
+  await expect(dialog.locator('details.representative')).not.toHaveAttribute('open', '');
+  await expect.poll(() => new URLSearchParams(page.url().split('?')[1]).get('batch')).toBe(batch);
+});
+
+test('expired batch deep link keeps every batch collapsed', async ({ page }) => {
+  await serveUbs(page, fixture());
+  await page.goto('./#projects/ubs/records?repository=ubs-engine&pr=100&batch=expired');
+  const dialog = page.locator('#detail');
+  await expect(dialog).toBeVisible();
+  await expect(dialog.locator('[data-role="invalid-entry"]')).toBeVisible();
+  await expect(dialog.locator('details[open]')).toHaveCount(0);
+});
+
 test('[BASIC-006] no-representative PR shows the reason and the most-recent batch, never a fabricated representative', async ({ page }) => {
   await serveUbs(page, fixture());
   await page.goto('./#ubs/repo/ubs-engine');

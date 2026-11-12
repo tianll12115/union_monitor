@@ -2,6 +2,29 @@ const { test } = require('node:test');
 const assert = require('node:assert/strict');
 
 const D = require('../web/detail.js');
+const { createApp } = require('./helpers/app-harness.cjs');
+
+function renderedDetail(entryId) {
+  const app = createApp();
+  app.run(`snapshot={meta:{},prs:[{number:1,events:[],batches:[
+    {number:1,url:'t/1',eligible:true,e2e_ms:100,trigger:{},children:[]},
+    {number:2,url:'t/2',eligible:true,e2e_ms:50,trigger:{},children:[]}
+  ]}]};openDetail(1,${JSON.stringify(entryId)},true)`);
+  return app.element('detailBody').innerHTML;
+}
+
+test('explicit batch entry renders only the chosen accordion open, retaining representative identity', () => {
+  const html = renderedDetail('t/2');
+  const opened = [...html.matchAll(/<details\b[^>]*\sopen(?:\s|>)/g)].map(m => /data-batch-url="([^"]+)"/.exec(m[0])[1]);
+  assert.deepEqual(opened, ['t/2']);
+  assert.match(html, /data-batch-url="t\/1"[^>]*class="batch representative"/);
+});
+
+test('invalid explicit batch entry renders no accordion open', () => {
+  const html = renderedDetail('t/expired');
+  assert.match(html, /data-role="invalid-entry"/);
+  assert.doesNotMatch(html, /<details\b[^>]*\sopen(?:\s|>)/);
+});
 
 function batch(url, number, end_ms, request_ms) {
   return { url, number, end_ms, request_ms, trigger: {}, children: [] };

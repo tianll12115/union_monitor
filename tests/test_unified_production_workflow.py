@@ -155,6 +155,20 @@ class UnifiedProductionTests(unittest.TestCase):
         self.assertIn("deadline", reports["triton"]["error"])
         self.assertTrue(aggregate["all_terminal"])
 
+    def test_each_project_gets_its_own_collection_timeout(self):
+        clock = VirtualClock()
+
+        def collect(project, ctx, wd):
+            clock.sleep({"ubs": 100 * 60, "triton": 30 * 60}[project["project_id"]])
+            return ok_report(project["project_id"])
+
+        reports, aggregate = run_round(
+            synthetic_catalog(), context(), collectors={"ubs": collect, "triton": collect},
+            clock=clock, sleep=clock.sleep,
+        )
+        self.assertEqual(aggregate["projects"], {"ubs": "success", "triton": "success"})
+        self.assertEqual(reports["triton"]["exit_code"], 0)
+
     def test_tc02_precheck_failure_performs_no_collection(self):
         catalog = synthetic_catalog()
         calls = []

@@ -13,6 +13,15 @@ from scripts.devdata import DevDataError, publish_catalog
 
 
 class PublishCatalogTests(unittest.TestCase):
+    def test_snapshot_paths_reject_windows_escapes_on_every_platform(self):
+        for value in (r'..\..\package.json', r'C:\outside.json', 'C:outside.json',
+                      r'\\server\share\outside.json', '../outside.json', '/outside.json',
+                      '', None, 123):
+            with self.subTest(value=value), self.assertRaises(DevDataError):
+                devdata.safe_snapshot_path(value, 'example')
+        self.assertEqual(devdata.safe_snapshot_path('repos/example.json', 'example').as_posix(),
+                         'repos/example.json')
+
     def test_copies_catalog_into_web_data(self):
         with tempfile.TemporaryDirectory() as tmp:
             source = Path(tmp) / "catalog.json"
@@ -118,6 +127,17 @@ class BootstrapTests(unittest.TestCase):
         self.assert_outputs()
         self.assertEqual(json.loads((self.web_data / "release.json").read_bytes()),
                          json.loads((self.FIXTURES / "release.json").read_bytes()))
+
+    def test_offline_index_cannot_copy_outside_fixture_or_destination(self):
+        fixtures = self.root / 'fixtures'
+        fixtures.mkdir()
+        (fixtures / 'repositories.json').write_text(json.dumps({
+            'repositories': [{'name': 'example', 'snapshot': '../outside.json'}]
+        }), encoding='utf-8')
+        with patch.object(devdata, 'FIXTURES_DIR', fixtures):
+            with self.assertRaisesRegex(DevDataError, 'unsafe snapshot path'):
+                devdata.run_offline([])
+        self.assertFalse(self.web_data.exists())
 
 
 if __name__ == "__main__":

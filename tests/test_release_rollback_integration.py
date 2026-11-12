@@ -75,6 +75,18 @@ class RollbackIntegrationTests(unittest.TestCase):
         self.assertIn("manual_entry", result)
         self.assertEqual(result["active_release_id"], "rel-1")
 
+    def test_corrupted_baseline_is_rejected_before_any_deployment(self):
+        path = self.store.archive_dir('rel-1') / 'data/snapshot.json'
+        path.write_bytes(b'tampered')
+        deployed, verified = [], []
+        with self.assertRaisesRegex(BaselineError, 'archive re-check failed'):
+            rollback_deploy(self.store, 'rel-2', 'rel-1',
+                            deploy_fn=lambda rid, files: deployed.append((rid, files)),
+                            verify_fn=lambda rid, manifest: verified.append(rid) or {'verified': True})
+        self.assertEqual(deployed, [])
+        self.assertEqual(verified, [])
+        self.assertEqual(self.store.pointer()['current'], 'rel-1')
+
     def test_tc02_failed_reverify_does_not_report_recovery(self):
         result = rollback_deploy(self.store, "rel-2", "rel-1",
                                  deploy_fn=lambda r, f: None,

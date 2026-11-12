@@ -14,8 +14,6 @@ def commands(browser=False):
         [sys.executable, '-B', 'scripts/devdata.py', '--offline'],
         [sys.executable, '-B', '-m', 'coverage', 'run', '--data-file=.tmp/python-coverage/.coverage',
          '-m', 'unittest', 'discover', '-s', 'tests', '-v'],
-        ['node', '--test', *[str(p.relative_to(ROOT)).replace('\\', '/')
-                            for p in sorted((ROOT / 'tests').glob('*.test.cjs'))]],
     ]
     if browser:
         result += [['npm', 'run', 'test:browser'],

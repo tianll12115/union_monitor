@@ -63,7 +63,7 @@ def rollback_deploy(
             f"refusing to overwrite nearer verified release {current!r} with {baseline_release_id!r}"
         )
     # Load the trusted complete bundle from the immutable archive (no re-collect).
-    manifest, files = store.read_archive(baseline_release_id)
+    manifest, files = store.cold_restore(baseline_release_id)
     try:
         deploy_fn(baseline_release_id, files)
     except Exception as exc:

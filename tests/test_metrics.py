@@ -37,6 +37,29 @@ class MetricsTest(unittest.TestCase):
         j=normalize_job({'url':'j/1/','timestamp':10000,'duration':1000,'result':'SUCCESS','actions':[{'waitingTimeMillis':100,'blockedTimeMillis':200,'buildableTimeMillis':300}]})
         self.assertEqual(j['total_ms'],1600)
         self.assertEqual(j['scheduled_ms'],9400)
+    def test_queue_rejects_each_invalid_raw_component(self):
+        keys = ('waitingTimeMillis', 'blockedTimeMillis', 'buildableTimeMillis')
+        for key in keys:
+            for invalid in (None, True, False, -100, float('nan'), float('inf'), '100'):
+                with self.subTest(key=key, invalid=invalid):
+                    components = dict.fromkeys(keys, 200)
+                    components[key] = invalid
+                    normalized = normalize_job({'timestamp': 10000, 'duration': 1000,
+                                                'result': 'SUCCESS', 'actions': [components]})
+                    self.assertIsNone(normalized['queue_ms'])
+                    self.assertIsNone(normalized['scheduled_ms'])
+                    self.assertIsNone(normalized['total_ms'])
+                    self.assertEqual(normalized['duration_ms'], 1000)
+
+    def test_zero_queue_components_are_valid(self):
+        normalized = normalize_job({'timestamp': 10000, 'duration': 1000,
+                                    'result': 'SUCCESS', 'actions': [{
+                                        'waitingTimeMillis': 0, 'blockedTimeMillis': 0,
+                                        'buildableTimeMillis': 0}]})
+        self.assertEqual(normalized['queue_ms'], 0)
+        self.assertEqual(normalized['scheduled_ms'], 10000)
+        self.assertEqual(normalized['total_ms'], 1000)
+
     def test_scope_includes_all_three_states(self):
         for state in ['open','closed','merged']:
             self.assertTrue(in_scope({'base':{'ref':'master'},'created_at':'2026-09-01T00:00:00+08:00','state':state},0,9999999999999))

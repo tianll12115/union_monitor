@@ -81,6 +81,11 @@ class ReleaseStore:
             manifest, files = self.read_archive(release_id)
         except ArchiveMissingError as exc:
             return [str(exc)]
+        return self._verify_resources(manifest, files)
+
+    @staticmethod
+    def _verify_resources(manifest: dict, files: dict[str, bytes]) -> list[str]:
+        """Check the exact loaded bytes that will be returned to the caller."""
         problems = []
         resources = manifest.get("resources") or {}
         if set(files) != set(resources):
@@ -133,7 +138,11 @@ class ReleaseStore:
         target = release_id or (self.pointer() or {}).get("current")
         if not target:
             raise ArchiveMissingError("no current release to restore")
-        return self.read_archive(target)
+        manifest, files = self.read_archive(target)
+        problems = self._verify_resources(manifest, files)
+        if problems:
+            raise BaselineError('archive re-check failed: ' + '; '.join(problems))
+        return manifest, files
 
 
 def promote_sequence(store: ReleaseStore, release_id: str, manifest: dict, files: dict[str, bytes],

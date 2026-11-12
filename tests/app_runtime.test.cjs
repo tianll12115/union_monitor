@@ -4,6 +4,13 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { createApp } = require('./helpers/app-harness.cjs');
 
+test('duplicate UBS search parameters retain their first value as the notice promises', () => {
+  const app = createApp();
+  app.run("navigate('#projects/ubs/records?q=first&q=second')");
+  assert.equal(app.element('query').value, 'first');
+  assert.match(app.element('notice').textContent, /仅保留首个值/);
+});
+
 test('opening a Triton batch resets both retained dialog scroll positions', () => {
   const app = createApp();
   const dialog = app.element('detail');

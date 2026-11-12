@@ -372,11 +372,21 @@ class SyntheticTreeTests(unittest.TestCase):
     def test_tampered_rep_expand_exit_one(self):
         root = self.build_tree()
         self.tamper(root, 'app.js',
-                    'bs.map(b=>batchHTML(b,mode(b)))',
-                    'bs.map(b=>batchHTML(b,"representative"))')
+                    'bs.map(b=>batchHTML(b,mode(b),choice.batch===b))',
+                    'bs.map(b=>batchHTML(b,mode(b),true))')
         code, report = self.run_tool(root)
         self.assertEqual(code, 1)
         self.assertIn('app.js:rep_expand_flag',
+                      report['source_contracts']['missing'])
+
+    def test_tampered_batch_expansion_ignores_choice_exit_one(self):
+        root = self.build_tree()
+        self.tamper(root, 'app.js',
+                    'expanded=!!mode){const open=expanded,',
+                    'expanded=!!mode){const open=!!mode,')
+        code, report = self.run_tool(root)
+        self.assertEqual(code, 1)
+        self.assertIn('app.js:batch_expansion_argument',
                       report['source_contracts']['missing'])
 
     def test_tampered_route_context_cleanup_exit_one(self):

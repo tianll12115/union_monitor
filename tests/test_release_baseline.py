@@ -83,6 +83,15 @@ class ReleaseStoreTests(unittest.TestCase):
         with self.assertRaises(ArchiveMissingError):
             self.store.cold_restore()
 
+    def test_cold_restore_rejects_corrupted_archive_bytes(self):
+        manifest, files = bundle('rel-1', b'v1')
+        dest = self.store.write_archive('rel-1', manifest, files)
+        self.store.promote('rel-1')
+        (dest / 'data/snapshot.json').write_bytes(b'tampered')
+        for target in (None, 'rel-1'):
+            with self.subTest(target=target), self.assertRaisesRegex(BaselineError, 'archive re-check failed'):
+                self.store.cold_restore(target)
+
     def test_promote_sequence_runs_verify_then_archive_then_promote(self):
         m1, f1 = bundle("rel-1")
         calls = []

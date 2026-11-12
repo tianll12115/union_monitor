@@ -61,11 +61,10 @@ def run_round(catalog, context, *, collectors, clock, sleep,
             return {}, {"run_id": context.run_id, "code_sha": context.code_sha,
                         "cutoff_at": iso_utc(context.cutoff_at), "projects": {},
                         "all_terminal": False, "precheck_failure": repr(exc)}
-    start = clock()
     reports = {}
     for pid in catalog.enabled_project_ids():
         project = catalog.project(pid)
-        deadline = start + project["timeout_minutes"] * 60
+        deadline = clock() + project["timeout_minutes"] * 60
         fn = collectors.get(pid)
         if fn is None:
             reports[pid] = _terminal(pid, "no collector registered", "failed", "no collector registered")

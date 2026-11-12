@@ -7,6 +7,8 @@ unavailability exhausts the budget without ever marking the release verified.
 """
 import hashlib
 import unittest
+from unittest.mock import patch
+from urllib.error import HTTPError, URLError
 
 from monitor.public_verify import (PermanentFetchError, PublicVerifier,
                                    TransientFetchError, verify_public_resources)
@@ -154,6 +156,26 @@ class PublicVerifierTests(unittest.TestCase):
 
 
 class PublicVerifierClassTests(unittest.TestCase):
+    def test_real_http_errors_retry_only_transient_statuses(self):
+        manifest = candidate({'index.html': {'sha256': sha(INDEX), 'size': len(INDEX)}})
+        for code, attempts in ((400, 1), (403, 1), (404, 1), (408, 3), (429, 3), (503, 3)):
+            with self.subTest(code=code):
+                error = HTTPError('https://site.example/index.html', code, 'unavailable', {}, None)
+                sleeps = []
+                with patch('monitor.public_verify.urllib_request.urlopen', side_effect=error) as fetch:
+                    receipt = PublicVerifier(sleep=sleeps.append).verify('https://site.example', manifest)
+                self.assertFalse(receipt['verified'])
+                self.assertEqual(fetch.call_count, attempts)
+                self.assertEqual(len(sleeps), attempts - 1)
+                self.assertIn(str(code), receipt['problems'][0]['detail'])
+
+    def test_network_failure_still_retries_with_a_finite_budget(self):
+        manifest = candidate({'index.html': {'sha256': sha(INDEX)}})
+        with patch('monitor.public_verify.urllib_request.urlopen', side_effect=URLError('offline')) as fetch:
+            receipt = PublicVerifier(sleep=lambda _: None).verify('https://site.example', manifest)
+        self.assertFalse(receipt['verified'])
+        self.assertEqual(fetch.call_count, 3)
+
     def test_verifier_records_every_request(self):
         verifier = PublicVerifier(fetch=FakeTransport(responses()))
         manifest = candidate()

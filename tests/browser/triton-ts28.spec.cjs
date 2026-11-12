@@ -283,6 +283,27 @@ test('[TS28-001 AC5] keyboard focus opens the same card, Escape closes it and re
   await expect(page.locator('[role="region"][aria-label="运行与任务详情"]')).toHaveCount(1);
 });
 
+test('a pinned card repositions after viewport and workflow content sizes change', async ({ page }) => {
+  await ready(page);
+  const tip = page.locator('[data-role="tip"]');
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.locator('[data-role="npuChart"] .mark-hit[data-i="0"]').click();
+  await expect(tip).toHaveClass(/pinned/);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+  const geometry = await tip.evaluate(el => {
+    const r = el.getBoundingClientRect();
+    return { bottom: r.bottom, top: r.top, right: r.right, left: r.left, vh: innerHeight, vw: innerWidth };
+  });
+  expect(geometry.bottom).toBeLessThanOrEqual(geometry.vh - 11.5);
+  expect(geometry.right).toBeLessThanOrEqual(geometry.vw - 11.5);
+  expect(geometry.left).toBeGreaterThanOrEqual(11.5);
+  expect(geometry.top).toBeGreaterThanOrEqual(11.5);
+  await tip.locator('.tip-wf summary').first().click();
+  const bottom = await tip.evaluate(el => el.getBoundingClientRect().bottom);
+  expect(bottom).toBeLessThanOrEqual(844 - 11.5);
+});
+
 test('[TS28-001 AC4] card stays inside 390/768/1440 viewports, never covers its mark and scrolls internally', async ({ page }) => {
   await ready(page);
   const tip = page.locator('[data-role="tip"]');

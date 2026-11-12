@@ -74,7 +74,9 @@ class CheckTests(unittest.TestCase):
         self.assertTrue(any('discover' in c and 'tests' in c for c in commands))
         node = next(c for c in commands if '--test' in c)
         self.assertGreater(len(node), 30)
-        self.assertTrue(all(p.endswith('.test.cjs') for p in node[2:]))
+        self.assertTrue(all(p.endswith('.test.cjs') for p in node[node.index('--test') + 1:]))
+        self.assertEqual(sum('--test' in c for c in commands), 1,
+                         'Run the complete Node suite once, instrumented for coverage')
         self.assertTrue(any('coverage' in c and 'run' in c for c in commands))
         self.assertTrue(any('c8' in c and '--all' in c for c in commands))
         self.assertTrue(any('scripts/verify_changed_coverage.py' in c for c in commands))

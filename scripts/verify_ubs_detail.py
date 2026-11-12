@@ -294,7 +294,9 @@ APP_CONTRACTS = [
     ('unmatched_note', '；批次身份与 Jenkins 链接保留，不伪造事件'),
     ('empty_event_placeholder', '此事件未关联到 trigger，详见数据质量提示'),
     ('rep_expand_flag',
-     'bs.map(b=>batchHTML(b,mode(b)))'),
+     'bs.map(b=>batchHTML(b,mode(b),choice.batch===b))'),
+    ('batch_expansion_argument',
+     'function batchHTML(b,mode,expanded=!!mode){const open=expanded,'),
     ('default_expanded_choice',
      'Detail.defaultExpandedBatch(p.batches,{entryId,'
      'representativeUrl:s.representative_batch_url,'

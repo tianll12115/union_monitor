@@ -351,7 +351,8 @@ def collect_many(args):
     # retrying the throttled repositories after a cooldown keeps one bad
     # window from cancelling the whole refresh.
     throttled=[(config,entry) for config,entry in zip(CONFIG,entries)
-               if entry['status']=='failed' and '429' in str(entry.get('error'))]
+               if (args.all or config['name']==args.repo)
+               and entry['status']=='failed' and '429' in str(entry.get('error'))]
     if throttled and not args.offline:
         print(f'限流冷却 {RATE_LIMIT_COOLDOWN:.0f}s 后重试 {len(throttled)} 个仓库',flush=True)
         time.sleep(RATE_LIMIT_COOLDOWN)

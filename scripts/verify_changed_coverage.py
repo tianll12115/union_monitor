@@ -8,11 +8,29 @@ import subprocess
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def diff_path(header):
+    """Decode Git's C-quoted UTF-8 bytes before selecting production files."""
+    value = header.split('\t', 1)[0]
+    if value.startswith('"'):
+        if not re.fullmatch(r'"(?:[^"\\]|\\(?:[0-7]{3}|[abfnrtv"\\]))*"', value):
+            raise ValueError('Invalid quoted Git diff path')
+        escapes = dict(zip(b'abfnrtv"\\', (7, 8, 12, 10, 13, 9, 11, 34, 92)))
+
+        def decode_escape(match):
+            token = match[1]
+            number = int(token, 8) if len(token) == 3 else escapes[token[0]]
+            return bytes([number])
+
+        value = re.sub(rb'\\([0-7]{3}|[abfnrtv"\\])', decode_escape,
+                       value[1:-1].encode('utf-8')).decode('utf-8')
+    return value[2:] if value.startswith('b/') else ''
+
+
 def changed_lines(diff):
     changes, path = {}, None
     for line in diff.splitlines():
         if line.startswith('+++ '):
-            candidate = line[6:] if line.startswith('+++ b/') else ''
+            candidate = diff_path(line[4:])
             path = candidate if (candidate.endswith(('.py', '.js', '.cjs', '.mjs'))
                                  and not candidate.startswith(('tests/', 'audit/', 'docs/'))) else None
         elif path and (match := re.match(r'@@ .* \+(\d+)(?:,(\d+))? @@', line)):

@@ -6,7 +6,7 @@ const vm = require('node:vm');
 // Run the real view against bounded DOM/timer boundaries. Browser gates test
 // the rendered layout and focus; these checks inspect its actual markup/state.
 function viewHarness() {
-  const nodes = new Map(), documentListeners = new Set(), resizeListeners = new Set(), intervals = new Set(), downloads = [];
+  const nodes = new Map(), documentListeners = new Set(), resizeListeners = new Set(), intervals = new Set(), downloads = [], observers = [];
   const node = selector => {
     if (!nodes.has(selector)) nodes.set(selector, {
       selector, innerHTML:'', textContent:'', value:'', hidden:false, style:{}, dataset:{}, clientWidth:900,
@@ -22,6 +22,7 @@ function viewHarness() {
   container.querySelector = node;
   const context = {
     ...require('../web/triton-core.js'), Units:require('../web/units.js'), Date, Intl, Blob,
+    ResizeObserver:class { constructor(callback){this.callback=callback;observers.push(this);} observe(target){this.target=target;} disconnect(){this.disconnected=true;} },
     Metrics:{async saveCsv(rows,name){downloads.push({name,rows});return {mode:'saved',name,url:'/exports/'+name};}},
     URL:{createObjectURL(blob){downloads.push({blob});return 'blob:qualifications';},revokeObjectURL(){}},
     document:{activeElement:null,getElementById:node,createElement(){return {click(){downloads[downloads.length-1].name=this.download;}};},addEventListener(_e,f){documentListeners.add(f);},removeEventListener(_e,f){documentListeners.delete(f);}},
@@ -31,8 +32,18 @@ function viewHarness() {
   context.window = context;
   vm.runInNewContext(fs.readFileSync(require.resolve('../web/triton-view.js'),'utf8'),context,
     {filename:require.resolve('../web/triton-view.js')});
-  return {view:context.TritonView,container,node,documentListeners,resizeListeners,intervals,downloads};
+  return {view:context.TritonView,container,node,documentListeners,resizeListeners,intervals,downloads,observers};
 }
+
+test('tooltip size observation is owned by the mounted view and released on deactivation', () => {
+  const h = viewHarness();
+  h.view.render(sample(), h.container);
+  assert.equal(h.observers.length, 1);
+  assert.equal(h.observers[0].target, h.node('[data-role="tip"]'));
+  h.observers[0].callback();
+  h.view.deactivate();
+  assert.equal(h.observers[0].disconnected, true);
+});
 
 function sample() {
   const batches = Array.from({length:10},(_,i)=>({id:i===9?'failed-long':'batch-'+i,pr:i+1,title:'Example',base_branch:'main',

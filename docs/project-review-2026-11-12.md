@@ -101,3 +101,13 @@ Local machine-readable coverage is written to `test-results/changed-coverage.jso
 full logs are under `.tmp/project-audit-*`. No branch protection, workflow gate,
 or test skip rule was weakened. No production collection, deployment, or GitHub CI
 run is claimed by these local results.
+
+## Publication follow-up
+
+The pre-push gate exposed a tooltip placement lifecycle defect: expanding workflow
+details or resizing an already visible card did not reposition it. The view now
+observes card size changes and re-anchors after chart redraw, releasing the
+observer on deactivation. A deterministic pinned-card resize regression failed
+before the fix. The full local gate then passed: Python 1,069 tests (10 existing
+platform/artifact skips), Node 364 tests, Chromium 77 tests, required journeys
+17/17, and changed-line coverage 100% (52/52) relative to `main`.

@@ -620,7 +620,7 @@
       rangeCountEl.textContent = spanText(viewEnd - viewStart);
     }
 
-    const redrawAll = () => { draw(); drawNpu(); drawNavigator(); };
+    const redrawAll = () => { draw(); drawNpu(); drawNavigator(); repositionCard(); };
     /* TA-003: resize handlers defer to the next animation frame so clientWidth is
        read after the final layout, not during an in-flight CSS/layout transition. */
     const raf = typeof requestAnimationFrame === 'function' ? requestAnimationFrame : fn => setTimeout(fn, 0);
@@ -861,6 +861,18 @@
       tip.style.left = p.x + 'px';
       tip.style.top = p.y + 'px';
     }
+
+    // Native details expansion and responsive text wrapping can grow the card
+    // after its initial placement. Re-anchor against the live, redrawn mark.
+    function repositionCard() {
+      if (tip.style.display !== 'block' || !currentTipBatch) return;
+      const mark = all('.mark-hit').find(candidate =>
+        D.batches[+candidate.dataset.i] === currentTipBatch && candidate.dataset.kind === currentTipKind);
+      if (mark) lastHoverMark = mark;
+      placeCard(mark || lastHoverMark);
+    }
+    const cardObserver = typeof root.ResizeObserver === 'function' ? new root.ResizeObserver(repositionCard) : null;
+    if (cardObserver) cardObserver.observe(tip);
 
     /* REQ-029/TS28-001 AC3/AC5: one close path for Esc, ✕, outside click and
        the 180ms leave timer. Closing clears the same-PR group and returns focus
@@ -1223,6 +1235,7 @@
 
     active = {
       destroy() {
+        if (cardObserver) cardObserver.disconnect();
         clearTimeout(tipTimer);
         clearHighlight();
         tipPinned = false;

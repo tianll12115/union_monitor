@@ -63,6 +63,15 @@ def validate_snapshot(repository, project, context, snapshot):
     if not isinstance(prs, list):
         errors.append('snapshot prs is not an array')
     else:
+        # A declared discovery population cannot disappear into a legal empty
+        # snapshot. Older adapters may omit these optional declarations.
+        for field in ('expected_prs', 'collected_prs'):
+            if field in meta:
+                count = meta[field]
+                if type(count) is not int or count < 0:
+                    errors.append(f'{field} must be a non-negative integer')
+                elif count != len(prs):
+                    errors.append(f'{field}={count} does not match {len(prs)} collected PRs')
         seen = set()
         for pr in prs:
             if not isinstance(pr, dict) or pr.get('repository') != expected or not isinstance(pr.get('number'), int):

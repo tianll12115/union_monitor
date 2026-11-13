@@ -3,7 +3,7 @@ import json
 import unittest
 from pathlib import Path
 
-from triton.dashboard import build_payload
+from triton.dashboard import build_payload, _job, summary_of
 from triton.quality import validate
 
 
@@ -27,6 +27,143 @@ def payload(rows):
 
 
 class RunE2ETests(unittest.TestCase):
+    def test_real_pr3097_source_preserves_queue_but_quarantines_clock_conflict(self):
+        row = json.loads((Path(__file__).parent/'fixtures/pr3097-source.json').read_text(encoding='utf-8'))
+        data = build_payload([row], '2026-11-09T00:00:00Z', '2026-11-12T06:49:49Z', '2026-11-12T06:49:49Z')
+        batch = data['batches'][0]
+        self.assertTrue(batch['is_integration_tests'])
+        self.assertEqual(batch['npu_queue_seconds'], 4208)
+        self.assertIsNone(batch['duration_seconds'])
+        self.assertEqual(batch['e2e_exclusion_reason'], 'source_timeline_conflict')
+        self.assertEqual(data['summary']['valid'], 0)
+        self.assertTrue(validate([row], data)['passed'])
+        self.assertTrue(next(j for j in batch['npu_jobs'] if j['id']==129869678562)['timeline_conflict'])
+
+    def test_run_completion_before_creation_is_quarantined_even_when_jobs_look_valid(self):
+        row = source(updated_at='2026-10-25T00:00:00Z')
+        data = payload([row])
+        self.assertIsNone(data['batches'][0]['duration_seconds'])
+        self.assertEqual(data['summary']['valid'], 0)
+        self.assertTrue(validate([row], data)['passed'])
+
+    def test_quality_checks_all_serialized_source_jobs_and_workflow_identity(self):
+        rows = [source()]
+        data = payload(rows)
+        mutations = [lambda w: w.update(workflow_id=999), lambda w: w.update(path='ci.fake'),
+                     lambda w: w.update(jobs=[]), lambda w: w['jobs'][0].update(run_seconds=0),
+                     lambda w: w['jobs'][0].update(timeline_conflict=True),
+                     lambda w: w['jobs'][0].update(wait_seconds=0),
+                     lambda w: w['jobs'][0].update(name='invented job'),
+                     lambda w: w['jobs'][0].update(url='https://example.com/wrong'),
+                     lambda w: w['jobs'][0].update(failed_steps=['invented failure']),
+                     lambda w: w['jobs'][0].update(measurement_error='invented anomaly'),
+                     lambda w: w['jobs'][0].update(started_at='2026-10-26T04:27:22Z'),
+                     lambda w: w['jobs'].append(copy.deepcopy(w['jobs'][0]))]
+        for mutate in mutations:
+            with self.subTest(mutation=mutate):
+                changed = copy.deepcopy(data)
+                mutate(changed['batches'][0]['workflows'][0])
+                self.assertFalse(validate(rows, changed)['passed'])
+
+    def test_boolean_zero_is_not_a_measured_source_job_time(self):
+        row = source()
+        row['jobs'][0]['started_at'] = row['jobs'][0]['created_at']
+        data = payload([row])
+        self.assertTrue(validate([row], data)['passed'])
+        data['batches'][0]['workflows'][0]['jobs'][0]['wait_seconds'] = False
+        self.assertFalse(validate([row], data)['passed'])
+
+    def test_npu_source_membership_cannot_disappear_when_only_runner_identifies_chip(self):
+        row = source()
+        row['jobs'][0]['runner_name'] = 'linux-amd64-a5-2-runner-1'
+        data = payload([row])
+        self.assertTrue(validate([row], data)['passed'])
+        self.assertEqual(len(data['batches'][0]['npu_jobs']), 1)
+        data['batches'][0].update(npu_jobs=[], npu_queue_seconds=None)
+        self.assertFalse(validate([row], data)['passed'])
+
+    def test_terminal_results_are_not_relabelled_as_success_and_gate_checks_them(self):
+        for conclusion, expected in [('skipped', 'skipped'), ('neutral', 'neutral'),
+                                     (None, 'unknown'), ('future_result', 'unknown')]:
+            with self.subTest(conclusion=conclusion):
+                row = source(conclusion=conclusion)
+                data = payload([row])
+                self.assertEqual(data['batches'][0]['status'], expected)
+                self.assertEqual(data['summary']['valid'], 0)
+                self.assertTrue(validate([row], data)['passed'])
+                forged = copy.deepcopy(data)
+                forged['batches'][0]['status'] = 'success'
+                self.assertFalse(validate([row], forged)['passed'])
+
+    def test_steps_outside_job_timeline_quarantine_execution_and_e2e(self):
+        for step in [dict(started_at='2026-10-26T04:29:00Z', completed_at='2026-10-26T04:55:29Z'),
+                     dict(started_at='2026-10-26T04:27:00Z', completed_at='2026-10-26T04:30:00Z'),
+                     dict(started_at='2026-10-26T04:30:00Z', completed_at='2026-10-26T04:29:00Z'),
+                     dict(started_at='2026-10-26T04:55:00Z'),
+                     dict(completed_at='2026-10-26T04:27:00Z')]:
+            with self.subTest(step=step):
+                row = source()
+                row['jobs'][0]['steps'] = [step]
+                job = _job(row['jobs'][0])
+                self.assertIsNone(job['run_seconds'])
+                self.assertIn('job/step', job['measurement_error'])
+                self.assertEqual(job['wait_seconds'], 38)
+                data = payload([row])
+                self.assertIsNone(data['batches'][0]['duration_seconds'])
+                self.assertEqual(data['batches'][0]['e2e_exclusion_reason'], 'source_timeline_conflict')
+                self.assertIsNone(data['batches'][0]['workflows'][0]['execution_span_seconds'])
+                self.assertTrue(validate([row], data)['passed'])
+
+    def test_running_timeline_conflict_is_quarantined_without_blocking_collection(self):
+        row = source(status='in_progress', conclusion=None)
+        row['jobs'][0]['steps'] = [dict(completed_at='2026-10-26T04:55:29Z')]
+        data = payload([row])
+        self.assertIsNone(data['batches'][0]['duration_seconds'])
+        self.assertTrue(validate([row], data)['passed'])
+
+    def test_out_of_window_future_attempt_does_not_invalidate_historical_window(self):
+        rows = [source(), source(2, run_attempt=2, run_started_at='2026-10-29T00:00:00Z',
+                                 updated_at='2026-10-29T01:00:00Z')]
+        data = payload(rows)
+        self.assertEqual(len(data['batches']), 1)
+        self.assertTrue(validate(rows, data)['passed'])
+
+    def test_valid_steps_preserve_job_measurement_and_auxiliary_flag_blocks_summary(self):
+        row = source()
+        row['jobs'][0]['steps'] = [dict(started_at='2026-10-26T04:28:00Z', completed_at='2026-10-26T04:52:58Z')]
+        self.assertEqual(_job(row['jobs'][0])['run_seconds'], 1498)
+        self.assertTrue(payload([row])['batches'][0]['e2e_sample_eligible'])
+        self.assertEqual(summary_of([dict(pr=1, status='success', duration_seconds=10,
+                                         is_integration_tests=False, approximate=False, missing=[])])['valid'], 0)
+
+    def test_ascend_ci_is_a_real_integration_sample_and_validator_agrees(self):
+        rows = [source(workflow_id=348219361, path='.github/workflows/ascend-ci.yml')]
+        data = payload(rows)
+        self.assertTrue(data['batches'][0]['is_integration_tests'])
+        self.assertTrue(data['batches'][0]['e2e_sample_eligible'])
+        self.assertEqual(data['summary']['valid'], 1)
+        self.assertEqual(data['summary']['p90'], 1536)
+        self.assertTrue(validate(rows, data)['passed'])
+        forged = copy.deepcopy(data)
+        forged['batches'][0]['e2e_sample_eligible'] = False
+        self.assertFalse(validate(rows, forged)['passed'])
+
+    def test_integration_workflow_drift_blocks_publication_instead_of_silent_exclusion(self):
+        for changes in [dict(workflow_id=999),
+                        dict(workflow_id=348219361, path='.github/workflows/ci.yml'),
+                        dict(workflow_id=241783889, path='.github/workflows/replacement.yml')]:
+            with self.subTest(changes=changes):
+                rows = [source(**changes)]
+                report = validate(rows, payload(rows))
+                self.assertFalse(report['passed'])
+                self.assertIn('unclassified Integration Tests workflow', ';'.join(report['errors']))
+
+    def test_renamed_registered_workflow_remains_identified_by_id_and_path(self):
+        rows = [source(name='Renamed NPU CI', workflow_id=348219361,
+                       path='.github/workflows/ascend-ci.yml@refs/heads/main')]
+        self.assertTrue(payload(rows)['batches'][0]['e2e_sample_eligible'])
+        self.assertTrue(validate(rows, payload(rows))['passed'])
+
     def test_pr2280_frozen_upstream_runs_reconcile_to_actual_jobs(self):
         rows=json.loads((Path(__file__).parent/'fixtures/pr2280-e2e.json').read_text(encoding='utf8'))
         data=payload(rows)
@@ -104,7 +241,11 @@ class RunE2ETests(unittest.TestCase):
                 if changes.get('status')=='in_progress':
                     self.assertIsNone(b['end_at'])
                     self.assertEqual(b['duration_seconds'],185558)
-                self.assertTrue(validate([row],data)['passed'])
+                report = validate([row],data)
+                if 'workflow_id' in changes or 'path' in changes:
+                    self.assertFalse(report['passed'])
+                else:
+                    self.assertTrue(report['passed'])
 
     def test_skipped_jobs_without_timestamps_do_not_erase_completed_evidence(self):
         row=source();row['jobs'].append(dict(id=19,status='completed',conclusion='skipped'))

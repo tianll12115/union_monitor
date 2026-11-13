@@ -5,6 +5,7 @@ import sqlite3
 import statistics
 import subprocess
 from collections import Counter
+from contextlib import closing
 from pathlib import Path
 
 from source_coverage import (
@@ -54,7 +55,7 @@ def _audit():
     seen_batches = set()
     job_timing = SourceCategory('job_timing')
     queue_timing = SourceCategory('queue_components')
-    with sqlite3.connect(ROOT / 'data/efficiency.sqlite') as db:
+    with closing(sqlite3.connect(ROOT / 'data/efficiency.sqlite')) as db:
         assert db.execute('pragma integrity_check').fetchone()[0] == 'ok'
         for entry in index['repositories']:
             path = ROOT / 'data/repos' / (entry['name'] + '.json')
@@ -110,10 +111,16 @@ def _audit():
                         queue_timing.record_applicable(job['url'])
                         raw = raw_jobs.get(job['url'])
                         if raw is None: continue  # missing evidence, accounted per identity (REQ-023)
-                        if (raw['timestamp'], raw['duration']) == (job['start_ms'], job['duration_ms']):
-                            job_timing.record_verified(job['url'])
+                        expected_times=tuple(v if type(v) in (int,float) and math.isfinite(v) and v>=0 else None
+                                             for v in (raw.get('timestamp'),raw.get('duration')))
+                        stored_times=(job['start_ms'],job['duration_ms'])
+                        if all(actual is None if expected is None else
+                               type(actual) in (int,float) and math.isfinite(actual) and actual==expected
+                               for actual,expected in zip(stored_times,expected_times)):
+                            if None in expected_times: job_timing.record_verified_absence(job['url'])
+                            else: job_timing.record_verified(job['url'])
                         else:
-                            job_timing.record_difference(job['url'], f"raw({raw['timestamp']}, {raw['duration']}) != snapshot({job['start_ms']}, {job['duration_ms']})")
+                            job_timing.record_difference(job['url'], f"raw interpreted {expected_times} != snapshot {stored_times}")
                         raw_queue, parts = queue_from_raw(raw)
                         if raw_queue is None:
                             if job['queue_ms'] is None: queue_timing.record_verified_absence(job['url'])  # raw confirms unknown (REQ-024 AC02)

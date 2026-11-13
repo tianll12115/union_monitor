@@ -7,7 +7,8 @@ const validDuration = value => typeof value === 'number' && Number.isFinite(valu
 // Explicitly unresolved old records must also be excluded; old records without
 // identity/qualification fields retain the established numerical rules.
 const e2eIdentityKnown = row => !(row && Object.prototype.hasOwnProperty.call(row, 'pr') && row.pr == null)
-  && !(row && row.e2e_sample_eligible === false);
+  && !(row && (row.e2e_sample_eligible === false || row.is_integration_tests === false
+    || row.e2e_exclusion_reason === 'outside_integration_tests'));
 /* EC-005: E2E and NPU sample qualification are independent. E2E requires a
    known PR identity and a finite non-negative E2E duration; NPU requires the
    NPU evidence itself (npu_queue_seconds) and must not be erased just because
@@ -140,6 +141,34 @@ const sampleEligible = (row, metric = 'e2e') => !!row
     };
   }
 
+  function metricAccounting(rows) {
+    const result = { total: rows.length, knownPrs: new Set(rows.map(r => r.pr).filter(Boolean)).size,
+      unresolved: rows.filter(r => r.pr == null).length,
+      e2e: { included: 0, excluded: 0, reasons: {} },
+      npu: { included: 0, excluded: 0, reasons: {} } };
+    for (const row of rows) {
+      for (const metric of ['e2e', 'npu']) {
+        const out = result[metric];
+        if (sampleEligible(row, metric)) { out.included += 1; continue; }
+        let reason;
+        if (metric === 'npu') {
+          reason = row.npu_data_missing || (row.npu_jobs || []).length || row.npu_queue_seconds != null
+            ? 'missing_or_invalid_npu' : 'no_npu_jobs';
+          if (validDuration(row.npu_queue_seconds) && !row.npu_data_missing) reason = 'non_sample_result';
+        } else {
+          reason = row.e2e_exclusion_reason || (row.pr == null ? 'unresolved_pr_batch_identity'
+            : row.is_integration_tests === false ? 'outside_integration_tests'
+            : row.e2e_sample_eligible === false ? 'explicit_metric_exclusion'
+            : row.status === 'running' ? 'running_observation'
+            : !['success', 'failure'].includes(row.status) ? 'non_sample_result' : 'invalid_or_missing_duration');
+        }
+        out.excluded += 1;
+        out.reasons[reason] = (out.reasons[reason] || 0) + 1;
+      }
+    }
+    return result;
+  }
+
   /* REQ-014: one start-source label shared by hover card, batch detail and CSV. */
   const START_SOURCE_LABELS = { trigger_event: '触发事件', first_job_created: '本 attempt 首个 job 创建（前置排队未知）', attempt_start: '本次重跑开始', workflow_created: '最早 workflow 创建' };
   function startSourceLabel(batch) {
@@ -171,16 +200,21 @@ const sampleEligible = (row, metric = 'e2e') => !!row
   }
 
   function normalizeE2ePayload(payload) {
-    if (payload.e2e_metric_version === 2) return payload;
+    const scopeMismatch = (payload.batches || []).some(b => b.is_integration_tests === false &&
+      (b.workflows || []).some(w => (w.workflow_id === 348219361 && (w.path || '').split('@')[0] === '.github/workflows/ascend-ci.yml') ||
+        (w.workflow_id === 241783889 && (w.path || '').split('@')[0] === '.github/workflows/ci.yml')));
+    if (payload.e2e_metric_version === 2 && !scopeMismatch) return payload;
     return { ...payload, e2e_metric_version: 2,
-      e2e_metric_notice: '旧口径数据尚未重新采集，Integration Tests E2E 暂不可用；NPU 数据独立保留。',
+      e2e_metric_notice: scopeMismatch ? '快照工作流范围不完整，Integration Tests E2E 暂不可用，请重新采集；NPU 数据独立保留。'
+        : '旧口径数据尚未重新采集，Integration Tests E2E 暂不可用；NPU 数据独立保留。',
       batches: payload.batches.map(b => ({ ...b, legacy_observed_seconds: b.duration_seconds,
         duration_seconds: null, e2e_sample_eligible: false, e2e_exclusion_reason: 'legacy_metric_unverified' })) };
   }
 
   function prHistory(rows, selected) {
     const peers = selected.pr == null ? [selected] : rows.filter(b => b.pr === selected.pr &&
-      (b.id === selected.id || b.action_name === 'Integration Tests' || (b.workflows || []).some(w => w.name === 'Integration Tests')));
+      (b.id === selected.id || b.is_integration_tests === true || (b.is_integration_tests == null &&
+        (b.action_name === 'Integration Tests' || (b.workflows || []).some(w => w.name === 'Integration Tests')))));
     const groups = new Map();
     peers.slice().sort((a, b) => (+new Date(a.start_at) || 0) - (+new Date(b.start_at) || 0) || String(a.id).localeCompare(String(b.id))).forEach(b => {
       const key = b.sha || b.id;
@@ -194,7 +228,7 @@ const sampleEligible = (row, metric = 'e2e') => !!row
     return points.filter(p => Math.hypot(p.x - x, p.y - y) < 8).map(p => p.i);
   }
 
-  return { normalizeE2ePayload, prHistory, overlapIndices, selectWindow, windowForHours, moveWindow, spreadPoints, layoutPoints, yAxisMarginLeft, navTimeAt, chartStats, filterBranches, dashboardStats, circleMark, markLabel, validDuration, sampleEligible, e2eIdentityKnown, startSourceLabel };
+  return { metricAccounting, normalizeE2ePayload, prHistory, overlapIndices, selectWindow, windowForHours, moveWindow, spreadPoints, layoutPoints, yAxisMarginLeft, navTimeAt, chartStats, filterBranches, dashboardStats, circleMark, markLabel, validDuration, sampleEligible, e2eIdentityKnown, startSourceLabel };
 });
 
 /* ---- T8 additions (appended; the prefix above is the original module plus
@@ -431,6 +465,7 @@ const sampleEligible = (row, metric = 'e2e') => !!row
     running_observation: '执行中观测',
     non_sample_result: '当前结果不属完成样本',
     invalid_or_missing_duration: '时长证据无效或缺失',
+    source_timeline_conflict: '源 job/step 时间矛盾',
   };
 
   function stampOf(value) {
@@ -449,7 +484,7 @@ const sampleEligible = (row, metric = 'e2e') => !!row
     if (FAILURE_RESULTS.includes(text)) return 'failure';
     if (CANCELLED_RESULTS.includes(text)) return 'cancelled';
     if (RUNNING_RESULTS.includes(text)) return 'running';
-    if (text === 'skipped' || text === 'neutral') return 'skipped';
+    if (text === 'skipped' || text === 'neutral') return text;
     return 'unknown';
   }
 
@@ -506,7 +541,7 @@ const sampleEligible = (row, metric = 'e2e') => !!row
     } else if (finiteSeconds(source.run_seconds) != null) {
       run = finiteSeconds(source.run_seconds); runKind = 'source_provided';
     }
-    if (source.run_inverted === true) { run = null; runKind = null; }
+    if (source.run_inverted === true || source.timeline_conflict === true) { run = null; runKind = null; }
     if (source.wait_inverted === true) { wait = null; waitKind = null; }
     if (String(source.status || '').toLowerCase() !== 'completed') {
       run = null; runKind = null;
@@ -793,7 +828,10 @@ const sampleEligible = (row, metric = 'e2e') => !!row
     const npuRowsData = npuJobRows(batch, asOf);
     const waits = npuRowsData.map(row => row.timing.waitSeconds).filter(value => value != null);
     const declaredQueue = finiteSeconds(batch && batch.npu_queue_seconds);
-    const npuQueueSeconds = declaredQueue != null ? declaredQueue : (waits.length ? Math.max(...waits) : null);
+    const completeNpuWaits = npuRowsData.every(row => row.timing.skipped || row.timing.waitSeconds != null);
+    const npuQueueSeconds = batch && batch.npu_data_missing ? null : declaredQueue != null ? declaredQueue
+      : (waits.length && completeNpuWaits ? Math.max(...waits) : null);
+    const npuApplicable = npuRowsData.length > 0 || declaredQueue != null;
     const integration = isIntegrationTestsRecord(batch);
     const focus = focusJobs(batch);
     const related = sameCommitRuns(batch, opts.index || opts.batches || []);
@@ -807,7 +845,7 @@ const sampleEligible = (row, metric = 'e2e') => !!row
     const associationNote = batch && batch.pr == null
       ? '未可靠关联 PR：不推断身份，不生成 PR 链接'
       : workflows.length
-        ? '本次集合仅含当前 Integration Tests run/attempt；未采集到其他可靠触发链证据'
+        ? '本次集合仅含当前 ' + workflows.map(w => w.name || '未命名 workflow').join('、') + ' run/attempt；未采集到其他可靠触发链证据'
         : '缺少来源 run/attempt 证据，按不可关联处理';
     return {
       metric,
@@ -826,8 +864,8 @@ const sampleEligible = (row, metric = 'e2e') => !!row
       result: normalizeResult(batch && batch.status),
       durationSeconds: duration,
       npuQueueSeconds,
-      npuApplicable: integration,
-      npuNotApplicableReason: integration ? null : '本记录非 Integration Tests，E2E 不适用',
+      npuApplicable,
+      npuNotApplicableReason: npuApplicable ? null : '本记录没有可用的 NPU Job 证据',
       exclusionReason: exclusion || null,
       exclusionLabel: exclusion ? (EXCLUSION_LABELS[exclusion] || exclusion) : null,
       missing,
@@ -846,7 +884,7 @@ const sampleEligible = (row, metric = 'e2e') => !!row
           ? '同提交其他运行不能证明同次触发，不计 E2E，也不改变主点时长'
           : '未发现同提交其他运行（不表示该提交从未触发其他 workflow）',
       },
-      npu: { jobs: npuRowsData, queueSeconds: npuQueueSeconds, applicable: integration },
+      npu: { jobs: npuRowsData, queueSeconds: npuQueueSeconds, applicable: npuApplicable },
       boundary: {
         collectedAt: opts.collectedAt || null,
         discoveryCutoff: opts.discoveryCutoff || null,

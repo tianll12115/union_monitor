@@ -26,10 +26,10 @@ class EmptyGitHub:
         self.calls = 0
 
     def get(self, path):
-        if '/actions/runs?' not in path or 'per_page=1' not in path:
+        if '/actions/runs?' not in path or 'created=' not in path or 'per_page=' not in path:
             raise AssertionError('unexpected transport request: ' + path)
         self.calls += 1
-        return {'total_count': 0}, {}
+        return {'total_count': 0, 'workflow_runs': []}, {}
 
     def pages(self, path, field=None):
         if '/actions/runs?' not in path or field != 'workflow_runs':

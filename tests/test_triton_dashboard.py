@@ -409,13 +409,15 @@ class CollectWindowTests(unittest.TestCase):
             def now(cls, tz=None):
                 return clock[0]
 
-        row = {"id": 1, "name": "Integration Tests", "head_sha": "abc", "event": "pull_request",
+        row = {"id": 1, "name": "Integration Tests", "workflow_id": 241783889, "path": ".github/workflows/ci.yml", "head_sha": "abc", "event": "pull_request",
                "created_at": "2026-09-28T11:00:00Z", "updated_at": "2026-09-28T12:01:00Z",
                "status": "completed", "conclusion": "success", "run_attempt": 1,
                "html_url": "https://github.com/example/actions/runs/1"}
 
         def fake_get(api, url):
             clock[0] = dt("2026-09-28T12:08:00Z")
+            if re.search(r"/attempts/\d+$", url):
+                return {**row, "run_attempt": 1, "run_started_at": row["created_at"], "updated_at": row["created_at"]}, {}
             if "/jobs" in url:
                 return {"total_count": 0, "jobs": []}, {}
             return {"total_count": 1, "workflow_runs": [row]}, {}
@@ -457,7 +459,7 @@ class CollectWindowTests(unittest.TestCase):
             self.assertEqual(excluded["batches"], [])
 
     def test_collect_discovers_rerun_created_before_window(self):
-        inside = {"id": 1, "name": "Integration Tests", "head_sha": "abc", "event": "pull_request",
+        inside = {"id": 1, "name": "Integration Tests", "workflow_id": 241783889, "path": ".github/workflows/ci.yml", "head_sha": "abc", "event": "pull_request",
                   "created_at": "2026-09-21T00:00:00Z", "run_started_at": "2026-09-26T10:00:00Z",
                   "updated_at": "2026-09-26T10:05:00Z", "status": "completed", "conclusion": "success",
                   "run_attempt": 2, "html_url": "https://github.com/example/actions/runs/1",
@@ -469,6 +471,8 @@ class CollectWindowTests(unittest.TestCase):
 
         def fake_get(self, url):
             paths.append(url)
+            if re.search(r"/attempts/\d+$", url):
+                return {**inside, "run_attempt": 1, "run_started_at": inside["created_at"], "updated_at": inside["created_at"]}, {}
             if url.endswith("per_page=1"):
                 return {"total_count": 2, "workflow_runs": [inside, outside]}, {}
             if "/jobs" in url:
@@ -485,9 +489,12 @@ class CollectWindowTests(unittest.TestCase):
                 patch("triton.pr_identity.PRResolver.resolve", return_value=pr_fields), \
                 patch("triton.dashboard.EVIDENCE", tmp):
             payload = collect(hours=72, as_of="2026-09-28T12:00:00Z")
-        created = next(p for p in paths if "created=" in p)
-        range_raw = urllib.parse.unquote(created.split("created=")[1].split("&")[0])
-        self.assertEqual(range_raw.split("..")[0], "2026-09-11T12:00:00Z")
+        discovery_paths = [p for p in paths if p.startswith("/actions/runs?")]
+        self.assertTrue(discovery_paths)
+        self.assertTrue(all("created=" in p and "event=" in p for p in discovery_paths))
+        self.assertTrue(any("2008-01-01" in p for p in discovery_paths))
+        self.assertEqual(payload["discovery"]["mode"], "all_retained_runs")
+        self.assertIsNone(payload["discovery"]["rerun_lookback_days"])
         self.assertEqual([batch["kind"] for batch in payload["batches"]], ["rerun"])
         self.assertEqual(payload["batches"][0]["start_at"], "2026-09-26T10:00:00Z")
 
@@ -496,7 +503,7 @@ class AttemptEnumerationTests(unittest.TestCase):
     """REQ-015 AC01 (A04): collect() must enumerate every historical attempt."""
 
     def attempt_run(self, attempt):
-        return {"id": 1, "name": "Integration Tests", "head_sha": "abc", "event": "pull_request",
+        return {"id": 1, "name": "Integration Tests", "workflow_id": 241783889, "path": ".github/workflows/ci.yml", "head_sha": "abc", "event": "pull_request",
                 "created_at": "2026-10-08T00:00:00Z", "run_started_at": "2026-10-08T06:00:00Z",
                 "updated_at": "2026-10-08T06:10:00Z", "status": "completed", "conclusion": "success",
                 "run_attempt": attempt, "html_url": "https://github.com/example/actions/runs/1",
@@ -508,6 +515,14 @@ class AttemptEnumerationTests(unittest.TestCase):
 
         def fake_get(self_github, url):
             paths.append(url)
+            if re.search(r"/attempts/\d+$", url):
+                attempt = int(url.rsplit("/", 1)[1])
+                jobs = jobs_by_attempt[attempt]
+                starts = [j["created_at"] for j in jobs if j.get("created_at")]
+                ends = [j["completed_at"] for j in jobs if j.get("completed_at")]
+                return {**run, "run_attempt": attempt, "run_started_at": min(starts) if starts else None,
+                        "updated_at": max(ends) if ends else None,
+                        "conclusion": "failure" if any(j.get("conclusion") == "failure" for j in jobs) else "success"}, {}
             if url.endswith("per_page=1"):
                 return {"total_count": 1, "workflow_runs": [run]}, {}
             if "/jobs" in url:
@@ -569,7 +584,7 @@ class AttemptEnumerationTests(unittest.TestCase):
     def test_collect_keeps_unresolved_pr_runs_as_unresolved_batches(self):
         # REQ-018: an unresolvable PR is never guessed and never fails the whole
         # refresh; it stays as an unresolved batch with its evidence gap marked.
-        run = {"id": 21, "name": "Integration Tests", "head_sha": "def", "event": "pull_request",
+        run = {"id": 21, "name": "Integration Tests", "workflow_id": 241783889, "path": ".github/workflows/ci.yml", "head_sha": "def", "event": "pull_request",
                "created_at": "2026-10-08T00:00:00Z", "run_started_at": "2026-10-08T06:00:00Z",
                "updated_at": "2026-10-08T06:10:00Z", "status": "completed", "conclusion": "success",
                "run_attempt": 1, "html_url": "https://github.com/example/actions/runs/21",
@@ -624,7 +639,7 @@ class CoverageLedgerMigrationTests(unittest.TestCase):
     append-only identity migration evidence; unavailable history stays unverified."""
 
     def test_collect_writes_coverage_ledger_bound_to_raw_fingerprint(self):
-        run_row = {"id": 1, "name": "Integration Tests", "head_sha": "abc", "event": "pull_request",
+        run_row = {"id": 1, "name": "Integration Tests", "workflow_id": 241783889, "path": ".github/workflows/ci.yml", "head_sha": "abc", "event": "pull_request",
                    "created_at": "2026-10-08T00:00:00Z", "run_started_at": "2026-10-08T06:00:00Z",
                    "updated_at": "2026-10-08T06:10:00Z", "status": "completed", "conclusion": "success",
                    "run_attempt": 1, "html_url": "https://github.com/example/actions/runs/1",

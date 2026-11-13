@@ -53,10 +53,16 @@ try:  # REQ-025 AC03: a crash must overwrite any stale report with an explicit f
             queue_timing.record_applicable(j['url'])
             raw=raw_jobs.get(j['url'])
             if raw is None:continue  # missing evidence, accounted per identity (REQ-023)
-            if (raw['timestamp'],raw['duration'])==(j['start_ms'],j['duration_ms']):
-                job_timing.record_verified(j['url'])
+            expected_times=tuple(v if type(v) in (int,float) and math.isfinite(v) and v>=0 else None
+                                 for v in (raw.get('timestamp'),raw.get('duration')))
+            stored_times=(j['start_ms'],j['duration_ms'])
+            if all(actual is None if expected is None else
+                   type(actual) in (int,float) and math.isfinite(actual) and actual==expected
+                   for actual,expected in zip(stored_times,expected_times)):
+                if None in expected_times: job_timing.record_verified_absence(j['url'])
+                else: job_timing.record_verified(j['url'])
             else:
-                job_timing.record_difference(j['url'],f"raw({raw['timestamp']}, {raw['duration']}) != snapshot({j['start_ms']}, {j['duration_ms']})")
+                job_timing.record_difference(j['url'],f"raw interpreted {expected_times} != snapshot {stored_times}")
             raw_queue,parts=queue_from_raw(raw)
             if raw_queue is None:
                 if j['queue_ms'] is None:queue_timing.record_verified_absence(j['url'])  # raw confirms unknown (REQ-024 AC02)

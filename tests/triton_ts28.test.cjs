@@ -209,7 +209,8 @@ test('TS28-001: the hover model exposes identity, links, reliable members, focus
   assert.equal(model.related.rows[0].excludedFromE2e, true);
   assert.equal(model.boundary.visibleSamePr, 2);
   assert.equal(model.boundary.discoveryCutoff, '2026-10-28T01:30:00Z');
-  assert.equal(model.npuApplicable, true);
+  assert.equal(model.npuApplicable, false);
+  assert.match(model.npuNotApplicableReason, /NPU Job 证据/);
   assert.equal(model.focus.rows.length, 0);
   assert.equal(model.focus.missing.length, 3);
 });
@@ -233,8 +234,8 @@ test('TS28-002/003: an auxiliary record reports E2E not applicable while NPU row
       created_at: '2026-10-28T00:00:00Z', started_at: '2026-10-28T00:00:20Z',
       completed_at: '2026-10-28T00:01:00Z' }] });
   const model = hoverModel(aux, { metric: 'npu', batches: [aux], collectedAt: '2026-10-28T02:00:00Z' });
-  assert.equal(model.npuApplicable, false);
-  assert.match(model.npuNotApplicableReason, /E2E 不适用/);
+  assert.equal(model.npuApplicable, true);
+  assert.equal(model.npuNotApplicableReason, null);
   assert.equal(model.npu.queueSeconds, 20);
   assert.equal(model.npu.jobs.length, 1);
   assert.equal(isIntegrationTestsRecord(aux), false);

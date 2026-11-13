@@ -171,11 +171,15 @@ def _job(row):
     created = dt(row.get("created_at"))
     inverted_wait = bool(start and created and start < created)
     inverted_run = bool(start and end and end < start)
+    from .run_e2e import job_step_conflicts
+    timeline_conflict = job_step_conflicts(row)
     errors = []
     if inverted_wait:
         errors.append("源时间戳异常：开始时间早于创建时间，排队不适用")
     if inverted_run:
         errors.append("源时间戳异常：结束时间早于开始时间，执行不适用")
+    if timeline_conflict:
+        errors.append("源 job/step 时间矛盾，执行不适用")
     return {
         "id": row.get("id"), "name": row.get("name") or "未命名任务",
         "status": row.get("status"), "conclusion": row.get("conclusion"),
@@ -186,7 +190,8 @@ def _job(row):
         "measurement_error": "；".join(errors) if errors else None,
         "wait_inverted": inverted_wait,
         "run_inverted": inverted_run,
-        "run_seconds": None if inverted_run else ((end-start).total_seconds() if start and end else row.get("duration_seconds")),
+        "timeline_conflict": timeline_conflict,
+        "run_seconds": None if inverted_run or timeline_conflict else ((end-start).total_seconds() if start and end else row.get("duration_seconds")),
         "failed_steps": [s.get("name") for s in row.get("steps", []) if s.get("conclusion") in ("failure", "timed_out", "action_required")],
     }
 
@@ -224,7 +229,7 @@ def workflow_timing(workflow, as_of):
         else:
             anomaly = "源时间戳异常：首个 job 开始早于 attempt 起点"
     complete_jobs = bool(active) and all(
-        j.get("status") == "completed" and dt(j.get("started_at")) and dt(j.get("completed_at"))
+        j.get("status") == "completed" and not j.get("timeline_conflict") and dt(j.get("started_at")) and dt(j.get("completed_at"))
         and dt(j.get("completed_at")) >= dt(j.get("started_at")) for j in active)
     if jobs_complete and complete_jobs and starts and ends and max(ends) >= min(starts):
         span = (max(ends) - min(starts)).total_seconds()
@@ -275,32 +280,28 @@ def _is_npu_job(job):
     return bool(re.search(r"linux-(?:aarch64|amd64)-a\d",identity) or "ascend950" in identity)
 
 
-def _historical_attempt_row(base, attempt, jobs):
-    """A historical attempt keeps the run's identity and PR association but only
-    its own evidence (A04): start/end come from this attempt's jobs, and the
-    current attempt's run-level status, timing and URL are never inherited."""
-    rows=[j for j in jobs if isinstance(j,dict)]
-    statuses={j.get("status") for j in rows}
-    conclusions={j.get("conclusion") for j in rows}
-    starts=[x for x in (dt(j.get("created_at")) for j in rows) if x]
-    ends=[x for x in (dt(j.get("completed_at")) for j in rows) if x]
-    status="completed" if rows and statuses<={"completed"} else (
-        "in_progress" if statuses&{"in_progress","queued","waiting","pending"} else None)
-    if status=="completed" and not ends:
-        status=None  # completion without end evidence is not provable
-    conclusion=None
-    if status=="completed":
-        if conclusions&{"failure","timed_out","action_required","startup_failure"}: conclusion="failure"
-        elif conclusions&{"cancelled","stale"}: conclusion="cancelled"
-        elif conclusions<={"success","skipped","neutral",None}: conclusion="success"
+def _historical_attempt_row(base, attempt, jobs, metadata=None):
+    """Historical lifecycle fields come only from the attempt REST resource.
+
+    Jobs establish measurements, never the workflow conclusion. Missing metadata
+    leaves an unknown failed-collection row rather than an inferred success.
+    """
+    fields = ("status", "conclusion", "run_started_at", "created_at", "updated_at")
+    if metadata is not None:
+        if not isinstance(metadata, dict) or metadata.get("id") != base.get("id") or type(metadata.get("run_attempt")) is not int or metadata["run_attempt"] != attempt:
+            raise RuntimeError("historical attempt metadata identity mismatch")
+        if any(key not in metadata for key in fields) or not metadata.get("status"):
+            raise RuntimeError("historical attempt metadata lifecycle incomplete")
+        for key in ("workflow_id", "path"):
+            if base.get(key) is not None and metadata.get(key) != base[key]:
+                raise RuntimeError("historical attempt metadata workflow identity mismatch")
     row={k:v for k,v in base.items()
          if k not in ("jobs","jobs_complete","jobs_error","focus_jobs","run_attempt",
                       "status","conclusion","run_started_at","updated_at","html_url")}
-    row.update(run_attempt=attempt,status=status,conclusion=conclusion,
-               run_started_at=iso(min(starts)) if starts else None,
-               updated_at=iso(max(ends)) if ends else None,
-               html_url=base.get("html_url") if attempt==1 else f"{base.get('html_url')}/attempts/{attempt}",
-               jobs=jobs,jobs_complete=True,focus_jobs=focus_from_jobs(jobs),
+    row.update({key: metadata.get(key) if metadata is not None else None for key in fields})
+    url = (base.get("html_url") or "").split("/attempts/")[0]
+    row.update(run_attempt=attempt, html_url=url+f"/attempts/{attempt}" if url else None,
+               jobs=jobs,jobs_complete=metadata is not None,focus_jobs=focus_from_jobs(jobs),
                attempt_source="enumerated")
     return row
 
@@ -699,13 +700,20 @@ def build_coverage_ledger(runs, payload, window_end):
     historical gaps (e.g. the frozen 887/885 replay) are never substituted here.
     """
     from .coverage_ledger import build_ledger
-    all_batches = build_batches(runs, window_end, None)
+    from .run_e2e import measurement, stamp
     public = {(w["id"], int(w.get("attempt") or 1))
               for b in payload.get("batches", []) for w in b.get("workflows", [])}
-    published = {(w["id"], int(w.get("attempt") or 1))
-                 for b in all_batches for w in b.get("workflows", [])}
-    out_of_window = {ident: "batch start falls before the display window"
-                     for ident in sorted(published - public)}
+    out_of_window = {}
+    lower, upper = stamp(payload.get("window_start")), stamp(window_end)
+    for row in runs:
+        ident = (row.get("id"), int(row.get("run_attempt") or 1))
+        if ident in public:
+            continue
+        started = stamp(measurement(row, window_end)["start_at"])
+        if started and lower and started < lower:
+            out_of_window[ident] = "attempt start falls before the display window"
+        elif started and upper and started > upper:
+            out_of_window[ident] = "attempt start falls after the display window"
     ledger = build_ledger(runs, public=public, out_of_window=out_of_window)
     fingerprint = hashlib.sha256(
         json.dumps(sorted((r.get("id"), int(r.get("run_attempt") or 1)) for r in runs),
@@ -719,27 +727,15 @@ def collect(hours=72, as_of=None):
     api=GitHub(); end=dt(as_of) if as_of else datetime.now(UTC).replace(microsecond=0); start=end-timedelta(hours=hours)
     fetch_end=end
     EVIDENCE.mkdir(parents=True, exist_ok=True)
-    # Query the two native PR event types separately; recursively split intervals to avoid GitHub's 1,000-result cap.
-    # A rerun may target a run first created before the window, so discovery reaches
-    # RERUN_LOOKBACK further back; run_in_window() then keeps only runs whose current
-    # attempt actually acted inside the display window.
-    fetch_start=start-RERUN_LOOKBACK
-    runs=[]
-    def interval(a,b,event):
-        created=urllib.parse.quote(f"{iso(a)}..{iso(b)}", safe="")
-        path=f"/actions/runs?event={event}&created={created}"
-        first,_=api.get(path+"&per_page=1")
-        if not isinstance(first, dict) or not isinstance(first.get("total_count"), int):
-            raise RuntimeError(f"{path}: response has no usable total_count")
-        if first["total_count"]>1000:
-            mid=a+(b-a)/2; interval(a,mid,event); interval(mid+timedelta(seconds=1),b,event); return
-        runs.extend(api.pages(path,"workflow_runs"))
-    for event in ("pull_request","pull_request_target"):
-        interval(fetch_start,end,event)
+    # Partition the full retained creation history below source query caps.
+    # A rolling lookback cannot find arbitrarily old reruns inside this window.
+    from .discovery import full_history_runs
+    fetch_start=None
+    runs=full_history_runs(api,start,end)
+    _write_json(EVIDENCE/"discovery-ledger.json",api.discovery_evidence)
     unique={(r["id"], r.get("run_attempt") or 1):r for r in runs}
-    discovered_end=end if as_of else datetime.now(UTC).replace(microsecond=0)
-    runs=[r for r in unique.values() if run_in_window(r,start,discovered_end)]
-    _write_json(EVIDENCE/"runs.json", {"collected_at":iso(datetime.now(UTC)),"window_start":iso(start),"fetch_window_start":iso(fetch_start),"window_end":iso(end),"runs":runs})
+    runs=list(unique.values())
+    _write_json(EVIDENCE/"runs.json", {"collected_at":iso(datetime.now(UTC)),"window_start":iso(start),"fetch_window_start":fetch_start,"window_end":iso(end),"runs":runs})
 
     # PRs from forks can have empty run.pull_requests and commit/pulls responses.
     from .pr_identity import PRResolver, association_error_kind
@@ -776,9 +772,14 @@ def collect(hours=72, as_of=None):
         # earlier attempt of this run so each identity and its jobs survive.
         for earlier in range(1,attempt):
             try:
+                metadata,_=api.get(f"/actions/runs/{r['id']}/attempts/{earlier}")
+                # Validate lifecycle and identity before accepting job evidence.
+                historical=_historical_attempt_row(row,earlier,[],metadata=metadata)
+                _write_json(EVIDENCE/"attempts"/f"{r['id']}-{earlier}.json",metadata)
                 jobs=api.pages(f"/actions/runs/{r['id']}/attempts/{earlier}/jobs","jobs")
                 _write_json(EVIDENCE/"jobs"/f"{r['id']}-{earlier}.json",jobs)
-                enriched.append(_historical_attempt_row(row,earlier,jobs))
+                historical.update(jobs=jobs,focus_jobs=focus_from_jobs(jobs))
+                enriched.append(historical)
             except Exception as exc:
                 failed=_historical_attempt_row(row,earlier,[])
                 failed.update(jobs_complete=False,jobs_error=str(exc))
@@ -803,13 +804,23 @@ def collect(hours=72, as_of=None):
     if as_of is None:
         end=observed; start=end-timedelta(hours=hours)
     _write_json(EVIDENCE/"runs.json", {"collected_at":iso(observed),"window_start":iso(start),
-                "fetch_window_start":iso(fetch_start),"fetch_window_end":iso(fetch_end),"window_end":iso(end),"runs":runs})
+                "fetch_window_start":fetch_start,"fetch_window_end":iso(fetch_end),"window_end":iso(end),"runs":runs})
     _write_json(EVIDENCE/"enriched-runs.json", enriched)
     payload = build_payload(enriched, iso(start), iso(end), iso(observed), api.calls,
-                            fetch_start=iso(fetch_start), fetch_end=iso(fetch_end))
+                            fetch_start=fetch_start, fetch_end=iso(fetch_end))
+    payload["discovery"]={"mode":"all_retained_runs", "discovery_method":"partitioned_created_history", "rerun_lookback_days":None,
+                          "fetch_window_start":None,"fetch_window_end":iso(fetch_end),
+                          "boundary_note":"全创建期分片（2008-01-01 至发现截止），按 PR 事件枚举 GitHub 当前保留的 run，逐个枚举历史 attempt；已删除或超出源保留期的记录不可恢复；创建发现截至 "+iso(fetch_end)+"，状态为逐页观测，非原子时间快照"}
+    payload["discovery"].update({key:api.discovery_evidence[key]
+                                 for key in ("enumerated_runs","candidate_runs","excluded_runs")})
+    metadata = json.loads((EVIDENCE/"runs.json").read_text(encoding="utf-8"))
+    metadata['discovery'] = payload['discovery']
+    _write_json(EVIDENCE/"runs.json", metadata)
     # ADR-004: bind a per-identity coverage ledger to this round's raw runs.
-    _write_json(EVIDENCE/"coverage-ledger.json",
-                build_coverage_ledger(enriched, payload, iso(end)))
+    ledger=build_coverage_ledger(enriched, payload, iso(end))
+    _write_json(EVIDENCE/"coverage-ledger.json",ledger)
+    if not ledger.get("verified"):
+        raise RuntimeError("coverage ledger has unaccounted or inconsistent run identities; refusing to publish")
     return payload
 
 
@@ -828,6 +839,8 @@ def e2e_qualification(batch):
     """
     if "pr" in batch and batch.get("pr") is None:
         return False, "unresolved_pr_batch_identity"
+    if batch.get("is_integration_tests") is False or batch.get("e2e_exclusion_reason") == "outside_integration_tests":
+        return False, "outside_integration_tests"
     if batch.get("e2e_sample_eligible") is False:
         return False, batch.get("e2e_exclusion_reason") or "explicit_metric_exclusion"
     if batch.get("status") not in ("success", "failure"):
@@ -928,6 +941,10 @@ def main():
             runs=augment_focus_jobs(runs,meta["window_end"]);_write_json(EVIDENCE/"enriched-runs.json",runs)
         payload=build_payload(runs,meta["window_start"],meta["window_end"],meta["collected_at"],
                               fetch_start=meta.get("fetch_window_start"),fetch_end=meta.get("fetch_window_end"))
+        if meta.get('discovery'):
+            from .discovery import replay_discovery
+            ledger=json.loads((EVIDENCE/'discovery-ledger.json').read_text(encoding='utf-8'))
+            payload['discovery']=replay_discovery(meta, runs, ledger)
     else: payload=collect(args.hours,args.as_of)
     from .quality import fingerprint, validate, verify_artifacts
     report=validate(runs if args.from_evidence else json.loads((EVIDENCE/"enriched-runs.json").read_text(encoding="utf-8")),payload)

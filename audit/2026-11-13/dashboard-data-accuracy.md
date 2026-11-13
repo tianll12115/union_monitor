@@ -30,7 +30,7 @@
 
 合并后触发的部署（43399530611）在 Triton 采集阶段运行 125 分钟后失败：发现阶段枚举出 **3745 条候选**（约为窗口 run 总数的 1.8 倍），逐个拉取 job 时耗尽 5000 次/小时令牌配额，1717 个 job 列表失败，门禁按设计拒绝发布。根因是“完整创建历史”发现把历史上所有 `attempt>1` 的 run 都当成候选。
 
-修复：发现窗口改为 `[窗口起点-14 天, 发现截止]`，并在 `discovery` 中披露“更早创建、但在窗口内重跑的 run 可能未枚举”。候选回到窗口量级（约 2250），整轮调用约 3000 次，留出配额余量。窗口内新创建 run 的完整性不受影响。
+修复：发现窗口改为 `[窗口起点-90 天, 发现截止]`，并把候选条件收紧为“当前 attempt 起点在窗口内”（attempt 按时间递增，最新 attempt 早于窗口就不可能有更早 attempt 落在窗口内）。历史重跑不再逐个拉取 job，候选回到窗口量级（约 2100），整轮调用约 3300 次，留出配额余量。窗口内新创建 run 与 90 天内重跑 run 的完整性不受影响。
 
 随后，live-data 契约测试仍按旧口径用 `window_end` 替代执行中批次的 `end_at`，把正确的观测时长（`collected_at - start`）判成错误；已改为按观测时刻校验（PR #22）。
 
@@ -46,7 +46,7 @@
 | manifest 指纹与 payload 一致 | 是 |
 | 批次 / PR | 2241 / 101 |
 | 有效 E2E 样本 | **166**（修复前 16） |
-| 未关联 PR 批次 | **33**（修复前 46） |
+| 未关联 PR 批次 | **33**（修复前 46；其中 25 条已发布候选 PR） |
 | NPU 点数 | 289 |
 | 本轮 API 调用 | 3038（配额内） |
 
@@ -54,18 +54,28 @@
 
 CSV、`triton-qualifications-v1.json`、manifest 与 payload 的一致性复核：0 个问题（`verify_artifacts`）。
 
+### PR 身份：把“未关联”变成可核对的候选
+
+已发布快照的 33 条未关联记录中：
+
+- **25 条**同属两个打开的 PR（#3051、#3011）共用的同一批提交（`e3a7eb97`、`a5137993` 等）。此前只写“未关联 PR”；现在记录 `pr_candidates=[3011, 3051]`，详情卡与 CSV 缺口说明列出两个真实 PR 链接，并明确“不猜测单一归属”。按 UDR-001 口径，它们仍不进入按 PR 统计的 E2E；其中 1 条有效时长观测在页面单独计数“未计入 KPI”，不隐藏。
+- **8 条**没有任何可证实候选（多为 `pull_request_target` 的基线提交或已删除来源）。保留“未关联 PR”，不生成伪链接。
+- 无 PR 时标题回退到源 run 的 `display_title`（例如 “[WIP][test] test never merge”），不再一律“标题未获取”。
+
 ## 修复
 
 | 区域 | 变更 |
 |---|---|
 | `triton/run_e2e.py` | Integration Tests 范围改为**工作流路径**判定（`ci.yml`、`ascend-ci.yml`），id 作为一致性校验；新增 300 秒 step 收尾容差 |
 | `triton/quality.py` | 选择窗口（`window_end`）与观测时刻（`collected_at`）分离；路径范围独立校验；已登记 id 报告不同路径时阻断发布 |
-| `triton/dashboard.py` | 窗口结束点等于创建发现截止，不再延伸到采集完成；建包前刷新仍在执行的 run，避免把“采集期间已完成”记成超长运行 |
-| `triton/pr_identity.py` | PR 必须在 run 创建时仍处于打开状态（`closed_at` 不早于 run 创建） |
+| `triton/dashboard.py` | 窗口结束点等于创建发现截止，不再延伸到采集完成；建包前刷新仍在执行的 run；90 天重跑回溯；批次保留 `pr_candidates` 与 `display_title` |
+| `triton/discovery.py` | 候选条件改为“当前 attempt 起点在窗口内”，历史重跑不再逐个拉取 job，避免配额耗尽；覆盖 attempt 跨度跨窗的防御分支 |
+| `triton/pr_identity.py` | PR 必须在 run 创建时仍处于打开状态；多候选时抛出携带全部候选的 `AmbiguousPRIdentity`，不猜测单一归属 |
+| 前端 | 详情卡/标记展示候选 PR 链接与“不猜测单一归属”；样本账本区分“未关联”与“多候选”，并单独计数未计入 KPI 的有效观测 |
 | 文档 | `docs/triton-e2e-v2.md`、`docs/operations.md`、`docs/user-guide.md` 同步口径 |
 
 ## 回归与验证
 
-- 新增/更新 UT：窗口截止与观测分离、执行中 run 刷新、路径范围与 id 漂移、关闭 PR 排除、step 容差（含 PR3097 真实源 fixture 由“隔离”改为可测量 5350 秒）。
-- 全量 Python 1129 项、Node 372 项通过；改动行覆盖率见 `scripts/verify_changed_coverage.py` 输出（要求 >80%）。
-- 部署后须复核：`window_end == discovery.fetch_window_end`、Integration Tests 样本数回到约 150+、未关联 run 从 46 降到 33 左右、`npu_points` 与之前同量级。
+- 新增/更新 UT：窗口截止与观测分离、执行中 run 刷新、路径范围与 id 漂移、关闭 PR 排除、step 容差（含 PR3097 真实源 fixture 由“隔离”改为可测量 5350 秒）、90 天回溯与候选条件、多候选身份与展示。
+- 全量 Python 1130 项、Node 373 项、Chromium 78 项通过；改动行覆盖率 100%（`scripts/verify_changed_coverage.py`）。
+- 部署后复核：`window_end == discovery.fetch_window_end`、manifest 指纹一致、E2E 样本 ~160+、未关联/多候选数量与候选链接可核对、NPU 点数同量级。

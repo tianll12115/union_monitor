@@ -143,7 +143,8 @@ const sampleEligible = (row, metric = 'e2e') => !!row
 
   function metricAccounting(rows) {
     const result = { total: rows.length, knownPrs: new Set(rows.map(r => r.pr).filter(Boolean)).size,
-      unresolved: rows.filter(r => r.pr == null).length,
+      unresolved: rows.filter(r => r.pr == null && !(r.pr_candidates || []).length).length,
+      ambiguous: rows.filter(r => r.pr == null && (r.pr_candidates || []).length).length,
       e2e: { included: 0, excluded: 0, reasons: {} },
       npu: { included: 0, excluded: 0, reasons: {} } };
     for (const row of rows) {
@@ -156,7 +157,8 @@ const sampleEligible = (row, metric = 'e2e') => !!row
             ? 'missing_or_invalid_npu' : 'no_npu_jobs';
           if (validDuration(row.npu_queue_seconds) && !row.npu_data_missing) reason = 'non_sample_result';
         } else {
-          reason = row.e2e_exclusion_reason || (row.pr == null ? 'unresolved_pr_batch_identity'
+          reason = row.e2e_exclusion_reason || (row.pr == null
+            ? ((row.pr_candidates || []).length ? 'ambiguous_pr_batch_identity' : 'unresolved_pr_batch_identity')
             : row.is_integration_tests === false ? 'outside_integration_tests'
             : row.e2e_sample_eligible === false ? 'explicit_metric_exclusion'
             : row.status === 'running' ? 'running_observation'
@@ -182,7 +184,10 @@ const sampleEligible = (row, metric = 'e2e') => !!row
   function markLabel(batch, kind) {
     if (batch && batch.pr == null) {
       const workflow = (batch.workflows || [])[0] || {};
-      return (kind === 'npu' ? 'NPU 排队详情：' : '观测详情：') + '未关联 PR · Run #' + (workflow.id || batch.id || '?')
+      const candidates = (batch.pr_candidates || []).map(Number).filter(Number.isFinite)
+        .sort((a, b) => a - b).map(n => '#' + n).join('、');
+      const owner = candidates ? 'PR 多候选 ' + candidates : '未关联 PR';
+      return (kind === 'npu' ? 'NPU 排队详情：' : '观测详情：') + owner + ' · Run #' + (workflow.id || batch.id || '?')
         + ' · attempt ' + (workflow.attempt || 1) + ' · ' + String(batch.sha || '未知').slice(0, 7);
     }
     const pr = batch && batch.pr != null ? batch.pr : '?';
@@ -459,6 +464,7 @@ const sampleEligible = (row, metric = 'e2e') => !!row
   const FOCUS_LABELS = { 'a3-py310': 'A3 · py3.10', 'a3-py311': 'A3 · py3.11', 'a5-py312': 'A5 · py3.12' };
   const EXCLUSION_LABELS = {
     unresolved_pr_batch_identity: 'PR 与提交批次身份未确认',
+    ambiguous_pr_batch_identity: 'PR 归属存在多个候选（同一提交），不猜测单一归属',
     outside_integration_tests: '辅助检查，不计入 Integration Tests E2E',
     rerun_queue_start_unknown: '重跑前置排队起点未知，仅观测',
     legacy_metric_unverified: '旧口径未重新采集',
@@ -839,11 +845,16 @@ const sampleEligible = (row, metric = 'e2e') => !!row
     const actions = safeLink(batch && batch.action_url) || workflowUrls[0] || null;
     const prUrl = safeLink(batch && batch.pr_url);
     const duration = finiteSeconds(batch && batch.duration_seconds);
-    const exclusion = batch && (batch.e2e_exclusion_reason || (batch.pr == null ? 'unresolved_pr_batch_identity'
+    const prCandidates = Array.isArray(batch && batch.pr_candidates)
+      ? batch.pr_candidates.map(Number).filter(Number.isFinite).sort((a, b) => a - b) : [];
+    const exclusion = batch && (batch.e2e_exclusion_reason || (batch.pr == null
+      ? (prCandidates.length ? 'ambiguous_pr_batch_identity' : 'unresolved_pr_batch_identity')
       : metric === 'e2e' && !integration ? 'outside_integration_tests' : null));
     const missing = Array.isArray(batch && batch.missing) ? batch.missing.slice() : [];
     const associationNote = batch && batch.pr == null
-      ? '未可靠关联 PR：不推断身份，不生成 PR 链接'
+      ? (prCandidates.length
+        ? '同一提交存在多个 PR 候选（' + prCandidates.map(n => '#' + n).join('、') + '），不猜测单一归属'
+        : '未可靠关联 PR：不推断身份，不生成 PR 链接')
       : workflows.length
         ? '本次集合仅含当前 ' + workflows.map(w => w.name || '未命名 workflow').join('、') + ' run/attempt；未采集到其他可靠触发链证据'
         : '缺少来源 run/attempt 证据，按不可关联处理';
@@ -852,6 +863,8 @@ const sampleEligible = (row, metric = 'e2e') => !!row
       batchId: batch && batch.id,
       prKnown: !!(batch && batch.pr != null),
       pr: batch && batch.pr != null ? batch.pr : null,
+      prCandidates,
+      prAmbiguous: prCandidates.length > 0,
       title: (batch && batch.title) || '标题未获取',
       author: (batch && batch.author) || null,
       branch: (batch && batch.branch) || null,

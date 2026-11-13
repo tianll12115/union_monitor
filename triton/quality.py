@@ -78,9 +78,10 @@ def validate(runs, payload):
         prefix=f"run {run.get('id')}"
         if run.get("event") in ("pull_request","pull_request_target"):
             proof=run.get("pr_evidence") or {}
-            if proof.get("method") == "unresolved":
-                # REQ-018: an explicitly unresolved PR is a declared evidence gap,
-                # surfaced on its batch ("未可靠关联 PR"), never a refresh failure.
+            if proof.get("method") in ("unresolved","ambiguous"):
+                # REQ-018: an explicitly unresolved or multi-candidate PR is a
+                # declared evidence gap, surfaced on its batch ("未可靠关联 PR"
+                # / candidates), never a refresh failure.
                 warnings.append(prefix+": PR identity unresolved (" + str(proof.get("error","unknown reason")) + ")")
             else:
                 if not run.get("pr") or not run.get("pr_url") or not run.get("base_branch") or not run.get("pr_title"):

@@ -74,10 +74,18 @@
         "note": "the successor PR 3113 never carried this SHA; remains an honest unknown"
       },
       {
-        "head_sha": "a513799327 + e3a7eb9732",
+        "head_sha": "e3a7eb9732 / a513799327 / e672d2bb06 / 068bc9472c (same fork main)",
         "runs": 25,
         "resolved_pr": null,
-        "note": "PRs 3051 and 3011 are both open on the same head SHA; attribution would be a guess"
+        "candidates": [3011, 3051],
+        "note": "both PRs are open on the same head commit; every candidate is published and no single owner is guessed"
+      },
+      {
+        "head_sha": "e672d2bb06 / 068bc9472c / 49bf4c2bd5",
+        "runs": 8,
+        "resolved_pr": null,
+        "candidates": [],
+        "note": "no provable candidate (mostly pull_request_target base commits or deleted sources); remains an honest unknown"
       }
     ]
   },
@@ -102,7 +110,7 @@
       "candidate_runs": 3745,
       "failed_job_lists": 1717,
       "cause": "unbounded creation-history discovery enumerated every historical rerun and exhausted the 5000-requests/hour token quota",
-      "fix": "bounded rerun lookback (window_start - 14 days) with a published discovery boundary; candidate set back to the window population"
+      "fix": "90-day rerun lookback plus a candidate rule that only fetches runs whose current attempt starts inside the window; historical reruns started before the window cost no job request"
     },
     "live_after_fix": {
       "run_id": 43426713115,

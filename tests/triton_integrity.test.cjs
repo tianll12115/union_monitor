@@ -61,12 +61,17 @@ test('sample accounting partitions all runs without treating missing or unknown 
     {pr:3,status:'success',duration_seconds:null,e2e_sample_eligible:false,is_integration_tests:true,e2e_exclusion_reason:'invalid_or_missing_duration',npu_queue_seconds:null,npu_data_missing:true},
   ];
   const a=core.metricAccounting(rows);
-  assert.deepEqual(a,{total:5,knownPrs:3,unresolved:1,
+  assert.deepEqual(a,{total:5,knownPrs:3,unresolved:1,ambiguous:0,
     e2e:{included:1,excluded:4,reasons:{unresolved_pr_batch_identity:1,non_sample_result:1,outside_integration_tests:1,invalid_or_missing_duration:1}},
     npu:{included:2,excluded:3,reasons:{non_sample_result:1,no_npu_jobs:1,missing_or_invalid_npu:1}}});
   assert.equal(a.e2e.included+a.e2e.excluded,a.total);
   assert.equal(a.npu.included+a.npu.excluded,a.total);
-  assert.deepEqual(core.metricAccounting([]),{total:0,knownPrs:0,unresolved:0,e2e:{included:0,excluded:0,reasons:{}},npu:{included:0,excluded:0,reasons:{}}});
+  const ambiguous=core.metricAccounting([{pr:null,pr_candidates:[3051,3011],status:'success',duration_seconds:10,
+    e2e_sample_eligible:false,is_integration_tests:true,e2e_exclusion_reason:'ambiguous_pr_batch_identity'}]);
+  assert.equal(ambiguous.ambiguous,1);
+  assert.equal(ambiguous.unresolved,0);
+  assert.deepEqual(ambiguous.e2e.reasons,{ambiguous_pr_batch_identity:1});
+  assert.deepEqual(core.metricAccounting([]),{total:0,knownPrs:0,unresolved:0,ambiguous:0,e2e:{included:0,excluded:0,reasons:{}},npu:{included:0,excluded:0,reasons:{}}});
 });
 
 test('running, invalid, and explicit non-integration flags never enter E2E through a missing eligibility field',()=>{

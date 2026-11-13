@@ -8,7 +8,7 @@ import tempfile
 from unittest.mock import patch
 from urllib.parse import parse_qs, urlsplit
 
-from triton.pr_identity import PRResolver
+from triton.pr_identity import AmbiguousPRIdentity, PRResolver
 
 
 REPO = {"id": 101, "name": "triton-ascend", "full_name": "triton-lang/triton-ascend",
@@ -111,6 +111,12 @@ class PRIdentityTests(unittest.TestCase):
     def test_shared_head_on_two_prs_is_ambiguous(self):
         with self.assertRaises(ValueError):
             PRResolver(FakeAPI([pull(41), pull(42)])).resolve(action_run())
+
+    def test_shared_head_reports_every_candidate(self):
+        with self.assertRaises(AmbiguousPRIdentity) as caught:
+            PRResolver(FakeAPI([pull(42), pull(41)])).resolve(action_run())
+        self.assertEqual(caught.exception.candidates, [41, 42])
+        self.assertIn("matches", caught.exception.diagnostic)
 
     def test_pr_closed_before_the_run_does_not_block_the_open_successor(self):
         # 2026-11-13 production case: PR 3084 was closed 42 seconds after it was

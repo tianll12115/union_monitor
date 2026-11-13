@@ -307,7 +307,7 @@ def _historical_attempt_row(base, attempt, jobs, metadata=None):
     return row
 
 
-RERUN_LOOKBACK = timedelta(days=14)
+RERUN_LOOKBACK = timedelta(days=90)
 
 
 def run_in_window(row, start, end):
@@ -419,10 +419,15 @@ def build_batches(runs, as_of, window_start=None):
         if not running and start and end is None: missing.append("无完成时间证据，E2E 留空")
         if key[2] == "rerun" and start is None: missing.append("无本次 attempt 起点证据，E2E 留空")
         if any(not r.get("jobs_complete") for r in rows): missing.append("部分 workflow 的 job 明细未采集")
-        if not first.get("pr"): missing.append("未可靠关联 PR")
+        pr_candidates=sorted({c for r in rows for c in (r.get("pr_candidates") or [])})
+        if not first.get("pr"):
+            missing.append(
+                "PR 归属存在多个候选（"+ "、".join(f"#{n}" for n in pr_candidates) +"），不计入 PR 统计"
+                if pr_candidates else "未可靠关联 PR")
         batches.append({
             "id": "-".join(str(x) for x in key if x is not None),
-            "pr": first.get("pr"), "title": first.get("pr_title") or "标题未获取",
+            "pr": first.get("pr"), "pr_candidates": pr_candidates,
+            "title": first.get("pr_title") or first.get("display_title") or "标题未获取",
             "pr_url": first.get("pr_url"), "author": first.get("author"),
             "branch": first.get("branch"), "base_branch":base_branch or "未知目标分支", "sha": first.get("head_sha"),
             "kind": "rerun" if key[2] == "rerun" else "initial",
@@ -806,10 +811,14 @@ def collect(hours=72, as_of=None):
             # REQ-018/REQ-019: an unresolvable PR is never guessed. It is kept as
             # an unresolved batch whose evidence gap is surfaced ("未可靠关联 PR")
             # rather than silently dropped and rather than failing the refresh.
-            row.update(pr=None,pr_url=None,pr_title=None,base_branch=None,
-                       pr_evidence={"method":"unresolved","run_id":r["id"],"error":str(exc)})
+            # A genuinely ambiguous identity keeps every matched candidate so the
+            # page can show the real alternatives instead of a bare "unknown".
+            candidates=sorted(getattr(exc,"candidates",[]) or [])
+            row.update(pr=None,pr_url=None,pr_title=None,base_branch=None,pr_candidates=candidates,
+                       pr_evidence={"method":"ambiguous" if candidates else "unresolved","run_id":r["id"],
+                                    "candidates":candidates,"error":str(exc)})
         row.update(author=(r.get("actor") or {}).get("login"),branch=r.get("head_branch"),
-                   trigger_at=None,trigger_exact=False)
+                   display_title=r.get("display_title"),trigger_at=None,trigger_exact=False)
         attempt=int(r.get("run_attempt") or 1)
         try:
             jobs=api.pages(f"/actions/runs/{r['id']}/attempts/{attempt}/jobs","jobs")
@@ -894,7 +903,8 @@ def e2e_qualification(batch):
     This does not govern NPU measurements or rewrite execution results.
     """
     if "pr" in batch and batch.get("pr") is None:
-        return False, "unresolved_pr_batch_identity"
+        return False, ("ambiguous_pr_batch_identity" if batch.get("pr_candidates")
+                       else "unresolved_pr_batch_identity")
     if batch.get("is_integration_tests") is False or batch.get("e2e_exclusion_reason") == "outside_integration_tests":
         return False, "outside_integration_tests"
     if batch.get("e2e_sample_eligible") is False:

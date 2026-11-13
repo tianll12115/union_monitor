@@ -14,7 +14,7 @@ import urllib.parse
 import urllib.request
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from metrics import ms, in_scope, normalize_job, extract_events, match_event, measure_batch, task_kind, pr_metrics, latest_submission, SUBMISSION_TIME_PROFILE
+from metrics import ms, in_scope, normalize_job, extract_events, match_event, measure_batch, task_kind, pr_metrics, latest_submission, SUBMISSION_TIME_PROFILE, valid_milliseconds
 
 ROOT=Path(__file__).resolve().parent
 CI='https://ci.openeuler.openatom.cn/'
@@ -125,9 +125,17 @@ def catalog(client,path,start):
     for offset in range(0,20000,500):
         query='allBuilds['+TREE+']{'+str(offset)+','+str(offset+500)+'}'
         raw=client.get(url+'api/json?tree='+urllib.parse.quote(query,safe=''),mutable=True)
-        batch=raw.get('allBuilds',[])
-        result.extend(normalize_job(x) for x in batch if x.get('timestamp',0)>=start)
-        if len(batch)<500 or min(x.get('timestamp',0) for x in batch)<start:break
+        if not isinstance(raw,dict) or not isinstance(raw.get('allBuilds'),list):
+            raise ValueError('Jenkins catalog response has no usable allBuilds array: '+path)
+        batch=raw['allBuilds']
+        if any(not isinstance(row,dict) for row in batch):
+            raise ValueError('Jenkins catalog contains a non-object build: '+path)
+        # Unknown creation time cannot prove a build is older than the window,
+        # nor prove the next page is out of scope. Preserve it for quarantine.
+        times=[x.get('timestamp') for x in batch]
+        result.extend(normalize_job(x) for x in batch
+                      if not valid_milliseconds(x.get('timestamp')) or x['timestamp']>=start)
+        if len(batch)<500 or (all(valid_milliseconds(t) for t in times) and min(times)<start):break
     else:raise ValueError('Jenkins 历史构建超过安全分页上限')
     return result
 

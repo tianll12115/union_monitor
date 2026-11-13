@@ -60,6 +60,10 @@ def in_scope(pr,start,end):
     t=ms(pr.get('created_at'))
     return pr.get('base',{}).get('ref')=='master' and t is not None and start<=t<=end
 
+def valid_milliseconds(value):
+    """Measured times are finite non-negative numbers; booleans are not times."""
+    return type(value) in (int, float) and math.isfinite(value) and value >= 0
+
 def normalize_job(raw):
     actions=raw.get('actions',[])
     q=next((a for a in actions if 'waitingTimeMillis' in a),{})
@@ -67,12 +71,15 @@ def normalize_job(raw):
     queue=sum(q[k] for k in keys) if all(
         isinstance(q.get(k),(int,float)) and not isinstance(q[k],bool)
         and math.isfinite(q[k]) and q[k]>=0 for k in keys) else None
-    start=raw.get('timestamp');duration=raw.get('duration');running=raw.get('building',False) or raw.get('result') is None
+    start=raw.get('timestamp') if valid_milliseconds(raw.get('timestamp')) else None
+    duration=raw.get('duration') if valid_milliseconds(raw.get('duration')) else None
+    running=raw.get('building',False) or raw.get('result') is None
     end=start+duration if start is not None and duration is not None and not running else None
+    if not valid_milliseconds(end): end=None
     return dict(url=raw.get('url'),number=raw.get('number'),result=raw.get('result'),building=running,
         start_ms=start,duration_ms=duration if not running else None,end_ms=end,queue_ms=queue,
-        total_ms=queue+duration if queue is not None and duration is not None and not running else None,
-        scheduled_ms=start-queue if start is not None and queue is not None else None,
+        total_ms=queue+duration if queue is not None and end is not None else None,
+        scheduled_ms=start-queue if start is not None and queue is not None and start>=queue else None,
         causes=[c for a in actions for c in a.get('causes',[])],
         exporter=any('BuildInfoExporter' in a.get('_class','') for a in actions))
 
@@ -87,12 +94,20 @@ def measure_batch(trigger,children,request_ms,complete):
     status=classify(trigger,children,complete);jobs=[trigger]+children
     cancelled=any(j.get('result') in ['ABORTED','NOT_BUILT'] for j in jobs)
     ends=[j.get('end_ms') for j in jobs]
-    end=max(ends) if ends and all(t is not None for t in ends) and complete else None
-    e2e=end-request_ms if end is not None and request_ms is not None and end>=request_ms else None
+    timing_valid=all(all(valid_milliseconds(j.get(k)) for k in ('start_ms','duration_ms','end_ms'))
+                     and j['end_ms']>=j['start_ms']
+                     and j['end_ms']==j['start_ms']+j['duration_ms'] for j in jobs)
+    end=max(ends) if timing_valid and complete else None
+    e2e=end-request_ms if end is not None and valid_milliseconds(request_ms) and end>=request_ms else None
     scheduled=trigger.get('scheduled_ms')
-    ci=end-scheduled if end is not None and scheduled is not None and end>=scheduled else None
+    ci=end-scheduled if end is not None and valid_milliseconds(scheduled) and end>=scheduled else None
     return dict(status=status,cancelled=cancelled,end_ms=end,e2e_ms=e2e,jenkins_ms=ci,
         eligible=status in ['success','failure'] and e2e is not None)
+
+def source_event_id(value):
+    """Keep real source identifiers; missing IDs must never become 'None'."""
+    return str(value) if type(value) in (str,int) and str(value).strip() else None
+
 
 def extract_events(pr,logs,comments):
     events=[dict(id='create',kind='create',time_ms=ms(pr['created_at']),sha=None,source='PR.created_at')]
@@ -106,11 +121,11 @@ def extract_events(pr,logs,comments):
             if sha:events[0]['sha']=sha[0]
         elif row.get('action')=='commit' and re.search(r'added \d+ commit|推送.*提交',text,re.I):
             shas=re.findall(r'<li>([0-9a-f]{7,40})\s*-',text)
-            events.append(dict(id=str(row['id']),kind='push',time_ms=ms(row['created_at']),sha=shas[0] if len(shas)==1 else None,
+            events.append(dict(id=source_event_id(row.get('id')),kind='push',time_ms=ms(row['created_at']),sha=shas[0] if len(shas)==1 else None,
                 shas=shas,source='operate_logs',discussion_id=row.get('discussion_id')))
     for row in comments:
         if re.match(r'^\s*/(?:retest|check-pr|rebuild)(?:\s|$)',row.get('body',''),re.I):
-            events.append(dict(id=str(row['id']),kind='retest',time_ms=ms(row['created_at']),sha=None,source='comments',discussion_id=row.get('discussion_id')))
+            events.append(dict(id=source_event_id(row.get('id')),kind='retest',time_ms=ms(row['created_at']),sha=None,source='comments',discussion_id=row.get('discussion_id')))
     events.sort(key=lambda e:e['time_ms'])
     last=None
     for e in events:
@@ -119,9 +134,14 @@ def extract_events(pr,logs,comments):
     return events
 
 def match_event(env,events):
+    events=[e for e in events if source_event_id(e.get('id')) is not None]
     typ=env.get('eventType');action=env.get('eventAction');at=ms(env.get('jobTriggerTime'))
     if typ=='note':
-        candidates=[e for e in events if e['kind']=='retest' and str(env.get('commentID')) in [str(e.get('discussion_id')),str(e['id'])]]
+        comment_id=env.get('commentID')
+        if comment_id is None or comment_id=='': return None
+        candidates=[e for e in events if e['kind']=='retest' and any(
+            identity is not None and identity!='' and str(comment_id)==str(identity)
+            for identity in (e.get('discussion_id'),e.get('id')))]
     elif typ=='merge_request' and action=='open':candidates=[e for e in events if e['kind']=='create']
     elif typ=='merge_request' and action=='update' and env.get('eventActionDetail')=='source update' and at is not None:
         # Typed platform push event corroborates the trigger's own webhook timestamp.

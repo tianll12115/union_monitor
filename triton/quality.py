@@ -100,7 +100,9 @@ def validate(runs, payload):
                     warnings.append(prefix+": 源时间戳倒置（完成早于创建），E2E 不纳入完成分位数")
                 elif applicable is not None and updated<applicable:
                     errors.append(prefix+": completed workflow ends before its applicable start")
-                elif as_of is not None and updated>as_of:
+                elif (as_of is not None and updated>as_of
+                      and (own_start := stamp(run.get('run_started_at') if int(run.get('run_attempt') or 1) > 1 else run.get('created_at')))
+                      and (window_start is None or own_start >= window_start) and own_start <= as_of):
                     errors.append(prefix+": completion time beyond the as-of reference")
             except (ValueError,TypeError,AttributeError):
                 errors.append(prefix+": invalid workflow timestamp")
@@ -109,7 +111,8 @@ def validate(runs, payload):
         for job in run.get("jobs", []):
             name=job.get("name", "")
             # Independent of the collector's runner-name matcher.
-            candidate="integration-tests-ascend (" in name or bool(re.search(r"linux-(?:amd64|aarch64)-a[0-9]",name))
+            identity = ' '.join(str(job.get(k) or '') for k in ('name', 'runner_name', 'runner_label')).lower()
+            candidate="integration-tests-ascend (" in name or bool(re.search(r"linux-(?:amd64|aarch64)-a[0-9]",identity)) or 'ascend950' in identity
             if not candidate: continue
             if (run.get("id"), int(run.get("run_attempt") or 1)) in expected and job.get("id") not in represented:
                 errors.append(prefix+": NPU job absent from aggregated data")
@@ -171,7 +174,9 @@ def validate(runs, payload):
         if batch.get("status")=="running" and b_start and as_of is not None:
             observed=(as_of-b_start).total_seconds()
             value=batch.get("duration_seconds")
-            if not valid_seconds(value) or abs(value-observed)>1:
+            quarantined = value is None and any(j.get('timeline_conflict') or j.get('run_inverted')
+                for w in batch.get('workflows', []) for j in w.get('jobs', []))
+            if not quarantined and (not valid_seconds(value) or abs(value-observed)>1):
                 errors.append(f"batch {batch['id']}: running batch must report only the observed span to as_of")
     if payload.get('e2e_metric_version') == 2 and as_of is not None:
         errors.extend(validate_run_metrics(runs, payload))
@@ -182,6 +187,7 @@ def validate(runs, payload):
 
 def validate_run_metrics(runs, payload):
     """Independent source reconciliation, not a call to the builder's measurement."""
+    from .dashboard import valid_seconds
     sources={(r.get('id'), int(r.get('run_attempt') or 1)):r for r in runs}
     errors=[]; seen=set(); as_of=stamp(payload['window_end'])
     for b in payload['batches']:
@@ -203,28 +209,82 @@ def validate_run_metrics(runs, payload):
         # DQ-09: recompute the same quarantine the builder applies, so a batch
         # that publishes a duration from contradictory timestamps still fails
         # while a quarantined batch (end/duration absent) reconciles exactly.
-        from .run_e2e import inverted_job_timestamps
-        inverted=inverted_job_timestamps(jobs)
+        from .run_e2e import inverted_job_timestamps, job_step_conflicts
+        created, updated = read(r.get('created_at')), read(r.get('updated_at'))
+        inverted=(inverted_job_timestamps(jobs) or any(job_step_conflicts(j) for j in jobs)
+                  or bool(created and updated and updated < created))
         end=None if inverted else (max(ends) if (r.get('status')=='completed' and r.get('jobs_complete') and jobs and all(ends)
                           and all(j.get('status')=='completed' for j in jobs)
                           and (start is None or max(ends) >= start)) else None)
         observed=as_of if r.get('status')!='completed' else end
-        valid=bool(start and observed and start<=observed<=as_of)
+        valid=bool(start and observed and start<=observed<=as_of and not inverted)
         if r.get('status')=='completed' and start:
             valid=valid and all(not read(j.get('started_at')) or
                                 (read(j.get('completed_at')) and start<=read(j['started_at'])<=read(j['completed_at'])) for j in jobs)
         seconds=(observed-start).total_seconds() if valid else None
-        eligible=bool(r.get('pr') and r.get('workflow_id')==241783889
-                      and (r.get('path') or '').split('@')[0]=='.github/workflows/ci.yml'
+        # Independent scope assertion: do not call the builder's predicate.
+        target=(r.get('workflow_id'), (r.get('path') or '').split('@')[0]) in {
+            (241783889, '.github/workflows/ci.yml'),
+            (348219361, '.github/workflows/ascend-ci.yml'),
+        }
+        if not target and ((r.get('name') or '').strip().casefold() == 'integration tests'
+                           or r.get('workflow_id') in (241783889, 348219361)
+                           or (r.get('path') or '').split('@')[0] in (
+                               '.github/workflows/ci.yml', '.github/workflows/ascend-ci.yml')):
+            errors.append(f"run {pair[0]}: unclassified Integration Tests workflow; update verified ID/path scope before publishing")
+        eligible=bool(r.get('pr') and target
                       and r.get('status')=='completed' and attempt==1 and seconds is not None
                       and r.get('conclusion') in ('success','failure','timed_out','action_required','startup_failure'))
-        actual=(read(b.get('start_at')),read(b.get('end_at')),b.get('duration_seconds'),b.get('action_url'),b.get('e2e_sample_eligible'))
+        result = r.get('conclusion')
+        status = ('running' if r.get('status') != 'completed' else
+                  'failure' if result in ('failure', 'timed_out', 'action_required', 'startup_failure') else
+                  'cancelled' if result in ('cancelled', 'stale') else
+                  result if result in ('success', 'skipped', 'neutral') else 'unknown')
+        actual=(read(b.get('start_at')),read(b.get('end_at')),b.get('duration_seconds'),b.get('action_url'),b.get('e2e_sample_eligible'),b.get('status'))
         url=r.get('html_url')
         url=url.split('/attempts/')[0]+f'/attempts/{attempt}' if url else None
-        expected=(start,end,seconds,url,eligible)
-        target=r.get('workflow_id')==241783889 and (r.get('path') or '').split('@')[0]=='.github/workflows/ci.yml'
+        expected=(start,end,seconds,url,eligible,status)
         if actual!=expected or b.get('e2e_metric_version')!=2 or ws[0].get('url')!=url or b.get('is_integration_tests') is not target:
             errors.append(f"batch {b['id']}: source run/attempt duration, qualification or provenance mismatch")
+        workflow = ws[0]
+        for key in ('id', 'workflow_id', 'path', 'created_at', 'updated_at', 'status', 'conclusion', 'event', 'head_sha'):
+            if workflow.get(key) != r.get(key):
+                errors.append(f"batch {b['id']}: serialized workflow {key} differs from source")
+        published_jobs = workflow.get('jobs') or []
+        source_jobs = r.get('jobs') or []
+        job_ids = [j.get('id') for j in published_jobs]
+        if job_ids != [j.get('id') for j in source_jobs] or len(set(job_ids)) != len(job_ids):
+            errors.append(f"batch {b['id']}: serialized job membership differs from source")
+            continue
+        for raw, published in zip(source_jobs, published_jobs):
+            for key in ('id', 'created_at', 'started_at', 'completed_at', 'status', 'conclusion', 'runner_name'):
+                if published.get(key) != raw.get(key):
+                    errors.append(f"batch {b['id']}: serialized job {key} differs from source")
+            source_fields = {'name': raw.get('name') or '未命名任务', 'url': raw.get('html_url'),
+                             'runner_label': raw.get('runner_label'),
+                             'failed_steps': [s.get('name') for s in raw.get('steps', []) if s.get('conclusion') in ('failure', 'timed_out', 'action_required')]}
+            if any(published.get(key) != value for key, value in source_fields.items()):
+                errors.append(f"batch {b['id']}: serialized job labels or links differ from source")
+            a, z, c = read(raw.get('started_at')), read(raw.get('completed_at')), read(raw.get('created_at'))
+            wait_bad, run_bad = bool(a and c and a < c), bool(a and z and z < a)
+            conflict = job_step_conflicts(raw)
+            wait = (a-c).total_seconds() if a and c and not wait_bad else None
+            run = (z-a).total_seconds() if a and z else raw.get('duration_seconds')
+            run = None if run_bad or conflict else run
+            expected_timing = (wait, run, wait_bad, run_bad, conflict)
+            actual_timing = tuple(published.get(k) for k in ('wait_seconds', 'run_seconds', 'wait_inverted', 'run_inverted', 'timeline_conflict'))
+            valid_times = all(value is None if expected is None else valid_seconds(value) and value == expected
+                              for expected, value in zip(expected_timing[:2], actual_timing[:2]))
+            if not valid_times or expected_timing != actual_timing or any(type(value) is not bool for value in actual_timing[2:]):
+                errors.append(f"batch {b['id']}: serialized job timing differs from source")
+            messages = (['源时间戳异常：开始时间早于创建时间，排队不适用'] if wait_bad else [])
+            if run_bad: messages.append('源时间戳异常：结束时间早于开始时间，执行不适用')
+            if conflict: messages.append('源 job/step 时间矛盾，执行不适用')
+            if published.get('measurement_error') != ('；'.join(messages) if messages else None):
+                errors.append(f"batch {b['id']}: serialized anomaly differs from source")
+        job_index = {j.get('id'): j for j in published_jobs}
+        if any(job != job_index.get(job.get('id')) for job in b.get('npu_jobs', [])):
+            errors.append(f"batch {b['id']}: NPU detail differs from source workflow jobs")
     return errors
 
 

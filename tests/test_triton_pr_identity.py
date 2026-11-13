@@ -349,7 +349,7 @@ class CollectorAssociationFailureTests(unittest.TestCase):
         run=action_run()
         class API:
             calls=0
-            def get(self,path): return {"total_count":1},{}
+            def get(self,path): return {"total_count":1,"workflow_runs":[run]},{}
             def pages(self,path,field=None):
                 if field=="workflow_runs": return [run]
                 if field=="jobs": return []

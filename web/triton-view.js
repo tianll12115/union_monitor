@@ -13,7 +13,7 @@
   'use strict';
 
   const HOUR = 3600000;
-  const statusLabels = { success: '成功', failure: '失败', running: '执行中', cancelled: '取消', skipped: '已跳过', unknown: '未知' };
+  const statusLabels = { success: '成功', failure: '失败', running: '执行中', cancelled: '取消', skipped: '已跳过', neutral: '中立', unknown: '未知' };
   const statusFill = {
     success: 'var(--ok)', failure: 'var(--danger)', running: 'var(--info)',
     cancelled: 'var(--warn)', skipped: 'var(--neutral)', unknown: 'var(--neutral)',
@@ -267,7 +267,7 @@
   </div>
   <div class="attention" data-role="attention"></div>
 </section>
-<div class="foot"><strong>口径：</strong>Integration Tests E2E = 本次 workflow 创建至最后 job 完成，包含排队，并行不相加。仅证据完整的成功/失败首次运行参与统计；重跑前置排队起点未知时仅展示观测值。跨 workflow 整套门禁时长未确定。<br><strong>数据边界：</strong><span data-role="boundary"></span></div>
+<div class="foot"><strong>样本对账：</strong><span data-role="sampleAccounting"></span><br><strong>口径：</strong>Integration Tests E2E = 本次 workflow 创建至最后 job 完成，包含排队，并行不相加。仅证据完整的成功/失败首次运行参与统计；重跑前置排队起点未知时仅展示观测值。跨 workflow 整套门禁时长未确定。<br><strong>数据边界：</strong><span data-role="boundary"></span></div>
 <div class="tooltip" data-role="tip" tabindex="-1" role="region" aria-label="运行与任务详情" aria-live="polite"></div>`;
   }
 
@@ -390,6 +390,9 @@
         parts.push(`发现截止与采集完成相差 ${gapMin} 分钟`);
       }
       if (disc.boundary_note) parts.push(String(disc.boundary_note));
+      if ([disc.enumerated_runs, disc.candidate_runs, disc.excluded_runs].every(Number.isInteger)) {
+        parts.push(`发现对账：${disc.enumerated_runs} 条源运行 = ${disc.candidate_runs} 条候选 + ${disc.excluded_runs} 条范围外运行`);
+      }
       parts.push(`${s.approximate} 个批次使用近似起点，${s.incomplete} 个批次存在明细或关联缺口`);
       return parts.join('；') + '。';
     };
@@ -638,9 +641,18 @@
       kNpuP50.textContent = 'P50 ' + dur(npu.p50);
       kNpuN.textContent = 'n=' + npu.count + (npu.count > 0 && npu.count < 10 ? ' · 样本不足' : '');
       boundaryEl.textContent = boundaryText();
-      const counts = { success: 0, failure: 0, running: 0, cancelled: 0 };
+      const accounting = core.metricAccounting(pool);
+      const reasonNames = { unresolved_pr_batch_identity: 'PR 未关联', outside_integration_tests: '非 Integration Tests',
+        non_sample_result: '非成功/失败完成结果', invalid_or_missing_duration: '时长无效或缺失',
+        rerun_queue_start_unknown: '重跑前置排队未知', running_observation: '执行中观测',
+        source_timestamp_inversion: '源时间戳倒置', source_timeline_conflict: '源 job/step 时间矛盾',
+        legacy_metric_unverified: '旧快照未验证', explicit_metric_exclusion: '证据资格不足',
+        no_npu_jobs: '无 NPU Job', missing_or_invalid_npu: 'NPU 明细缺失或异常' };
+      const describe = metric => Object.entries(metric.reasons).map(([reason, count]) => `${reasonNames[reason] || reason} ${count}`).join('、') || '无';
+      el('[data-role="sampleAccounting"]').textContent = `${accounting.total} 条运行（每条为 workflow/attempt，并非 PR 提交次数），${accounting.knownPrs} 个已关联 PR，${accounting.unresolved} 条未关联 PR；E2E：纳入 ${accounting.e2e.included}，排除 ${accounting.e2e.excluded}（${describe(accounting.e2e)}）；NPU：纳入 ${accounting.npu.included}，排除 ${accounting.npu.excluded}（${describe(accounting.npu)}）。NPU 跨全部工作流，每次取最长 Job 等待；两项均仅统计成功/失败完成样本，图上另保留非样本观测。`;
+      const counts = { success: 0, failure: 0, running: 0, cancelled: 0, skipped: 0, neutral: 0, unknown: 0 };
       pool.forEach(b => { if (counts[b.status] != null) counts[b.status] += 1; });
-      statusPillsEl.innerHTML = ['success', 'failure', 'running', 'cancelled']
+      statusPillsEl.innerHTML = Object.keys(counts)
         .map(key => `<span class="pill ${key}">${statusLabels[key]} ${counts[key]}</span>`).join('');
       const fm = document.getElementById('footerMeta');
       if (fm) fm.textContent = footerText();

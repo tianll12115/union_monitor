@@ -103,6 +103,28 @@
       "failed_job_lists": 1717,
       "cause": "unbounded creation-history discovery enumerated every historical rerun and exhausted the 5000-requests/hour token quota",
       "fix": "bounded rerun lookback (window_start - 14 days) with a published discovery boundary; candidate set back to the window population"
+    },
+    "live_after_fix": {
+      "run_id": 43426713115,
+      "concluded_at": "2026-11-13T13:14:10Z",
+      "collected_at": "2026-11-13T13:11:07Z",
+      "window_start": "2026-11-10T12:48:20Z",
+      "window_end": "2026-11-13T12:48:20Z",
+      "window_matches_discovery": true,
+      "manifest_fingerprint_matches": true,
+      "api_calls": 3038,
+      "batches": 2241,
+      "prs": 101,
+      "valid_e2e_samples": 166,
+      "unresolved_batches": 33,
+      "npu_points": 289,
+      "user_window": {
+        "start_ms": 1794314900000,
+        "end_ms": 1794503636000,
+        "n": 128,
+        "p50": 1525.5,
+        "p90": 4574.8
+      }
     }
   }
 }

@@ -19,6 +19,22 @@ def run(run_id=1, attempt=1, created="2026-11-10T12:00:00Z", started=None):
 
 
 class DiscoveryIntegrityTests(unittest.TestCase):
+    def test_rest_attempt_start_is_not_labelled_as_first_job_creation(self):
+        from triton.run_e2e import measurement
+        base = run(attempt=3)
+        metadata = {**base, 'run_attempt': 2, 'run_started_at': '2026-11-10T12:00:00Z'}
+        job = dict(id=1, status='completed', conclusion='success',
+                   created_at='2026-11-10T12:00:10Z', started_at='2026-11-10T12:00:20Z',
+                   completed_at='2026-11-10T12:05:00Z')
+        historical = dashboard._historical_attempt_row(base, 2, [job], metadata=metadata)
+        result = measurement(historical, '2026-11-11T00:00:00Z')
+        self.assertEqual(result['start_at'], metadata['run_started_at'])
+        self.assertEqual(result['start_source'], 'attempt_start')
+        self.assertFalse(result['e2e_sample_eligible'])
+        timing = dashboard.workflow_timing(dict(attempt=2, attempt_source=historical['attempt_source'],
+                                               created_at=metadata['created_at'], jobs=[job]), '2026-11-11T00:00:00Z')
+        self.assertIsNone(timing['first_job_wait_seconds'], 'REST attempt start does not prove pre-queue origin')
+
     def test_source_schema_rejects_missing_events_and_noninteger_attempts(self):
         from triton.discovery import full_history_runs
         at = dashboard.dt("2026-11-11T00:00:00Z")

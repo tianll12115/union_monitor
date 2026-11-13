@@ -300,9 +300,10 @@ def _historical_attempt_row(base, attempt, jobs, metadata=None):
                       "status","conclusion","run_started_at","updated_at","html_url")}
     row.update({key: metadata.get(key) if metadata is not None else None for key in fields})
     url = (base.get("html_url") or "").split("/attempts/")[0]
+    attempt_source = "rest_attempt" if metadata is not None else "enumerated"
     row.update(run_attempt=attempt, html_url=url+f"/attempts/{attempt}" if url else None,
                jobs=jobs,jobs_complete=metadata is not None,focus_jobs=focus_from_jobs(jobs),
-               attempt_source="enumerated")
+               attempt_source=attempt_source)
     return row
 
 

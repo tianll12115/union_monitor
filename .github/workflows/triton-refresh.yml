@@ -16,7 +16,11 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    # 90-day rerun discovery plus per-run job/PR evidence takes ~50 minutes on
+    # the 2026-11-13 snapshot (3,242 REST calls). 60 minutes left no margin for
+    # a slower runner or a retried request; 90 keeps the refresh inside its
+    # deadline without shrinking the completeness boundary.
+    timeout-minutes: 90
     steps:
       - name: Check out repository
         uses: actions/checkout@v4

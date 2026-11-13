@@ -24,6 +24,13 @@ class TritonWorkflowTests(unittest.TestCase):
         self.assertNotIn("collect.py", self.workflow)
         self.assertNotIn("push:", self.workflow)
 
+    def test_build_timeout_covers_the_90_day_discovery(self):
+        # The 2026-11-13 snapshot needed ~50 minutes (3,242 REST calls) for
+        # collection plus tests; 60 minutes left no retry margin and would
+        # silently skip scheduled refreshes.
+        build = self.workflow.split("\n  build:", 1)[1].split("\n  deploy:", 1)[0]
+        self.assertRegex(build, r"(?m)^\s{4}timeout-minutes: 90$")
+
     def test_permissions_match_daily_build(self):
         # ADR-005: contents:read is the only top-level default; the collect/build
         # job inherits read-only, and only the deploy job holds Pages/OIDC write.

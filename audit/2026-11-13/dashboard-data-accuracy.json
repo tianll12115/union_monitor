@@ -113,26 +113,29 @@
       "fix": "90-day rerun lookback plus a candidate rule that only fetches runs whose current attempt starts inside the window; historical reruns started before the window cost no job request"
     },
     "live_after_fix": {
-      "run_id": 43426713115,
-      "concluded_at": "2026-11-13T13:14:10Z",
-      "collected_at": "2026-11-13T13:11:07Z",
-      "window_start": "2026-11-10T12:48:20Z",
-      "window_end": "2026-11-13T12:48:20Z",
+      "run_id": 43443272726,
+      "concluded_at": "2026-11-13T15:29:58Z",
+      "collected_at": "2026-11-13T15:27:09Z",
+      "window_start": "2026-11-10T14:39:44Z",
+      "window_end": "2026-11-13T14:39:44Z",
       "window_matches_discovery": true,
       "manifest_fingerprint_matches": true,
-      "api_calls": 3038,
-      "batches": 2241,
-      "prs": 101,
-      "valid_e2e_samples": 166,
-      "unresolved_batches": 33,
+      "api_calls": 3242,
+      "batches": 2250,
+      "prs": 100,
+      "valid_e2e_samples": 162,
+      "ambiguous_with_candidates": 25,
+      "true_unknown": 0,
+      "resolved_via_closed_pr": 6,
       "npu_points": 289,
       "user_window": {
-        "start_ms": 1794314900000,
+        "start_ms": 1794321584000,
         "end_ms": 1794503636000,
-        "n": 128,
-        "p50": 1525.5,
-        "p90": 4574.8
+        "n": 121,
+        "p50": 1466.0,
+        "p90": 4385.0
       }
-    }
+    },
+    "refresh_timeout_minutes": 90
   }
 }

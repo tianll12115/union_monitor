@@ -94,6 +94,15 @@
   "deployment": {
     "published_before_fixes": "2026-11-13T06:09:23Z",
     "cancelled_push_runs": [43381673738, 43384499390],
-    "note": "both merge-triggered Collect and deploy dashboard runs were cancelled during UBS collection, so the merged collector fixes were never published"
+    "note": "both merge-triggered Collect and deploy dashboard runs were cancelled during UBS collection, so the merged collector fixes were never published",
+    "failed_full_history_run": {
+      "run_id": 43399530611,
+      "started_at": "2026-11-13T09:13:35Z",
+      "failed_at": "2026-11-13T11:18:01Z",
+      "candidate_runs": 3745,
+      "failed_job_lists": 1717,
+      "cause": "unbounded creation-history discovery enumerated every historical rerun and exhausted the 5000-requests/hour token quota",
+      "fix": "bounded rerun lookback (window_start - 14 days) with a published discovery boundary; candidate set back to the window population"
+    }
   }
 }

@@ -203,6 +203,27 @@ class DiscoveryIntegrityTests(unittest.TestCase):
         self.assertTrue(all(e["reason"] for e in ledger["entries"]))
         self.assertFalse(any("jobs" in e or "repository" in e for e in ledger["entries"]))
 
+    def test_bounded_rerun_lookback_publishes_its_creation_floor(self):
+        from triton.discovery import full_history_runs
+        rows = [run(5)]
+
+        class API:
+            def get(self, path):
+                self.path = path
+                return {"total_count": len(rows), "workflow_runs": rows}, {}
+
+        api = API()
+        start = dashboard.dt("2026-11-09T00:00:00Z")
+        result = full_history_runs(api, start, dashboard.dt("2026-11-11T00:00:00Z"),
+                                   rerun_lookback=dashboard.timedelta(days=14))
+        # The query starts at the published floor, not 2008: enumerating every
+        # historical attempt produced 3745 candidates and exhausted the quota.
+        self.assertIn("created=2026-10-26", api.path)
+        self.assertEqual([r["id"] for r in result], [5])
+        self.assertEqual(api.discovery_evidence["creation_floor"], "2026-10-26T00:00:00Z")
+        self.assertEqual(api.discovery_evidence["rerun_lookback_days"], 14)
+        self.assertIn("may be missed", api.discovery_evidence["boundary"])
+
     def test_full_history_rejects_missing_creation_evidence(self):
         from triton.discovery import full_history_runs
 

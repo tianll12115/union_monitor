@@ -776,11 +776,13 @@ def collect(hours=72, as_of=None):
     api=GitHub(); end=dt(as_of) if as_of else datetime.now(UTC).replace(microsecond=0); start=end-timedelta(hours=hours)
     fetch_end=end
     EVIDENCE.mkdir(parents=True, exist_ok=True)
-    # Partition the full retained creation history below source query caps.
-    # A rolling lookback cannot find arbitrarily old reruns inside this window.
+    # Partition the retained creation history below source query caps. The
+    # rerun lookback is explicit: enumerating every historical attempt cost
+    # 3745 candidates and exhausted the hourly token quota (2026-11-13), so a
+    # bounded boundary is published instead of an unaffordable completeness.
     from .discovery import full_history_runs
     fetch_start=None
-    runs=full_history_runs(api,start,end)
+    runs=full_history_runs(api,start,end,rerun_lookback=RERUN_LOOKBACK)
     _write_json(EVIDENCE/"discovery-ledger.json",api.discovery_evidence)
     unique={(r["id"], r.get("run_attempt") or 1):r for r in runs}
     runs=list(unique.values())
@@ -862,9 +864,9 @@ def collect(hours=72, as_of=None):
     _write_json(EVIDENCE/"enriched-runs.json", enriched)
     payload = build_payload(enriched, iso(start), iso(end), iso(observed), api.calls,
                             fetch_start=fetch_start, fetch_end=iso(fetch_end))
-    payload["discovery"]={"mode":"all_retained_runs", "discovery_method":"partitioned_created_history", "rerun_lookback_days":None,
-                          "fetch_window_start":None,"fetch_window_end":iso(fetch_end),
-                          "boundary_note":"全创建期分片（2008-01-01 至发现截止），按 PR 事件枚举 GitHub 当前保留的 run，逐个枚举历史 attempt；已删除或超出源保留期的记录不可恢复；创建发现截至 "+iso(fetch_end)+"；统计窗口按 attempt 起点选择、窗末等于该发现截止，采集完成时间另列，采集期间完成的批次可能晚于窗末；状态为逐页观测，非原子时间快照"}
+    payload["discovery"]={"mode":"bounded_rerun_lookback", "discovery_method":"partitioned_created_history", "rerun_lookback_days":RERUN_LOOKBACK.days,
+                          "fetch_window_start":iso(start-RERUN_LOOKBACK),"fetch_window_end":iso(fetch_end),
+                          "boundary_note":"按 PR 事件枚举创建时间在 "+iso(start-RERUN_LOOKBACK)+" 至发现截止之间的 run，并逐个枚举历史 attempt；早于该回溯边界创建、但在窗口内重跑的 run 可能未枚举，本快照不宣称全量；已删除或超出源保留期的记录不可恢复；创建发现截至 "+iso(fetch_end)+"；统计窗口按 attempt 起点选择、窗末等于该发现截止，采集完成时间另列，采集期间完成的批次可能晚于窗末；状态为逐页观测，非原子时间快照"}
     payload["discovery"].update({key:api.discovery_evidence[key]
                                  for key in ("enumerated_runs","candidate_runs","excluded_runs")})
     metadata = json.loads((EVIDENCE/"runs.json").read_text(encoding="utf-8"))

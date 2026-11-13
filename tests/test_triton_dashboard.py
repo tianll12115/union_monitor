@@ -552,9 +552,14 @@ class CollectWindowTests(unittest.TestCase):
         discovery_paths = [p for p in paths if p.startswith("/actions/runs?")]
         self.assertTrue(discovery_paths)
         self.assertTrue(all("created=" in p and "event=" in p for p in discovery_paths))
-        self.assertTrue(any("2008-01-01" in p for p in discovery_paths))
-        self.assertEqual(payload["discovery"]["mode"], "all_retained_runs")
-        self.assertIsNone(payload["discovery"]["rerun_lookback_days"])
+        # Production discovery is bounded by a 14-day rerun lookback (the
+        # unbounded form exceeded the hourly token quota), and the boundary is
+        # published instead of being claimed as complete.
+        self.assertTrue(any("2026-09-11T12" in p for p in discovery_paths), discovery_paths[:2])
+        self.assertEqual(payload["discovery"]["mode"], "bounded_rerun_lookback")
+        self.assertEqual(payload["discovery"]["rerun_lookback_days"], 14)
+        self.assertEqual(payload["discovery"]["fetch_window_start"], "2026-09-11T12:00:00Z")
+        self.assertIn("回溯边界", payload["discovery"]["boundary_note"])
         self.assertEqual([batch["kind"] for batch in payload["batches"]], ["rerun"])
         self.assertEqual(payload["batches"][0]["start_at"], "2026-09-26T10:00:00Z")
 

@@ -135,6 +135,23 @@ class PRIdentityTests(unittest.TestCase):
         result = PRResolver(FakeAPI([pull(42, closed="2026-10-07T09:00:00Z")])).resolve(action_run())
         self.assertEqual(result["pr"], 42)
 
+    def test_only_matching_closed_pr_resolves_and_is_labelled(self):
+        # A late event for a PR closed seconds/hours earlier still has exactly
+        # one PR whose head commit matches; keeping it as unknown lost 8 real
+        # records (e.g. PR 3098 closed 7 s before its run was created).
+        pr = pull(3098, "a" * 40, created="2026-10-01T00:00:00Z",
+                  closed="2026-10-07T07:59:53Z")
+        result = PRResolver(FakeAPI([pr])).resolve(action_run())
+        self.assertEqual(result["pr"], 3098)
+        self.assertIn("+closed_pr", result["pr_evidence"]["method"])
+        self.assertTrue(result["pr_evidence"]["pr_closed_before_run"])
+
+    def test_two_closed_matches_remain_ambiguous(self):
+        with self.assertRaises(AmbiguousPRIdentity) as caught:
+            PRResolver(FakeAPI([pull(41, closed="2026-10-07T07:00:00Z"),
+                                pull(42, closed="2026-10-07T07:30:00Z")])).resolve(action_run())
+        self.assertEqual(caught.exception.candidates, [41, 42])
+
     def test_older_run_matches_pr_commit_history_and_retains_original_sha(self):
         api = FakeAPI([pull(42, "c" * 40)], commits={42: ["a" * 40, "c" * 40]})
         result = PRResolver(api).resolve(action_run())

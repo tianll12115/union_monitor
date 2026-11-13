@@ -57,17 +57,25 @@ def interval_runs(api, start, end, event):
     return interval_runs(api, start, middle, event) + interval_runs(api, middle + timedelta(seconds=1), end, event)
 
 
-def full_history_runs(api, start, end):
-    """Partition the entire retained creation history below GitHub query caps.
+def full_history_runs(api, start, end, rerun_lookback=None):
+    """Enumerate retained PR runs, optionally bounded by a rerun lookback.
 
-    A first-attempt run wholly before the window needs no job requests. Every
-    rerun created by the cutoff remains a candidate: an intermediate attempt
-    may belong to the window even when the latest attempt does not.
+    A run created inside the window is always discovered because the creation
+    query starts at or before the window start. Reruns of much older runs are
+    discovered only when their run was created within ``rerun_lookback`` of the
+    window start. The unbounded form (``rerun_lookback=None``) enumerates the
+    entire retained creation history, but every historical rerun costs a job
+    list and an identity lookup; on 2026-11-13 that produced 3745 candidates
+    and exhausted the 5000-requests/hour token quota, so the production caller
+    passes an explicit lookback and publishes the boundary instead of claiming
+    an unaffordable completeness.
+
     Fixed creation bounds exclude newly born runs during pagination. Approximate
     source counts only guide splitting; actual rows and Link control pagination.
     """
-    from .dashboard import dt, run_in_window
-    origin = datetime(2008, 1, 1, tzinfo=timezone.utc)
+    from .dashboard import dt, iso, run_in_window
+    origin = (datetime(2008, 1, 1, tzinfo=timezone.utc) if rerun_lookback is None
+              else start - rerun_lookback)
     rows = []
     for event in ("pull_request", "pull_request_target"):
         rows.extend(interval_runs(api, origin, end, event))
@@ -102,10 +110,13 @@ def full_history_runs(api, start, end):
         if candidate:
             candidates.append(row)
     api.discovery_evidence = {"schema_version": 1, "method": "partitioned_created_history",
-                              "creation_floor": "2008-01-01T00:00:00Z", "creation_cutoff": end.isoformat(),
+                              "creation_floor": iso(origin), "creation_cutoff": end.isoformat(),
+                              "rerun_lookback_days": rerun_lookback.days if rerun_lookback else None,
                               "enumerated_runs": len(entries), "candidate_runs": len(candidates),
                               "excluded_runs": len(entries) - len(candidates), "entries": entries,
-                              "boundary": "Only source-retained records; paginated observations are not an atomic snapshot."}
+                              "boundary": ("Only source-retained records; paginated observations are not an atomic snapshot."
+                                           + ("" if rerun_lookback is None else
+                                              f" Reruns of runs created earlier than {iso(origin)} may be missed."))}
     return candidates
 
 

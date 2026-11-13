@@ -44,21 +44,32 @@ class PRResolver:
         return False
 
     @staticmethod
+    def created_before(run, pr):
+        """The PR must have existed when the run was created."""
+        if not pr.get("created_at") or not run.get("created_at"): return True
+        parse=lambda x:datetime.fromisoformat(x.replace("Z","+00:00"))
+        return parse(pr["created_at"])<=parse(run["created_at"])
+
+    @staticmethod
+    def open_at_run(run, pr):
+        """Whether the PR was still open when the run was created."""
+        if not run.get("created_at"): return True
+        closed=pr.get("closed_at")
+        if not closed: return True
+        parse=lambda x:datetime.fromisoformat(x.replace("Z","+00:00"))
+        return parse(closed)>=parse(run["created_at"])
+
+    @staticmethod
     def existed(run, pr):
         """The PR must have existed *and still been open* when the run started.
 
-        A run cannot gate a PR that was already closed when it was created.
-        Ignoring ``closed_at`` made every reused branch whose previous PR was
-        closed ambiguous (2026-11-13: a 42-second PR still matched runs created
-        two minutes after it closed, so 13 runs -- including one Integration
-        Tests sample -- were published as "未关联 PR").
+        A closed PR cannot win over an open successor, but it is not discarded
+        outright: when it is the only PR whose commit matches, the late event
+        still belongs to it (see ``resolve``). Ignoring ``closed_at`` entirely
+        made every reused branch ambiguous (2026-11-13: a 42-second PR still
+        matched runs created two minutes after it closed).
         """
-        if not pr.get("created_at") or not run.get("created_at"): return True
-        parse=lambda x:datetime.fromisoformat(x.replace("Z","+00:00"))
-        created=parse(run["created_at"])
-        if parse(pr["created_at"])>created: return False
-        closed=pr.get("closed_at")
-        return not closed or parse(closed)>=created
+        return PRResolver.created_before(run, pr) and PRResolver.open_at_run(run, pr)
 
     def compare(self, sha, anchor):
         result=self.read(f"/compare/{sha}...{anchor}?per_page=1")
@@ -123,38 +134,54 @@ class PRResolver:
         matches=[]
         for pr in candidates:
             number=pr.get("number")
-            if not number or not self.existed(run,pr): continue
+            if not number or not self.created_before(run,pr): continue
             is_linked=number in explicit
             if not is_linked and not self.same_source(run,pr): continue
+            is_open=is_linked or self.open_at_run(run,pr)
             sha=run.get("head_sha")
             snapshot=((explicit.get(number) or {}).get("head") or {}).get("sha")
             if is_linked and snapshot:
-                matches.append((pr,snapshot,"run.pull_requests.head.sha",None));continue
+                matches.append((pr,snapshot,"run.pull_requests.head.sha",None,is_open));continue
             if sha and sha==(pr.get("head") or {}).get("sha"):
-                matches.append((pr,sha,"source_repository+branch+head_sha",None));continue
+                matches.append((pr,sha,"source_repository+branch+head_sha",None,is_open));continue
             if sha and any(c.get("sha")==sha for c in self.read(f"/pulls/{number}/commits",many=True)):
-                matches.append((pr,sha,"source_repository+branch+pr_commit_history",None));continue
+                matches.append((pr,sha,"source_repository+branch+pr_commit_history",None,is_open));continue
             history=self.historical_head(run,number,(pr.get("base") or {}).get("sha")) if sha else None
             if history:
                 method="source_repository+branch+force_push_history"
                 if history["matched_field"]=="beforeCommit.ancestor": method+="+ancestry"
-                matches.append((pr,sha,method,history))
-        # Never guess from title, nearest creation time, or the first branch match.
-        matches={p[0]["number"]:p for p in matches}
-        if len(matches)!=1:
-            diagnostic={"run_id":run.get("id"),"head_sha":run.get("head_sha"),"head_branch":run.get("head_branch"),"candidates":[p.get("number") for p in candidates],"matches":sorted(matches)}
+                matches.append((pr,sha,method,history,is_open))
+        # Never guess from title, nearest creation time, or the first branch
+        # match. An open PR always wins over a closed one; a closed PR is only
+        # accepted when it is the *only* matching PR (a late event for its
+        # commit), and the result is labelled as closed-before-run.
+        open_matches={p[0]["number"]:p for p in matches if p[4]}
+        closed_matches={p[0]["number"]:p for p in matches if not p[4]}
+        if len(open_matches)==1:
+            chosen=next(iter(open_matches.values())); closed_before=False
+        elif not open_matches and len(closed_matches)==1:
+            chosen=next(iter(closed_matches.values())); closed_before=True
+        else:
+            diagnostic={"run_id":run.get("id"),"head_sha":run.get("head_sha"),"head_branch":run.get("head_branch"),
+                        "candidates":[p.get("number") for p in candidates],
+                        "matches":sorted(list(open_matches)+list(closed_matches))}
             self.save(run,diagnostic)
             if matches:
                 # The run demonstrably gates more than one PR (for example two
-                # open PRs sharing one head commit). Keep every candidate; the
-                # caller publishes them instead of inventing a single owner.
+                # open PRs sharing one head commit, or several closed ones).
+                # Keep every candidate; the caller publishes them instead of
+                # inventing a single owner.
                 raise AmbiguousPRIdentity(diagnostic)
             raise ValueError(f"PR identity unresolved/ambiguous: {diagnostic}")
-        pr,sha,method,history=next(iter(matches.values()))
+        pr,sha,method,history,_=chosen
+        if closed_before: method+="+closed_pr"
         result={"pr":pr["number"],"pr_url":pr.get("html_url") or f"https://github.com/triton-lang/triton-ascend/pull/{pr['number']}",
                 "pr_title":pr.get("title"),"base_branch":(pr.get("base") or {}).get("ref"),"head_sha":sha,
                 "pr_evidence":{"method":method,"run_id":run.get("id"),"pr":pr["number"],"raw_run_sha":run.get("head_sha"),"resolved_head_sha":sha,
                                "source_repository":(pr.get("head",{}).get("repo") or {}).get("full_name"),"head_ref":(pr.get("head") or {}).get("ref")}}
+        if closed_before:
+            result["pr_evidence"]["pr_closed_before_run"]=True
+            result["pr_evidence"]["closed_at"]=pr.get("closed_at")
         if history: result["pr_evidence"]["force_push_event"]=history
         if not result["pr_title"] or not result["base_branch"]:
             raise ValueError(f"PR {pr['number']} metadata incomplete")

@@ -102,7 +102,8 @@ class FrozenTritonSnapshotTests(unittest.TestCase):
 
     def test_d09_e2e_recomputes_from_retained_workflows(self):
         # REQ-046 AC01: approximate E2E = wall-clock span from the earliest
-        # workflow creation to the last completion (window_end while running).
+        # workflow creation to the last completion (observation time while
+        # running, which is later than the selection cutoff by design).
         mismatches = checked = 0
         for batch in self.batches:
             if not batch.get('approximate'):
@@ -111,7 +112,7 @@ class FrozenTritonSnapshotTests(unittest.TestCase):
             workflows = batch['workflows']
             beg = min(stamp(w['created_at']) for w in workflows)
             fin = max(stamp(w['updated_at']) for w in workflows) if batch['status'] != 'running' \
-                else stamp(self.payload['window_end'])
+                else stamp(self.payload.get('collected_at') or self.payload['window_end'])
             if not same(batch['duration_seconds'], max(0, fin - beg)):
                 mismatches += 1
         self.assertEqual(mismatches, 0)
@@ -248,7 +249,9 @@ class ContractShapeTests(unittest.TestCase):
             elif end is None:
                 self.assertTrue(batch['status'] in ('running', 'cancelled') or
                                 (batch.get('e2e_sample_eligible') is False and batch.get('e2e_exclusion_reason')), batch['id'])
-                end = stamp(payload.get('window_end'))
+                # In-flight spans are observed until collection, which is later
+                # than the selection cutoff (window_end) by design.
+                end = stamp(payload.get('collected_at') or payload.get('window_end'))
                 self.assertIsNotNone(end, batch['id'])
             self.assertFalse(isinstance(batch['duration_seconds'], bool), batch['id'])
             self.assertTrue(math.isfinite(batch['duration_seconds']) and batch['duration_seconds'] >= 0, batch['id'])

@@ -14,7 +14,15 @@ def validate(runs, payload):
     errors=[]; warnings=[]
     from .dashboard import summary_of, valid_seconds
     try:
-        as_of=stamp(payload.get("window_end"))
+        # The selection window ends at the creation-discovery cutoff; the
+        # observation time is later and is the only reference that can prove a
+        # completion timestamp. Conflating the two either hides runs created
+        # during collection or rejects completions observed after the cutoff.
+        cutoff=stamp(payload.get("window_end"))
+    except (ValueError,TypeError,AttributeError):
+        cutoff=None
+    try:
+        as_of=stamp(payload.get("collected_at") or payload.get("window_end"))
     except (ValueError,TypeError,AttributeError):
         as_of=None
     # REQ-019 (A09): a payload that carries data must name a parseable as-of
@@ -23,8 +31,8 @@ def validate(runs, payload):
     # trusting the stored copy (api_calls is collector telemetry, not
     # batch-derived, so it is exempt from the comparison).
     if runs or payload.get("batches"):
-        if as_of is None:
-            errors.append("payload window_end (as-of reference) missing or unparseable")
+        if as_of is None or cutoff is None:
+            errors.append("payload window_end (selection cutoff) or collected_at (observation reference) missing or unparseable")
         recomputed=summary_of(payload.get("batches") or [])
         stored=payload.get("summary") or {}
         mismatches=[f"{k}: stored {stored.get(k)!r} != recomputed {recomputed.get(k)!r}"
@@ -62,7 +70,7 @@ def validate(runs, payload):
         starts=group["exact"] or group["derived"]
         start=min(starts) if starts else None
         # Unknown start evidence cannot justify silently dropping a record.
-        if start is None or ((window_start is None or start>=window_start) and (as_of is None or start<=as_of)):
+        if start is None or ((window_start is None or start>=window_start) and (cutoff is None or start<=cutoff)):
             expected.add(pair)
     for pair in expected-batched:
         errors.append(f"run {pair[0]} attempt {pair[1]}: in-window workflow absent from aggregated data")
@@ -189,7 +197,7 @@ def validate_run_metrics(runs, payload):
     """Independent source reconciliation, not a call to the builder's measurement."""
     from .dashboard import valid_seconds
     sources={(r.get('id'), int(r.get('run_attempt') or 1)):r for r in runs}
-    errors=[]; seen=set(); as_of=stamp(payload['window_end'])
+    errors=[]; seen=set(); as_of=stamp(payload.get('collected_at') or payload.get('window_end'))
     for b in payload['batches']:
         ws=b.get('workflows') or []
         pair=(ws[0].get('id'), int(ws[0].get('attempt') or 1)) if len(ws)==1 else None
@@ -223,15 +231,18 @@ def validate_run_metrics(runs, payload):
                                 (read(j.get('completed_at')) and start<=read(j['started_at'])<=read(j['completed_at'])) for j in jobs)
         seconds=(observed-start).total_seconds() if valid else None
         # Independent scope assertion: do not call the builder's predicate.
-        target=(r.get('workflow_id'), (r.get('path') or '').split('@')[0]) in {
-            (241783889, '.github/workflows/ci.yml'),
-            (348219361, '.github/workflows/ascend-ci.yml'),
-        }
+        # Scope is the workflow path; a run whose name says Integration Tests
+        # but whose path is not verified must block publication instead of
+        # silently leaving the E2E gate out of the dashboard.
+        verified_paths={'.github/workflows/ci.yml', '.github/workflows/ascend-ci.yml'}
+        verified_ids={241783889: '.github/workflows/ci.yml', 348219361: '.github/workflows/ascend-ci.yml'}
+        run_path=(r.get('path') or '').split('@')[0]
+        target=run_path in verified_paths
+        if r.get('workflow_id') in verified_ids and run_path != verified_ids[r['workflow_id']]:
+            errors.append(f"run {pair[0]}: workflow {r.get('workflow_id')} reports path {run_path!r} but its verified path is {verified_ids[r['workflow_id']]!r}")
         if not target and ((r.get('name') or '').strip().casefold() == 'integration tests'
-                           or r.get('workflow_id') in (241783889, 348219361)
-                           or (r.get('path') or '').split('@')[0] in (
-                               '.github/workflows/ci.yml', '.github/workflows/ascend-ci.yml')):
-            errors.append(f"run {pair[0]}: unclassified Integration Tests workflow; update verified ID/path scope before publishing")
+                           or r.get('workflow_id') in (241783889, 348219361)):
+            errors.append(f"run {pair[0]}: unclassified Integration Tests workflow; update verified workflow path scope before publishing")
         eligible=bool(r.get('pr') and target
                       and r.get('status')=='completed' and attempt==1 and seconds is not None
                       and r.get('conclusion') in ('success','failure','timed_out','action_required','startup_failure'))

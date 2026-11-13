@@ -27,6 +27,7 @@ from triton.dashboard import (
     parse_pr_base_html,
     parse_run_html,
     percentile,
+    refresh_inflight,
     run_in_window,
     summary_of,
 )
@@ -400,7 +401,7 @@ class RunWindowTests(unittest.TestCase):
 
 
 class CollectWindowTests(unittest.TestCase):
-    def test_live_collection_uses_finished_observation_and_declares_discovery_cutoff(self):
+    def test_collect_window_ends_at_discovery_cutoff_and_discloses_observation(self):
         from triton.quality import validate
         clock = [dt("2026-09-28T12:00:00Z")]
 
@@ -409,17 +410,22 @@ class CollectWindowTests(unittest.TestCase):
             def now(cls, tz=None):
                 return clock[0]
 
+        job = {"id": 11, "name": "integration-tests-ascend (linux-aarch64-a3-800i-4, py3.10)",
+               "status": "completed", "conclusion": "success",
+               "created_at": "2026-09-28T11:00:30Z", "started_at": "2026-09-28T11:01:00Z",
+               "completed_at": "2026-09-28T11:50:00Z"}
         row = {"id": 1, "name": "Integration Tests", "workflow_id": 241783889, "path": ".github/workflows/ci.yml", "head_sha": "abc", "event": "pull_request",
-               "created_at": "2026-09-28T11:00:00Z", "updated_at": "2026-09-28T12:01:00Z",
+               "created_at": "2026-09-28T11:00:00Z", "run_started_at": "2026-09-28T11:00:00Z",
+               "updated_at": "2026-09-28T11:51:00Z",
                "status": "completed", "conclusion": "success", "run_attempt": 1,
                "html_url": "https://github.com/example/actions/runs/1"}
 
         def fake_get(api, url):
             clock[0] = dt("2026-09-28T12:08:00Z")
             if re.search(r"/attempts/\d+$", url):
-                return {**row, "run_attempt": 1, "run_started_at": row["created_at"], "updated_at": row["created_at"]}, {}
+                return {**row, "run_attempt": 1}, {}
             if "/jobs" in url:
-                return {"total_count": 0, "jobs": []}, {}
+                return {"total_count": 1, "jobs": [job]}, {}
             return {"total_count": 1, "workflow_runs": [row]}, {}
 
         fields = {"pr": 42, "pr_url": "https://github.com/example/pull/42", "pr_title": "Race",
@@ -430,33 +436,87 @@ class CollectWindowTests(unittest.TestCase):
                 patch("triton.pr_identity.PRResolver.resolve", return_value=fields), \
                 patch("triton.dashboard.EVIDENCE", Path(temp)):
             payload = collect(hours=72)
-            raw = json.loads((Path(temp) / "enriched-runs.json").read_text())
-            meta = json.loads((Path(temp) / "runs.json").read_text())
+            raw = json.loads((Path(temp) / "enriched-runs.json").read_text(encoding="utf-8"))
+            meta = json.loads((Path(temp) / "runs.json").read_text(encoding="utf-8"))
             self.assertTrue(validate(raw, payload)["passed"])
-            self.assertEqual(payload["window_end"], "2026-09-28T12:08:00Z")
-            self.assertEqual(payload["window_start"], "2026-09-25T12:08:00Z")
+            # The window ends at the creation-discovery cutoff; observation
+            # continued to 12:08 and is disclosed without claiming that time.
+            self.assertEqual(payload["window_end"], "2026-09-28T12:00:00Z")
+            self.assertEqual(payload["window_start"], "2026-09-25T12:00:00Z")
+            self.assertEqual(payload["collected_at"], "2026-09-28T12:08:00Z")
             self.assertEqual(payload["discovery"]["fetch_window_end"], "2026-09-28T12:00:00Z")
             self.assertIn("创建", payload["discovery"]["boundary_note"])
             self.assertEqual(meta["window_end"], payload["window_end"])
             self.assertEqual(meta["fetch_window_end"], payload["discovery"]["fetch_window_end"])
+            self.assertEqual(payload["batches"][0]["duration_seconds"], 3000)
             replay = build_payload(raw, meta["window_start"], meta["window_end"], meta["collected_at"],
                                    fetch_start=meta["fetch_window_start"], fetch_end=meta["fetch_window_end"])
             self.assertEqual(replay["batches"], payload["batches"])
-            fixed = collect(hours=72, as_of="2026-09-28T12:00:00Z")
-            self.assertEqual(fixed["window_end"], "2026-09-28T12:00:00Z")
-            self.assertIn("completion time beyond the as-of reference", ";".join(validate(raw, fixed)["errors"]))
+            # A completion timestamp later than the last observation is not
+            # observable and must fail rather than be published as measured.
             raw[0]["updated_at"] = "2026-09-28T12:09:00Z"
             self.assertIn("completion time beyond the as-of reference", ";".join(validate(raw, payload)["errors"]))
-            # The creation query can discover an older run whose new attempt
-            # starts during pagination; it belongs to the live observed window.
+            # A rerun that starts after the cutoff belongs to a later window,
+            # even when the creation query happens to return it during paging.
             row.update(created_at="2026-09-21T00:00:00Z", run_attempt=2,
                        run_started_at="2026-09-28T12:01:00Z", updated_at="2026-09-28T12:02:00Z")
             clock[0] = dt("2026-09-28T12:00:00Z")
-            rerun = collect(hours=72)
-            self.assertEqual([b["kind"] for b in rerun["batches"]], ["rerun"])
-            self.assertEqual(rerun["batches"][0]["start_at"], "2026-09-28T12:01:00Z")
-            excluded = collect(hours=72, as_of="2026-09-28T12:00:00Z")
-            self.assertEqual(excluded["batches"], [])
+            after = collect(hours=72)
+            self.assertEqual(after["batches"], [])
+
+    def test_collect_refreshes_runs_still_in_flight_after_discovery(self):
+        from triton.quality import validate
+        clock = [dt("2026-09-28T12:00:00Z")]
+
+        class Clock(datetime):
+            @classmethod
+            def now(cls, tz=None):
+                return clock[0]
+
+        job = {"id": 11, "name": "integration-tests-ascend (linux-aarch64-a3-800i-4, py3.10)",
+               "status": "in_progress", "conclusion": None,
+               "created_at": "2026-09-28T11:00:30Z", "started_at": "2026-09-28T11:01:00Z",
+               "completed_at": None}
+        row = {"id": 1, "name": "Integration Tests", "workflow_id": 241783889, "path": ".github/workflows/ci.yml", "head_sha": "abc", "event": "pull_request",
+               "created_at": "2026-09-28T11:00:00Z", "run_started_at": "2026-09-28T11:00:00Z",
+               "updated_at": "2026-09-28T11:59:00Z",
+               "status": "in_progress", "conclusion": None, "run_attempt": 1,
+               "html_url": "https://github.com/example/actions/runs/1"}
+
+        def fake_get(api, url):
+            if re.search(r"/attempts/\d+$", url):
+                clock[0] = dt("2026-09-28T12:05:00Z")
+                return {**row, "run_attempt": 1}, {}
+            if url.endswith("/actions/runs/1"):
+                clock[0] = dt("2026-09-28T12:06:00Z")
+                row.update(status="completed", conclusion="success", updated_at="2026-09-28T12:05:00Z")
+                job.update(status="completed", conclusion="success", completed_at="2026-09-28T12:02:00Z")
+                return dict(row), {}
+            if "/jobs" in url:
+                return {"total_count": 1, "jobs": [dict(job)]}, {}
+            clock[0] = dt("2026-09-28T12:04:00Z")
+            return {"total_count": 1, "workflow_runs": [dict(row)]}, {}
+
+        fields = {"pr": 42, "pr_url": "https://github.com/example/pull/42", "pr_title": "Race",
+                  "base_branch": "main", "head_sha": "abc",
+                  "pr_evidence": {"method": "synthetic", "run_id": 1, "pr": 42, "resolved_head_sha": "abc"}}
+        with tempfile.TemporaryDirectory() as temp, patch("triton.dashboard.datetime", Clock), \
+                patch.object(GitHub, "get", fake_get), \
+                patch("triton.pr_identity.PRResolver.resolve", return_value=fields), \
+                patch("triton.dashboard.EVIDENCE", Path(temp)):
+            payload = collect(hours=72)
+            raw = json.loads((Path(temp) / "enriched-runs.json").read_text(encoding="utf-8"))
+            self.assertTrue(validate(raw, payload)["passed"])
+            batch = payload["batches"][0]
+            # The run was in flight at discovery but finished during collection:
+            # its real completion is published instead of a duration stretched
+            # to the end of collection.
+            self.assertEqual(batch["status"], "success")
+            self.assertEqual(batch["end_at"], "2026-09-28T12:02:00Z")
+            self.assertEqual(batch["duration_seconds"], 3720)
+            self.assertTrue(batch["e2e_sample_eligible"])
+            self.assertEqual(payload["window_end"], "2026-09-28T12:00:00Z")
+            self.assertEqual(payload["collected_at"], "2026-09-28T12:06:00Z")
 
     def test_collect_discovers_rerun_created_before_window(self):
         inside = {"id": 1, "name": "Integration Tests", "workflow_id": 241783889, "path": ".github/workflows/ci.yml", "head_sha": "abc", "event": "pull_request",
@@ -497,6 +557,33 @@ class CollectWindowTests(unittest.TestCase):
         self.assertIsNone(payload["discovery"]["rerun_lookback_days"])
         self.assertEqual([batch["kind"] for batch in payload["batches"]], ["rerun"])
         self.assertEqual(payload["batches"][0]["start_at"], "2026-09-26T10:00:00Z")
+
+
+class RefreshInflightTests(unittest.TestCase):
+    def test_only_in_window_runs_with_an_unchanged_attempt_are_refreshed(self):
+        base = {"status": "in_progress", "conclusion": None, "run_attempt": 1,
+                "created_at": "2026-09-28T11:00:00Z", "run_started_at": "2026-09-28T11:00:00Z",
+                "updated_at": "2026-09-28T11:59:00Z", "jobs": [], "jobs_complete": True}
+        outside = dict(base, id=1, created_at="2026-09-20T00:00:00Z",
+                       run_started_at="2026-09-20T00:00:00Z")
+        rerun = dict(base, id=2)
+        calls = []
+
+        class Api:
+            def get(self, url):
+                calls.append(url)
+                return {"run_attempt": 2, "status": "completed", "conclusion": "success"}, {}
+
+            def pages(self, path, field=None):
+                raise AssertionError("a rerun started after the cutoff must not refetch jobs")
+
+        refresh_inflight(Api(), [outside, rerun], "2026-09-25T12:00:00Z", "2026-09-28T12:00:00Z")
+        # The out-of-window row is never requested; the in-window row got a new
+        # attempt after the cutoff, so the retained attempt must stay untouched.
+        self.assertEqual(calls, ["/actions/runs/2"])
+        self.assertEqual(outside["status"], "in_progress")
+        self.assertEqual(rerun["status"], "in_progress")
+        self.assertEqual(rerun["jobs_complete"], True)
 
 
 class AttemptEnumerationTests(unittest.TestCase):

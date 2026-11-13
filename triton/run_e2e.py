@@ -1,12 +1,39 @@
 """Version 2: attributable workflow E2E, never a PR+SHA observation span."""
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
+
+# GitHub records a job's ``completed_at`` before its post-job steps ("Post
+# Checkout", "Stop containers", "Complete job") finish, and "Set up job" can
+# start before ``started_at``. Across the 2026-11-10..13 window the observed
+# skew was at most 169 s after completion and 35 s before start, so a step
+# inside this allowance is normal runner teardown, not contradictory evidence.
+# Without the allowance, 151 of 228 Integration Tests runs were quarantined as
+# "source_timeline_conflict" and silently dropped from the E2E samples.
+STEP_TIMING_ALLOWANCE_SECONDS = 300
 
 # IDs alone or names alone cannot prove scope. Keep legacy and replacement
 # workflows explicit; an unknown replacement is rejected by the quality gate.
+# Scope is decided by workflow *path*: GitHub assigns a new numeric workflow id
+# when a file is deleted and re-added, so an id-only allowlist silently drops
+# every later run of the same logical gate (2026-11-13: the repo replaced
+# ci.yml with ascend-ci.yml; 191 in-window first attempts were published as
+# auxiliary checks and 147 measurable E2E samples disappeared while the page
+# still claimed "Integration Tests E2E").
+# The ids below stay as documentation and as an identity-consistency check.
 INTEGRATION_WORKFLOWS = {
     241783889: '.github/workflows/ci.yml',
     348219361: '.github/workflows/ascend-ci.yml',
 }
+INTEGRATION_PATHS = frozenset(INTEGRATION_WORKFLOWS.values())
+
+
+def workflow_path(row):
+    """Normalized workflow path of a run, without a reusable-workflow ref."""
+    return (row.get('path') or '').split('@')[0]
+
+
+def is_integration_workflow(row):
+    """True when this run is one of the verified Integration Tests workflows."""
+    return workflow_path(row) in INTEGRATION_PATHS
 
 
 def stamp(value):
@@ -32,12 +59,26 @@ def inverted_job_timestamps(jobs):
 
 
 def job_step_conflicts(job):
-    """Steps outside their job clock are contradictory source evidence."""
+    """Steps contradicting the job clock by more than runner teardown skew.
+
+    An inverted pair is always contradictory. A step outside the job window is
+    only contradictory when it exceeds the documented allowance; post-job
+    teardown routinely lands a couple of minutes after ``completed_at`` and is
+    not evidence against the measured job span.
+    """
     start, end = stamp(job.get('started_at')), stamp(job.get('completed_at'))
+    slack = timedelta(seconds=STEP_TIMING_ALLOWANCE_SECONDS)
     for step in job.get('steps') or []:
         a, b = stamp(step.get('started_at')), stamp(step.get('completed_at'))
-        if ((a and b and b < a)
-                or any(value and ((start and value < start) or (end and value > end)) for value in (a, b))):
+        if a and b and b < a:
+            return True
+        if a and start and a < start - slack:
+            return True
+        if b and start and b < start - slack:
+            return True
+        if a and end and a > end + slack:
+            return True
+        if b and end and b > end + slack:
             return True
     return False
 
@@ -69,7 +110,7 @@ def measurement(row, as_of):
                           (stamp(j.get('completed_at')) and stamp(j['completed_at']) >= stamp(j['started_at']) >= start)
                           for j in active) if start and not running else True
     duration = (observed_end - start).total_seconds() if valid and job_times_valid and not inverted and not conflict else None
-    target = (row.get('workflow_id'), (row.get('path') or '').split('@')[0]) in INTEGRATION_WORKFLOWS.items()
+    target = is_integration_workflow(row)
     reason = ('unresolved_pr_batch_identity' if not row.get('pr') else
               'outside_integration_tests' if not target else
               'running_observation' if running else
@@ -85,16 +126,24 @@ def measurement(row, as_of):
                 e2e_metric_version=2, is_integration_tests=target, end_source='last_job_completed' if end else None)
 
 
-def build_run_batches(runs, as_of, window_start=None):
+def build_run_batches(runs, as_of, window_start=None, window_end=None):
+    """One batch per run/attempt, selected by attempt start against the window.
+
+    ``as_of`` is the observation time used for in-flight durations; ``window_end``
+    is the independent selection cutoff. A run created during collection (after
+    the cutoff) is therefore never counted into the declared window, while a run
+    that finished during collection still keeps its real completion time.
+    """
     # Reuse only single-row metadata/NPU serialization, never the legacy grouping.
     from .dashboard import build_batches
     result = []
     unique = {(r.get('id'), int(r.get('run_attempt') or 1)): r for r in runs}
+    cutoff = stamp(window_end) or stamp(as_of)
     for (run_id, attempt), row in unique.items():
         evidence = measurement(row, as_of)
         if evidence['start_at'] and window_start and stamp(evidence['start_at']) < stamp(window_start):
             continue
-        if evidence['start_at'] and stamp(evidence['start_at']) > stamp(as_of):
+        if evidence['start_at'] and cutoff and stamp(evidence['start_at']) > cutoff:
             continue
         b = build_batches([row], as_of)[0]
         b.update(evidence)

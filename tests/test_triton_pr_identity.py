@@ -112,6 +112,23 @@ class PRIdentityTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             PRResolver(FakeAPI([pull(41), pull(42)])).resolve(action_run())
 
+    def test_pr_closed_before_the_run_does_not_block_the_open_successor(self):
+        # 2026-11-13 production case: PR 3084 was closed 42 seconds after it was
+        # opened, then 3085 reused the branch. Ignoring closed_at matched both
+        # and published 13 runs (1 E2E sample) as "未关联 PR".
+        candidates = [pull(3084, "a" * 40, created="2026-10-07T07:50:00Z",
+                           closed="2026-10-07T07:55:00Z"),
+                      pull(3085, "c" * 40, created="2026-10-07T07:59:00Z")]
+        api = FakeAPI(candidates, commits={3085: ["a" * 40, "c" * 40]})
+        result = PRResolver(api).resolve(action_run())
+        self.assertEqual(result["pr"], 3085)
+        self.assertEqual(result["head_sha"], "a" * 40)
+        self.assertIn("pr_commit_history", result["pr_evidence"]["method"])
+
+    def test_pr_still_open_at_run_creation_matches_its_own_commit(self):
+        result = PRResolver(FakeAPI([pull(42, closed="2026-10-07T09:00:00Z")])).resolve(action_run())
+        self.assertEqual(result["pr"], 42)
+
     def test_older_run_matches_pr_commit_history_and_retains_original_sha(self):
         api = FakeAPI([pull(42, "c" * 40)], commits={42: ["a" * 40, "c" * 40]})
         result = PRResolver(api).resolve(action_run())

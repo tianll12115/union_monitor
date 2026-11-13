@@ -27,17 +27,20 @@ def payload(rows):
 
 
 class RunE2ETests(unittest.TestCase):
-    def test_real_pr3097_source_preserves_queue_but_quarantines_clock_conflict(self):
+    def test_real_pr3097_source_preserves_queue_and_full_execution(self):
         row = json.loads((Path(__file__).parent/'fixtures/pr3097-source.json').read_text(encoding='utf-8'))
         data = build_payload([row], '2026-11-09T00:00:00Z', '2026-11-12T06:49:49Z', '2026-11-12T06:49:49Z')
         batch = data['batches'][0]
         self.assertTrue(batch['is_integration_tests'])
         self.assertEqual(batch['npu_queue_seconds'], 4208)
-        self.assertIsNone(batch['duration_seconds'])
-        self.assertEqual(batch['e2e_exclusion_reason'], 'source_timeline_conflict')
-        self.assertEqual(data['summary']['valid'], 0)
+        # The 2.5-minute step skew is normal post-job teardown, so the measured
+        # 89-minute E2E (queue + execution) is retained instead of discarded.
+        self.assertEqual(batch['duration_seconds'], 5350)
+        self.assertEqual(batch['end_at'], '2026-11-10T15:17:01Z')
+        self.assertTrue(batch['e2e_sample_eligible'])
+        self.assertEqual(data['summary']['valid'], 1)
         self.assertTrue(validate([row], data)['passed'])
-        self.assertTrue(next(j for j in batch['npu_jobs'] if j['id']==129869678562)['timeline_conflict'])
+        self.assertTrue(all(not j['timeline_conflict'] for j in batch['npu_jobs']))
 
     def test_run_completion_before_creation_is_quarantined_even_when_jobs_look_valid(self):
         row = source(updated_at='2026-10-25T00:00:00Z')
@@ -96,11 +99,11 @@ class RunE2ETests(unittest.TestCase):
                 self.assertFalse(validate([row], forged)['passed'])
 
     def test_steps_outside_job_timeline_quarantine_execution_and_e2e(self):
-        for step in [dict(started_at='2026-10-26T04:29:00Z', completed_at='2026-10-26T04:55:29Z'),
-                     dict(started_at='2026-10-26T04:27:00Z', completed_at='2026-10-26T04:30:00Z'),
+        for step in [dict(started_at='2026-10-26T04:29:00Z', completed_at='2026-10-26T04:58:30Z'),
+                     dict(started_at='2026-10-26T04:22:00Z', completed_at='2026-10-26T04:30:00Z'),
                      dict(started_at='2026-10-26T04:30:00Z', completed_at='2026-10-26T04:29:00Z'),
-                     dict(started_at='2026-10-26T04:55:00Z'),
-                     dict(completed_at='2026-10-26T04:27:00Z')]:
+                     dict(started_at='2026-10-26T04:58:30Z'),
+                     dict(completed_at='2026-10-26T04:20:00Z')]:
             with self.subTest(step=step):
                 row = source()
                 row['jobs'][0]['steps'] = [step]
@@ -114,9 +117,24 @@ class RunE2ETests(unittest.TestCase):
                 self.assertIsNone(data['batches'][0]['workflows'][0]['execution_span_seconds'])
                 self.assertTrue(validate([row], data)['passed'])
 
+    def test_post_job_teardown_skew_within_allowance_keeps_the_measurement(self):
+        # Observed on real runs: "Set up job" up to 35 s before started_at and
+        # post-job steps up to 169 s after completed_at.
+        row = source()
+        row['jobs'][0]['steps'] = [dict(name='Set up job', started_at='2026-10-26T04:27:40Z',
+                                       completed_at='2026-10-26T04:28:10Z'),
+                                   dict(name='Complete job', started_at='2026-10-26T04:53:00Z',
+                                        completed_at='2026-10-26T04:55:29Z')]
+        job = _job(row['jobs'][0])
+        self.assertFalse(job['timeline_conflict'])
+        self.assertEqual(job['run_seconds'], 1498)
+        data = payload([row])
+        self.assertEqual(data['batches'][0]['duration_seconds'], 1536)
+        self.assertTrue(data['batches'][0]['e2e_sample_eligible'])
+
     def test_running_timeline_conflict_is_quarantined_without_blocking_collection(self):
         row = source(status='in_progress', conclusion=None)
-        row['jobs'][0]['steps'] = [dict(completed_at='2026-10-26T04:55:29Z')]
+        row['jobs'][0]['steps'] = [dict(completed_at='2026-10-26T05:00:30Z')]
         data = payload([row])
         self.assertIsNone(data['batches'][0]['duration_seconds'])
         self.assertTrue(validate([row], data)['passed'])
@@ -148,15 +166,22 @@ class RunE2ETests(unittest.TestCase):
         forged['batches'][0]['e2e_sample_eligible'] = False
         self.assertFalse(validate(rows, forged)['passed'])
 
-    def test_integration_workflow_drift_blocks_publication_instead_of_silent_exclusion(self):
-        for changes in [dict(workflow_id=999),
-                        dict(workflow_id=348219361, path='.github/workflows/ci.yml'),
+    def test_integration_scope_is_verified_by_path_but_identity_drift_still_fails(self):
+        # A re-added workflow file keeps its path but gets a new numeric id; it
+        # must stay in scope instead of silently disappearing from the E2E chart.
+        rows = [source(workflow_id=999)]
+        self.assertTrue(payload(rows)['batches'][0]['e2e_sample_eligible'])
+        self.assertTrue(validate(rows, payload(rows))['passed'])
+        for changes in [dict(workflow_id=348219361, path='.github/workflows/ci.yml'),
                         dict(workflow_id=241783889, path='.github/workflows/replacement.yml')]:
             with self.subTest(changes=changes):
                 rows = [source(**changes)]
                 report = validate(rows, payload(rows))
                 self.assertFalse(report['passed'])
-                self.assertIn('unclassified Integration Tests workflow', ';'.join(report['errors']))
+                self.assertTrue(any('workflow' in error for error in report['errors']),
+                                report['errors'])
+        rows = [source(workflow_id=241783889, path='.github/workflows/replacement.yml')]
+        self.assertIn('unclassified Integration Tests workflow', ';'.join(validate(rows, payload(rows))['errors']))
 
     def test_renamed_registered_workflow_remains_identified_by_id_and_path(self):
         rows = [source(name='Renamed NPU CI', workflow_id=348219361,
@@ -233,14 +258,16 @@ class RunE2ETests(unittest.TestCase):
 
     def test_running_cancelled_unknown_and_wrong_workflow_never_enter_samples(self):
         cases=[dict(status='in_progress',conclusion=None),dict(conclusion='cancelled'),
-               dict(pr=None),dict(workflow_id=99),dict(path='.github/workflows/other.yml')]
+               dict(pr=None),dict(workflow_id=99,path='.github/workflows/other.yml')]
         for changes in cases:
             with self.subTest(changes=changes):
                 row=source(**changes);data=payload([row]);b=data['batches'][0]
                 self.assertFalse(b['e2e_sample_eligible'])
                 if changes.get('status')=='in_progress':
                     self.assertIsNone(b['end_at'])
-                    self.assertEqual(b['duration_seconds'],185558)
+                    # An in-flight batch is observed until the collection time
+                    # (08:01), not the selection cutoff (08:00).
+                    self.assertEqual(b['duration_seconds'],185618)
                 report = validate([row],data)
                 if 'workflow_id' in changes or 'path' in changes:
                     self.assertFalse(report['passed'])

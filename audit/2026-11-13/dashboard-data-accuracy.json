@@ -1,0 +1,99 @@
+{
+  "date": "2026-11-13",
+  "site": "https://tianll12115.github.io/union_monitor/",
+  "snapshot": {
+    "collected_at": "2026-11-13T06:09:23Z",
+    "window_start": "2026-11-10T06:09:23Z",
+    "window_end": "2026-11-13T06:09:23Z",
+    "summary": {
+      "prs": 99,
+      "batches": 2091,
+      "valid": 16,
+      "median": 4448.5,
+      "p90": 5439.0,
+      "approximate": 48,
+      "incomplete": 93
+    },
+    "discovery_fetch_window_end": "2026-11-13T05:47:26Z"
+  },
+  "window_completeness": {
+    "source_runs_created_in_window": 2050,
+    "published_distinct_runs": 2044,
+    "missing_runs": 7,
+    "missing_run_ids": [
+      43376383534,
+      43376383610,
+      43376383717,
+      43376386203,
+      43376386219,
+      43376386241,
+      43376386379
+    ],
+    "missing_created_at": "2026-11-13T06:06:24Z..2026-11-13T06:06:26Z",
+    "missing_integration_runs": 1,
+    "cause": "discovery stopped at 05:47:26Z while the payload still claimed a 06:09:23Z window end; runs created in the 22-minute gap were never enumerated"
+  },
+  "integration_scope": {
+    "published_integration_batches": 29,
+    "published_valid_samples": 16,
+    "window_integration_runs": 229,
+    "measured_samples_after_path_scope": 163,
+    "cause": "workflow id 348219361 (.github/workflows/ascend-ci.yml) was outside the hard-coded id+path scope, so 191 in-window Integration Tests runs were published as outside_integration_tests"
+  },
+  "user_window": {
+    "from_ms": 1794290963000,
+    "to_ms": 1794503636000,
+    "published": { "n": 15, "p50": 4534.0, "p90": 5440.2 },
+    "corrected": { "n": 151, "p50": 1466.0, "p90": 4385.0 }
+  },
+  "pr_identity": {
+    "published_unresolved_runs": 46,
+    "resolvable_by_closed_at_rule": 13,
+    "recovered_integration_samples": 1,
+    "groups": [
+      {
+        "head_sha": "0447ce5a6cae86a6163435ec3c44ed9fabdd33ed",
+        "runs": 10,
+        "closed_pr": 3084,
+        "closed_at": "2026-11-10T07:20:57Z",
+        "run_created_at": "2026-11-10T07:22:20Z",
+        "resolved_pr": 3085
+      },
+      {
+        "head_sha": "d5027f3947",
+        "runs": 3,
+        "closed_pr": 3020,
+        "closed_at": "2026-11-06T07:17:10Z",
+        "run_created_at": "2026-11-11T02:31:27Z",
+        "resolved_pr": 3102
+      },
+      {
+        "head_sha": "c4d0bbbdb2",
+        "runs": 8,
+        "resolved_pr": null,
+        "note": "the successor PR 3113 never carried this SHA; remains an honest unknown"
+      },
+      {
+        "head_sha": "a513799327 + e3a7eb9732",
+        "runs": 25,
+        "resolved_pr": null,
+        "note": "PRs 3051 and 3011 are both open on the same head SHA; attribution would be a guess"
+      }
+    ]
+  },
+  "timeline_conflict": {
+    "current_main_rule": "any step outside the job clock quarantines execution and E2E",
+    "first_attempt_integration_runs": 228,
+    "false_positive_quarantines": 151,
+    "observed_step_skew_after_completed_at_max_seconds": 169,
+    "observed_step_skew_before_started_at_max_seconds": 35,
+    "allowance_seconds_applied": 300,
+    "eligible_before_allowance": 38,
+    "eligible_after_allowance": 156
+  },
+  "deployment": {
+    "published_before_fixes": "2026-11-13T06:09:23Z",
+    "cancelled_push_runs": [43381673738, 43384499390],
+    "note": "both merge-triggered Collect and deploy dashboard runs were cancelled during UBS collection, so the merged collector fixes were never published"
+  }
+}

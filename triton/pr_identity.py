@@ -30,9 +30,20 @@ class PRResolver:
 
     @staticmethod
     def existed(run, pr):
+        """The PR must have existed *and still been open* when the run started.
+
+        A run cannot gate a PR that was already closed when it was created.
+        Ignoring ``closed_at`` made every reused branch whose previous PR was
+        closed ambiguous (2026-11-13: a 42-second PR still matched runs created
+        two minutes after it closed, so 13 runs -- including one Integration
+        Tests sample -- were published as "未关联 PR").
+        """
         if not pr.get("created_at") or not run.get("created_at"): return True
         parse=lambda x:datetime.fromisoformat(x.replace("Z","+00:00"))
-        return parse(pr["created_at"])<=parse(run["created_at"])
+        created=parse(run["created_at"])
+        if parse(pr["created_at"])>created: return False
+        closed=pr.get("closed_at")
+        return not closed or parse(closed)>=created
 
     def compare(self, sha, anchor):
         result=self.read(f"/compare/{sha}...{anchor}?per_page=1")

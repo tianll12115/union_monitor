@@ -724,6 +724,54 @@ def build_coverage_ledger(runs, payload, window_end):
     return ledger
 
 
+def refresh_inflight(api, rows, window_start, cutoff):
+    """Refresh runs that were still in flight when discovery finished.
+
+    Discovery is a point-in-time listing. A run that finished while jobs were
+    being fetched would otherwise keep a stale in-flight status and a duration
+    measured to the end of collection instead of its real completion. Only
+    rows whose attempt identity is unchanged are refreshed: a rerun started
+    after the cutoff (or after discovery) belongs to a later observation and
+    must not rewrite the retained attempt. Request failures propagate so an
+    unverifiable status can never be published as a measured duration.
+    """
+    lower = dt(window_start)
+    cutoff = dt(cutoff)
+    target = []
+    for row in rows:
+        if row.get("status") == "completed":
+            continue
+        start = dt(row.get("run_started_at") if int(row.get("run_attempt") or 1) > 1 else row.get("created_at"))
+        if not start or (lower and start < lower) or (cutoff and start > cutoff):
+            continue
+        target.append(row)
+    if not target:
+        return rows
+
+    def refresh(row):
+        metadata, _ = api.get(f"/actions/runs/{row['id']}")
+        if int(metadata.get("run_attempt") or 1) != int(row.get("run_attempt") or 1):
+            return row, None
+        return row, metadata
+
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        results = list(pool.map(refresh, target))
+    refreshed = 0
+    for row, metadata in results:
+        if metadata is None:
+            continue
+        for key in ("status", "conclusion", "run_started_at", "updated_at"):
+            row[key] = metadata.get(key)
+        if row.get("status") == "completed":
+            attempt = int(row.get("run_attempt") or 1)
+            jobs = api.pages(f"/actions/runs/{row['id']}/attempts/{attempt}/jobs", "jobs")
+            row.update(jobs=jobs, jobs_complete=True, focus_jobs=focus_from_jobs(jobs))
+        refreshed += 1
+    if refreshed:
+        print(f"refreshed {refreshed} in-flight runs before building the payload", flush=True)
+    return rows
+
+
 def collect(hours=72, as_of=None):
     api=GitHub(); end=dt(as_of) if as_of else datetime.now(UTC).replace(microsecond=0); start=end-timedelta(hours=hours)
     fetch_end=end
@@ -799,11 +847,16 @@ def collect(hours=72, as_of=None):
             raise RuntimeError(f"PR association source requests failed for {len(source_failures)} runs; refusing to publish. See pr-association-errors.json")
 
     # REST pages are observed over time, not atomically at discovery start.
-    # Keep explicit historical cutoffs strict; live snapshots use the end of
-    # observation and disclose the earlier creation-time discovery boundary.
-    observed=datetime.now(UTC).replace(microsecond=0)
+    # The declared window ends at the creation-discovery cutoff: extending it to
+    # the end of observation would claim a window whose last minutes were never
+    # enumerated (2026-11-13: 7 runs created at 06:06 were absent from a snapshot
+    # that still claimed a 06:09 window end). Observation time is disclosed
+    # separately, and live in-flight runs are refreshed so no stale status or
+    # over-long "running" duration is published. Historical replay (explicit
+    # --as-of) never refreshes: current status cannot describe a past cutoff.
     if as_of is None:
-        end=observed; start=end-timedelta(hours=hours)
+        refresh_inflight(api, enriched, iso(start), iso(end))
+    observed=datetime.now(UTC).replace(microsecond=0)
     _write_json(EVIDENCE/"runs.json", {"collected_at":iso(observed),"window_start":iso(start),
                 "fetch_window_start":fetch_start,"fetch_window_end":iso(fetch_end),"window_end":iso(end),"runs":runs})
     _write_json(EVIDENCE/"enriched-runs.json", enriched)
@@ -811,7 +864,7 @@ def collect(hours=72, as_of=None):
                             fetch_start=fetch_start, fetch_end=iso(fetch_end))
     payload["discovery"]={"mode":"all_retained_runs", "discovery_method":"partitioned_created_history", "rerun_lookback_days":None,
                           "fetch_window_start":None,"fetch_window_end":iso(fetch_end),
-                          "boundary_note":"全创建期分片（2008-01-01 至发现截止），按 PR 事件枚举 GitHub 当前保留的 run，逐个枚举历史 attempt；已删除或超出源保留期的记录不可恢复；创建发现截至 "+iso(fetch_end)+"，状态为逐页观测，非原子时间快照"}
+                          "boundary_note":"全创建期分片（2008-01-01 至发现截止），按 PR 事件枚举 GitHub 当前保留的 run，逐个枚举历史 attempt；已删除或超出源保留期的记录不可恢复；创建发现截至 "+iso(fetch_end)+"；统计窗口按 attempt 起点选择、窗末等于该发现截止，采集完成时间另列，采集期间完成的批次可能晚于窗末；状态为逐页观测，非原子时间快照"}
     payload["discovery"].update({key:api.discovery_evidence[key]
                                  for key in ("enumerated_runs","candidate_runs","excluded_runs")})
     metadata = json.loads((EVIDENCE/"runs.json").read_text(encoding="utf-8"))
@@ -885,16 +938,24 @@ def summary_of(batches, calls=0):
 
 
 def build_payload(runs, window_start, window_end, collected_at, calls=0, fetch_start=None, fetch_end=None):
+    """Assemble the published payload.
+
+    ``window_end`` is the selection cutoff: a batch belongs to the window when
+    its own start is not after it. ``collected_at`` is the later observation
+    time and is the only reference used for in-flight durations and for
+    rejecting a completion timestamp that could not have been observed yet.
+    """
     for row in runs:
         if row.get("conclusion") in ("skipped","neutral"): row["jobs_complete"]=True
     from .run_e2e import build_run_batches
-    batches=build_run_batches(runs, window_end, window_start)
+    observed = collected_at or window_end
+    batches=build_run_batches(runs, observed, window_start, window_end)
     # TS28-002/TS28-007: every workflow carries its own derived timing contract
     # (origin, first-task wait, wall-clock execution span and the reason a value
     # is absent). Rendering never re-derives these from display strings.
     for batch in batches:
         for workflow in batch.get("workflows", []):
-            workflow.update(workflow_timing(workflow, window_end))
+            workflow.update(workflow_timing(workflow, observed))
     payload={"repo":REPO,"window_start":window_start,"window_end":window_end,"collected_at":collected_at,
              "e2e_metric_version":2,"e2e_metric":"integration_tests_workflow_e2e",
              "timing_contract":"first_task_wait + execution_span (wall clock, seconds)",

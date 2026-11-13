@@ -1,5 +1,6 @@
 """Run the full local unit gate, optionally followed by real browser checks."""
 import argparse
+import os
 import shutil
 import subprocess
 import sys
@@ -34,10 +35,15 @@ def commands(browser=False):
 
 
 def check(browser=False):
+    # Git exports repository-local variables to hooks. Child tests create their
+    # own repositories; inheriting GIT_DIR would mutate this checkout instead.
+    environment = os.environ.copy()
+    for key in git_output('rev-parse', '--local-env-vars').splitlines():
+        environment.pop(key, None)
     for command in commands(browser):
         print('+ ' + ' '.join(command), flush=True)
         executable = shutil.which(command[0]) or command[0]
-        subprocess.run([executable, *command[1:]], cwd=ROOT, check=True)
+        subprocess.run([executable, *command[1:]], cwd=ROOT, check=True, env=environment)
 
 
 def git_output(*args):

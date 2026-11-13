@@ -642,14 +642,17 @@
       kNpuN.textContent = 'n=' + npu.count + (npu.count > 0 && npu.count < 10 ? ' · 样本不足' : '');
       boundaryEl.textContent = boundaryText();
       const accounting = core.metricAccounting(pool);
-      const reasonNames = { unresolved_pr_batch_identity: 'PR 未关联', outside_integration_tests: '非 Integration Tests',
+      const reasonNames = { unresolved_pr_batch_identity: 'PR 未关联', ambiguous_pr_batch_identity: 'PR 归属多候选',
+        outside_integration_tests: '非 Integration Tests',
         non_sample_result: '非成功/失败完成结果', invalid_or_missing_duration: '时长无效或缺失',
         rerun_queue_start_unknown: '重跑前置排队未知', running_observation: '执行中观测',
         source_timestamp_inversion: '源时间戳倒置', source_timeline_conflict: '源 job/step 时间矛盾',
         legacy_metric_unverified: '旧快照未验证', explicit_metric_exclusion: '证据资格不足',
         no_npu_jobs: '无 NPU Job', missing_or_invalid_npu: 'NPU 明细缺失或异常' };
       const describe = metric => Object.entries(metric.reasons).map(([reason, count]) => `${reasonNames[reason] || reason} ${count}`).join('、') || '无';
-      el('[data-role="sampleAccounting"]').textContent = `${accounting.total} 条运行（每条为 workflow/attempt，并非 PR 提交次数），${accounting.knownPrs} 个已关联 PR，${accounting.unresolved} 条未关联 PR；E2E：纳入 ${accounting.e2e.included}，排除 ${accounting.e2e.excluded}（${describe(accounting.e2e)}）；NPU：纳入 ${accounting.npu.included}，排除 ${accounting.npu.excluded}（${describe(accounting.npu)}）。NPU 跨全部工作流，每次取最长 Job 等待；两项均仅统计成功/失败完成样本，图上另保留非样本观测。`;
+      const unattributed = pool.filter(b => b.e2e_exclusion_reason === 'ambiguous_pr_batch_identity'
+        && (b.status === 'success' || b.status === 'failure') && core.validDuration(b.duration_seconds)).length;
+      el('[data-role="sampleAccounting"]').textContent = `${accounting.total} 条运行（每条为 workflow/attempt，并非 PR 提交次数），${accounting.knownPrs} 个已关联 PR，${accounting.unresolved} 条未关联 PR，${accounting.ambiguous} 条 PR 多候选；E2E：纳入 ${accounting.e2e.included}，排除 ${accounting.e2e.excluded}（${describe(accounting.e2e)}）${unattributed ? `；另有 ${unattributed} 条有效时长观测因 PR 归属多候选未计入 KPI，可在全部批次查看` : ''}；NPU：纳入 ${accounting.npu.included}，排除 ${accounting.npu.excluded}（${describe(accounting.npu)}）。NPU 跨全部工作流，每次取最长 Job 等待；两项均仅统计成功/失败完成样本，图上另保留非样本观测。`;
       const counts = { success: 0, failure: 0, running: 0, cancelled: 0, skipped: 0, neutral: 0, unknown: 0 };
       pool.forEach(b => { if (counts[b.status] != null) counts[b.status] += 1; });
       statusPillsEl.innerHTML = Object.keys(counts)
@@ -728,11 +731,17 @@
         ? `最长排队 ${secondsText(model.npuQueueSeconds)}`
         : `E2E ${secondsText(model.durationSeconds)}`;
       const runText = model.runId == null ? '?' : model.runId;
+      const candidateLinks = model.prCandidates.map(number => anchorHtml(
+        'https://github.com/triton-lang/triton-ascend/pull/' + number, `PR #${number}`)).filter(Boolean).join('、');
       const title = model.prKnown
         ? `PR #${esc(model.pr)} · ${esc(model.title)}`
-        : `未关联 PR · Run #${esc(runText)} · attempt ${esc(model.attempt)}`;
+        : model.prAmbiguous
+          ? `PR 多候选：${esc(model.prCandidates.map(n => '#' + n).join('、'))} · ${esc(model.title)} · Run #${esc(runText)} · attempt ${esc(model.attempt)}`
+          : `未关联 PR · ${esc(model.title)} · Run #${esc(runText)} · attempt ${esc(model.attempt)}`;
       const links = [
-        model.prKnown ? anchorHtml(model.links.pr, `打开 PR #${model.pr}`) : '<span class="tip-note">未关联 PR，不生成 PR 链接</span>',
+        model.prKnown ? anchorHtml(model.links.pr, `打开 PR #${model.pr}`)
+          : model.prAmbiguous ? `<span class="tip-note">同一提交关联多个 PR：${candidateLinks}（不猜测单一归属）</span>`
+          : '<span class="tip-note">未关联 PR，不生成 PR 链接</span>',
         anchorHtml(model.links.actions, `本次 ${((model.reliable.members[0] || {}).name) || 'Actions'} Actions ↗`),
         '<button type="button" class="tip-detail" data-role="tipDetail">运行详情</button>',
       ].filter(Boolean).join('');

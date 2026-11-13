@@ -180,10 +180,12 @@ class DiscoveryIntegrityTests(unittest.TestCase):
 
     def test_full_history_discovers_old_rerun_and_records_exclusions(self):
         from triton.discovery import full_history_runs
-        rows = [run(created="2020-01-01T00:00:00Z", attempt=2),
+        rows = [run(created="2020-01-01T00:00:00Z", attempt=2,
+                    started="2026-11-10T00:00:00Z"),
                 run(2, created="2020-01-02T00:00:00Z"),
                 run(3, created="2026-11-12T00:00:00Z"),
-                run(4, created="2020-01-01T00:00:00Z"), run(5)]
+                run(4, created="2020-01-01T00:00:00Z"), run(5),
+                run(6, created="2020-01-03T00:00:00Z", attempt=2)]
 
         class API:
             def get(self, path):
@@ -194,14 +196,19 @@ class DiscoveryIntegrityTests(unittest.TestCase):
         result = full_history_runs(api, dashboard.dt("2026-11-09T00:00:00Z"), dashboard.dt("2026-11-11T00:00:00Z"))
         self.assertIn("created=2008-01-01", api.path)
         self.assertIn("event=pull_request", api.path)
+        # An old run whose latest attempt starts in the window is enumerated;
+        # an old rerun whose latest attempt started years ago is not, and costs
+        # no job request.
         self.assertEqual([r["id"] for r in result], [1, 5])
         ledger = api.discovery_evidence
-        self.assertEqual(ledger["enumerated_runs"], 5)
+        self.assertEqual(ledger["enumerated_runs"], 6)
         self.assertEqual(ledger["candidate_runs"], 2)
-        self.assertEqual(ledger["excluded_runs"], 3)
+        self.assertEqual(ledger["excluded_runs"], 4)
         self.assertEqual(ledger["enumerated_runs"], ledger["candidate_runs"] + ledger["excluded_runs"])
         self.assertTrue(all(e["reason"] for e in ledger["entries"]))
         self.assertFalse(any("jobs" in e or "repository" in e for e in ledger["entries"]))
+        reasons = {e["id"]: e["reason"] for e in ledger["entries"]}
+        self.assertEqual(reasons[6], "rerun_started_before_display_window")
 
     def test_bounded_rerun_lookback_publishes_its_creation_floor(self):
         from triton.discovery import full_history_runs

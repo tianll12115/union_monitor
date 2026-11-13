@@ -256,6 +256,13 @@ class RunE2ETests(unittest.TestCase):
                 forged['batches'][0][field] = value
                 self.assertFalse(validate(rows, forged)['passed'])
 
+    def test_ambiguous_identity_has_its_own_exclusion_reason(self):
+        row = source(pr=None, pr_candidates=[3011, 3051])
+        batch = payload([row])['batches'][0]
+        self.assertFalse(batch['e2e_sample_eligible'])
+        self.assertEqual(batch['e2e_exclusion_reason'], 'ambiguous_pr_batch_identity')
+        self.assertEqual(batch['pr_candidates'], [3011, 3051])
+
     def test_running_cancelled_unknown_and_wrong_workflow_never_enter_samples(self):
         cases=[dict(status='in_progress',conclusion=None),dict(conclusion='cancelled'),
                dict(pr=None),dict(workflow_id=99,path='.github/workflows/other.yml')]

@@ -73,7 +73,7 @@ def full_history_runs(api, start, end, rerun_lookback=None):
     Fixed creation bounds exclude newly born runs during pagination. Approximate
     source counts only guide splitting; actual rows and Link control pagination.
     """
-    from .dashboard import dt, iso, run_in_window
+    from .dashboard import dt, iso
     origin = (datetime(2008, 1, 1, tzinfo=timezone.utc) if rerun_lookback is None
               else start - rerun_lookback)
     rows = []
@@ -95,17 +95,30 @@ def full_history_runs(api, start, end, rerun_lookback=None):
         created = dt(row.get("created_at"))
         if created is None:
             raise RuntimeError(f"run {row.get('id')}: discovery requires created_at")
-        candidate = False
+        attempt = int(row.get("run_attempt") or 1)
+        latest = dt(row.get("run_started_at")) or created
         if created > end:
-            reason = "created_after_discovery_cutoff"
-        elif int(row.get("run_attempt") or 1) > 1:
-            candidate, reason = True, "rerun_requires_attempt_enumeration"
-        elif run_in_window(row, start, end):
-            candidate, reason = True, "first_attempt_in_window"
+            candidate, reason = False, "created_after_discovery_cutoff"
+        elif start <= created <= end or start <= latest <= end:
+            # The current attempt (or the first-attempt creation) starts inside
+            # the window. Enumerating every historical rerun instead was the
+            # 2026-11-13 quota failure: a rerun whose latest attempt started
+            # before the window can never have an earlier attempt inside it,
+            # because attempts are chronological.
+            candidate = True
+            reason = "attempt_in_window" if attempt > 1 else "first_attempt_in_window"
+        elif created < start and latest > end:
+            # A recorded attempt span crosses the window (source clock skew or
+            # an observation newer than the cutoff). An intermediate attempt may
+            # still start inside it, so the run must be enumerated rather than
+            # silently excluded.
+            candidate, reason = True, "attempt_span_crosses_window"
+        elif attempt > 1:
+            candidate, reason = False, "rerun_started_before_display_window"
         else:
-            reason = "first_attempt_before_display_window"
+            candidate, reason = False, "first_attempt_before_display_window"
         entry = {key: row.get(key) for key in ("id", "run_attempt", "event", "created_at", "run_started_at", "updated_at")}
-        entry.update(run_attempt=int(row.get("run_attempt") or 1), candidate=candidate, reason=reason)
+        entry.update(run_attempt=attempt, candidate=candidate, reason=reason)
         entries.append(entry)
         if candidate:
             candidates.append(row)

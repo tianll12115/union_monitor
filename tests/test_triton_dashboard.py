@@ -555,10 +555,10 @@ class CollectWindowTests(unittest.TestCase):
         # Production discovery is bounded by a 14-day rerun lookback (the
         # unbounded form exceeded the hourly token quota), and the boundary is
         # published instead of being claimed as complete.
-        self.assertTrue(any("2026-09-11T12" in p for p in discovery_paths), discovery_paths[:2])
+        self.assertTrue(any("2026-06-27T12" in p for p in discovery_paths), discovery_paths[:2])
         self.assertEqual(payload["discovery"]["mode"], "bounded_rerun_lookback")
-        self.assertEqual(payload["discovery"]["rerun_lookback_days"], 14)
-        self.assertEqual(payload["discovery"]["fetch_window_start"], "2026-09-11T12:00:00Z")
+        self.assertEqual(payload["discovery"]["rerun_lookback_days"], 90)
+        self.assertEqual(payload["discovery"]["fetch_window_start"], "2026-06-27T12:00:00Z")
         self.assertIn("回溯边界", payload["discovery"]["boundary_note"])
         self.assertEqual([batch["kind"] for batch in payload["batches"]], ["rerun"])
         self.assertEqual(payload["batches"][0]["start_at"], "2026-09-26T10:00:00Z")
@@ -589,6 +589,21 @@ class RefreshInflightTests(unittest.TestCase):
         self.assertEqual(outside["status"], "in_progress")
         self.assertEqual(rerun["status"], "in_progress")
         self.assertEqual(rerun["jobs_complete"], True)
+
+
+class AmbiguousIdentityBatchTests(unittest.TestCase):
+    def test_batch_keeps_candidates_display_title_and_reason(self):
+        row = run(1, "Integration Tests", "abc", "2026-09-22T00:00:00Z", "2026-09-22T02:00:00Z", jobs=[])
+        row.update(pr=None, pr_title=None, pr_candidates=[3011, 3051],
+                   display_title="[WIP][test] test never merge",
+                   pr_evidence={"method": "ambiguous", "run_id": 1, "candidates": [3011, 3051]})
+        batch = build_batches([row], "2026-09-22T03:00:00Z")[0]
+        self.assertEqual(batch["pr_candidates"], [3011, 3051])
+        self.assertEqual(batch["title"], "[WIP][test] test never merge")
+        note = " ".join(batch["missing"])
+        self.assertIn("多个候选", note)
+        self.assertIn("#3011", note)
+        self.assertIn("#3051", note)
 
 
 class AttemptEnumerationTests(unittest.TestCase):
@@ -851,7 +866,7 @@ class SummaryValidityTests(unittest.TestCase):
         payload = build_payload([], "2026-09-22T00:00:00Z", "2026-09-25T00:00:00Z",
                                 "2026-09-25T00:00:00Z", fetch_start="2026-09-08T00:00:00Z")
         self.assertIn("discovery", payload)
-        self.assertEqual(payload["discovery"]["rerun_lookback_days"], 14)
+        self.assertEqual(payload["discovery"]["rerun_lookback_days"], 90)
         self.assertEqual(payload["discovery"]["fetch_window_start"], "2026-09-08T00:00:00Z")
         self.assertIn("不宣称全量", payload["discovery"]["boundary_note"])
 

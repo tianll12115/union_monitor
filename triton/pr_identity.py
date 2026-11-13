@@ -5,6 +5,21 @@ from pathlib import Path
 from urllib.parse import quote
 
 
+class AmbiguousPRIdentity(ValueError):
+    """More than one PR has evidence for the same run/attempt.
+
+    This is an ordinary unknown outcome (never a source failure), but unlike a
+    run with no candidate at all it carries the matched PR numbers. Publishing
+    those candidates is not a guess: it tells the reader exactly which PRs the
+    run can belong to and why no single owner was chosen.
+    """
+
+    def __init__(self, diagnostic):
+        self.diagnostic = diagnostic
+        self.candidates = sorted(diagnostic.get("matches") or [])
+        super().__init__(f"PR identity unresolved/ambiguous: {diagnostic}")
+
+
 class PRResolver:
     def __init__(self, api, evidence_dir=None):
         self.api=api
@@ -127,8 +142,13 @@ class PRResolver:
         # Never guess from title, nearest creation time, or the first branch match.
         matches={p[0]["number"]:p for p in matches}
         if len(matches)!=1:
-            diagnostic={"run_id":run.get("id"),"head_sha":run.get("head_sha"),"head_branch":run.get("head_branch"),"candidates":[p.get("number") for p in candidates],"matches":list(matches)}
+            diagnostic={"run_id":run.get("id"),"head_sha":run.get("head_sha"),"head_branch":run.get("head_branch"),"candidates":[p.get("number") for p in candidates],"matches":sorted(matches)}
             self.save(run,diagnostic)
+            if matches:
+                # The run demonstrably gates more than one PR (for example two
+                # open PRs sharing one head commit). Keep every candidate; the
+                # caller publishes them instead of inventing a single owner.
+                raise AmbiguousPRIdentity(diagnostic)
             raise ValueError(f"PR identity unresolved/ambiguous: {diagnostic}")
         pr,sha,method,history=next(iter(matches.values()))
         result={"pr":pr["number"],"pr_url":pr.get("html_url") or f"https://github.com/triton-lang/triton-ascend/pull/{pr['number']}",

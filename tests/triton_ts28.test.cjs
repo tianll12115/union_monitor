@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const {
   normalizeResult, recordResult, safeLink, jobTiming, workflowTiming, workflowMembers,
   focusJobs, focusKey, parseFocusName, relatedIndex, sameCommitRuns, npuJobRows,
-  visiblePrCount, hoverModel, isIntegrationTestsRecord, circleMark,
+  visiblePrCount, hoverModel, isIntegrationTestsRecord, circleMark, markLabel,
 } = require('../web/triton-core.js');
 
 /* TS28-002/003/005/007 pure contracts: identity, timing, focus tasks, the
@@ -226,6 +226,21 @@ test('TS28-001 AC1: unknown PR never invents a PR link; unsafe URLs are dropped'
   assert.equal(model.exclusionReason, 'unresolved_pr_batch_identity');
   assert.match(model.boundary.associationNote, /未可靠关联 PR/);
   assert.equal(model.related.count, 0);
+});
+
+test('ambiguous identity publishes its candidates instead of inventing one', () => {
+  const ambiguous = batch('ambiguous', {
+    pr: null, pr_candidates: [3051, 3011], title: '[WIP][test] test never merge',
+    e2e_exclusion_reason: 'ambiguous_pr_batch_identity',
+    workflows: [{ id: 9, attempt: 1, name: 'Integration Tests', jobs: [], url: 'https://github.com/example/actions/runs/9' }],
+  });
+  const model = hoverModel(ambiguous, { metric: 'e2e', batches: [ambiguous], collectedAt: '2026-10-28T02:00:00Z' });
+  assert.equal(model.prKnown, false);
+  assert.equal(model.prAmbiguous, true);
+  assert.deepEqual(model.prCandidates, [3011, 3051]);
+  assert.equal(model.exclusionReason, 'ambiguous_pr_batch_identity');
+  assert.match(model.boundary.associationNote, /#3011、#3051/);
+  assert.match(markLabel(ambiguous, 'e2e'), /PR 多候选 #3011、#3051/);
 });
 
 test('TS28-002/003: an auxiliary record reports E2E not applicable while NPU rows stay independent', () => {

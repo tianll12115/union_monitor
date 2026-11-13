@@ -111,7 +111,8 @@ def measurement(row, as_of):
                           for j in active) if start and not running else True
     duration = (observed_end - start).total_seconds() if valid and job_times_valid and not inverted and not conflict else None
     target = is_integration_workflow(row)
-    reason = ('unresolved_pr_batch_identity' if not row.get('pr') else
+    reason = ('ambiguous_pr_batch_identity' if not row.get('pr') and row.get('pr_candidates') else
+              'unresolved_pr_batch_identity' if not row.get('pr') else
               'outside_integration_tests' if not target else
               'running_observation' if running else
               'non_sample_result' if row.get('conclusion') not in ('success', 'failure', 'timed_out', 'action_required', 'startup_failure') else

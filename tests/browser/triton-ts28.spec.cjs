@@ -312,6 +312,14 @@ test('[TS28-001 AC4] card stays inside 390/768/1440 viewports, never covers its 
     const mark = page.locator('[data-role="chart"] .mark-hit[data-i="0"]');
     await mark.hover();
     await expect(tip).toBeVisible();
+    const bottomBeforeObserver = await tip.evaluate(card => {
+      const workflow = card.querySelector('.tip-wf');
+      workflow.open = true;
+      const bottom = card.getBoundingClientRect().bottom;
+      workflow.open = false;
+      return { bottom, limit: innerHeight - 11.5 };
+    });
+    expect(bottomBeforeObserver.bottom).toBeLessThanOrEqual(bottomBeforeObserver.limit);
     await tip.locator('.tip-wf summary').first().click();
     const geometry = await page.evaluate(() => {
       const tipEl = document.querySelector('[data-role="tip"]');

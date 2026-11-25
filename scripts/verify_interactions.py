@@ -416,22 +416,19 @@ TRITON_VIEW_CONTRACTS = [
      '[viewStart, viewEnd] = core.windowForHours(domainStart, domainEnd,'
      ' Number(btn.dataset.hours));'),
     ('pointerdown_prevent_default',
-     "e.preventDefault();\n      const mode = (e.target.dataset &&"
-     " e.target.dataset.drag) || 'jump';"),
+     "if (navDrag || e.button !== 0) return;\n      e.preventDefault();"),
     ('pointer_capture', 'navSvg.setPointerCapture(e.pointerId);'),
     ('pointermove_window',
-     "if (navDrag.mode === 'window') [viewStart, viewEnd] ="
-     ' core.moveWindow(domainStart, domainEnd, navDrag.start, navDrag.end,'
-     ' delta);'),
+     'navDrag.preview = core.moveWindow(domainStart, domainEnd, start, end, delta);'),
     ('pointermove_start',
-     "else if (navDrag.mode === 'start') viewStart ="
-     " core.clampBoundary(domainStart, domainEnd, viewStart, viewEnd,"
-     " 'start', navDrag.start + delta);"),
+     "navDrag.preview = [core.clampBoundary(domainStart, domainEnd, start, end, 'start', start + delta), end];"),
     ('pointermove_end',
-     "else viewEnd = core.clampBoundary(domainStart, domainEnd, viewStart,"
-     " viewEnd, 'end', navDrag.end + delta);"),
+     "navDrag.preview = [start, core.clampBoundary(domainStart, domainEnd, start, end, 'end', end + delta)];"),
     ('pointerup_cancel',
-     "navSvg.onpointerup = navSvg.onpointercancel = () => { navDrag = null; };"),
+     '[viewStart, viewEnd] = navDrag.preview;\n      navDrag = null;\n      updateGlobal();\n    };\n'
+     '    navSvg.onpointercancel = navSvg.onlostpointercapture = e => {\n'
+     '      if (navDrag?.pointerId !== e.pointerId) return;\n'
+     '      navDrag = null;\n      previewNavigator(viewStart, viewEnd);'),
     ('keyboard_directions',
      "const directions = { ArrowLeft: 'left', ArrowDown: 'left',"
      " ArrowRight: 'right', ArrowUp: 'right', Home: 'home', End: 'end' };"),
@@ -484,8 +481,7 @@ TRITON_CORE_CONTRACTS = [
 
 STYLE_CONTRACTS = [
     ('nav_touch_action',
-     '.nav-svg{display:block;width:100%;height:72px;touch-action:none;'
-     'user-select:none}'),
+     '.nav-svg{position:relative;touch-action:none;user-select:none}'),
     ('tooltip_viewport_cap',
      'max-height:calc(100vh - 24px);overflow:auto'),
     ('table_scroll', '.table-scroll{overflow-x:auto}'),

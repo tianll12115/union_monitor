@@ -934,9 +934,16 @@
          cover the mark. */
       const chosen = spaceBelow >= Math.min(natural, cap) ? spaceBelow : spaceAbove;
       tip.style.maxHeight = Math.max(160, Math.min(cap, chosen)) + 'px';
-      const p = core.placeTipBox(ax, ay, tip.offsetWidth, tip.offsetHeight, window.innerWidth, window.innerHeight, 16, 16);
-      tip.style.left = p.x + 'px';
-      tip.style.top = p.y + 'px';
+      const width = tip.offsetWidth;
+      const height = tip.offsetHeight;
+      const p = core.placeTipBox(ax, ay, width, height, window.innerWidth, window.innerHeight, 16, 16);
+      const aboveMark = rect && p.x < rect.right && p.x + width > rect.left && p.y + height <= rect.top;
+      const bottom = aboveMark ? rect.top - gap : window.innerHeight - pad;
+      // Keep the card inside the current viewport until a resize can re-anchor it.
+      const top = `clamp(${pad}px, ${p.y}px, 100vh - ${pad + 32}px)`;
+      tip.style.maxHeight = `min(${Math.max(0, bottom - p.y)}px, 100vh - ${top} - ${pad}px)`;
+      tip.style.left = `clamp(${pad}px, ${p.x}px, 100vw - var(--tip-width) - ${pad}px)`;
+      tip.style.top = top;
     }
 
     // Native details expansion and responsive text wrapping can grow the card

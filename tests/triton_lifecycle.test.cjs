@@ -146,7 +146,18 @@ test('ADR-007: show-all export reuses the complete sorted search pool (list == d
 test('deactivation releases a navigator pointer that was still captured mid-drag', () => {
   const h=viewHarness();h.view.render(sample(),h.container);
   const navigator=h.node('[data-role="navigator"]');
-  navigator.onpointerdown({preventDefault(){},pointerId:42,clientX:450,target:{dataset:{drag:'window'}}});
+  const sliders = Object.fromEntries(['window', 'start', 'end'].map(part => {
+    const slider = h.node('slider-' + part);
+    slider.dataset.drag = part;
+    slider.nextElementSibling = h.node('grip-' + part);
+    slider.nextElementSibling.nextElementSibling = h.node('grip2-' + part);
+    return [part, slider];
+  }));
+  navigator.querySelector = selector => sliders[selector.split('"')[1]];
+  navigator.querySelectorAll = selector => selector === '.nav-dim'
+    ? [h.node('lower-dim'), h.node('upper-dim')]
+    : Object.values(sliders);
+  navigator.onpointerdown({preventDefault(){},button:0,pointerId:42,clientX:450,target:sliders.window});
   assert.equal(navigator.captures.size,1);
   h.view.deactivate();
   assert.equal(navigator.captures.size,0);

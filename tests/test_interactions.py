@@ -317,6 +317,16 @@ class SyntheticTreeTests(unittest.TestCase):
         self.assertIn('style.css:nav_touch_action',
                       report['source_contracts']['missing'])
 
+    def test_pointer_cancel_must_not_commit_the_preview(self):
+        root = self.build_tree()
+        self.tamper(root, 'triton-view.js',
+                    'previewNavigator(viewStart, viewEnd);',
+                    'updateGlobal();')
+        code, report = self.run_tool(root)
+        self.assertEqual(code, 1)
+        self.assertIn('triton-view.js:pointerup_cancel',
+                      report['source_contracts']['missing'])
+
     def test_tampered_app_mount_exit_one(self):
         root = self.build_tree()
         self.tamper(root, 'app.js',

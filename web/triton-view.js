@@ -63,7 +63,8 @@
   }
 
   const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
-  const fmtDate = stamp => new Intl.DateTimeFormat('zh-CN', { timeZone: 'Asia/Shanghai', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(stamp));
+  const dateFormatter = new Intl.DateTimeFormat('zh-CN', { timeZone: 'Asia/Shanghai', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false });
+  const fmtDate = stamp => dateFormatter.format(new Date(stamp));
   /* TS28-001 AC1 / section 4.2: source times keep the date and seconds in
      Shanghai time; a >24h or cross-day span is never shortened. */
   const fmtStamp = stamp => (stamp == null || !Number.isFinite(+new Date(stamp))) ? '未知' : new Intl.DateTimeFormat('zh-CN', { timeZone: 'Asia/Shanghai', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).format(new Date(stamp));
@@ -229,7 +230,10 @@
 <section class="section">
   <div class="navigator" style="border-top:0">
     <div class="navigator-head"><strong>拖动或键盘选择时间范围 · 两张趋势图联动</strong><span data-role="selectedRange"></span></div>
-    <svg class="nav-svg" data-role="navigator" role="group" aria-label="选择趋势图时间范围"></svg>
+    <div class="nav-plot">
+      <svg class="nav-overview" data-role="navigatorOverview" aria-hidden="true"></svg>
+      <svg class="nav-svg" data-role="navigator" role="group" aria-label="选择趋势图时间范围"></svg>
+    </div>
     <div class="range-control">
       <span class="range-label">快速选择</span>
       <button type="button" class="chip" data-hours="6">6 小时</button>
@@ -279,6 +283,7 @@
     const chartSvg = el('[data-role="chart"]');
     const npuChartSvg = el('[data-role="npuChart"]');
     const navSvg = el('[data-role="navigator"]');
+    const navOverview = el('[data-role="navigatorOverview"]');
     const tip = el('[data-role="tip"]');
     const freshnessEl = el('[data-role="freshness"]');
     const branchOptionsEl = el('[data-role="branchOptions"]');
@@ -577,15 +582,19 @@
       refreshHighlight();
     }
 
+    const navigatorPadding = { l: 4, r: 4, t: 6, b: 19 };
+    const navigatorX = (time, width) => navigatorPadding.l + (time - domainStart) / (domainEnd - domainStart)
+      * (width - navigatorPadding.l - navigatorPadding.r);
+
     function drawNavigator() {
       const rows = branchPool();
       const measuredW = navSvg.clientWidth;
       if (!Number.isFinite(measuredW) || measuredW < 10) { scheduleRedraw(); return; }
-      const W = measuredW, H = 72, p = { l: 4, r: 4, t: 6, b: 19 };
-      const domain = domainEnd - domainStart;
-      const x = t => p.l + (t - domainStart) / domain * (W - p.l - p.r);
+      const W = measuredW, H = 72, p = navigatorPadding;
+      const x = time => navigatorX(time, W);
       const plotH = H - p.t - p.b;
       navSvg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+      navOverview.setAttribute('viewBox', `0 0 ${W} ${H}`);
       /* REQ-027 AC03: remember which navigator control held focus before the
          innerHTML rebuild replaces it. */
       const activeMode = navSvg.contains(document.activeElement) && document.activeElement.dataset
@@ -598,6 +607,8 @@
         const cy = p.t + plotH - b.duration_seconds / max * (plotH - 5) - 2;
         out += `<circle class="nav-point" cx="${x(+new Date(b.start_at))}" cy="${cy}" r="1.6" style="fill:${fillFor(b.status)}"/>`;
       });
+      navOverview.innerHTML = out;
+      out = '';
       const sx = x(viewStart), ex = x(viewEnd);
       out += `<rect class="nav-dim" x="${p.l}" y="${p.t}" width="${Math.max(0, sx - p.l)}" height="${plotH}"/>`;
       out += `<rect class="nav-dim" x="${ex}" y="${p.t}" width="${Math.max(0, W - p.r - ex)}" height="${plotH}"/>`;
@@ -617,13 +628,58 @@
         const restored = navSvg.querySelector(`[data-drag="${activeMode}"]`);
         if (restored) restored.focus();
       }
+      updateRangeReadout();
+    }
+
+    function updateRangeReadout() {
       const hours = Math.round((viewEnd - viewStart) / HOUR);
       all('[data-hours]').forEach(b => b.classList.toggle('active', Math.abs(Number(b.dataset.hours) - hours) < 1 && Math.abs(viewEnd - domainEnd) < 60000));
       selectedRangeEl.textContent = `${fmtDate(viewStart)} — ${fmtDate(viewEnd)}`;
       rangeCountEl.textContent = spanText(viewEnd - viewStart);
     }
 
-    const redrawAll = () => { draw(); drawNpu(); drawNavigator(); repositionCard(); };
+    function previewNavigator(startTime, endTime) {
+      const width = navDrag?.rect.width ?? navSvg.clientWidth;
+      const start = navigatorX(startTime, width), end = navigatorX(endTime, width);
+      const [left, right] = navSvg.querySelectorAll('.nav-dim');
+      left.setAttribute('width', Math.max(0, start - navigatorPadding.l));
+      right.setAttribute('x', end);
+      right.setAttribute('width', Math.max(0, width - navigatorPadding.r - end));
+      const windowSlider = navSvg.querySelector('[data-drag="window"]');
+      windowSlider.setAttribute('x', start);
+      windowSlider.setAttribute('width', Math.max(1, end - start));
+      const semantics = core.navSliderSemantics(domainStart, domainEnd, startTime, endTime);
+      for (const [side, position, time] of [['start', start, startTime], ['end', end, endTime]]) {
+        const handle = navSvg.querySelector('[data-drag="' + side + '"]');
+        handle.setAttribute('x', position - 6);
+        handle.setAttribute('aria-valuetext', fmtDate(time));
+        for (const [line, offset] of [[handle.nextElementSibling, -2], [handle.nextElementSibling.nextElementSibling, 2]]) {
+          line.setAttribute('x1', position + offset);
+          line.setAttribute('x2', position + offset);
+        }
+      }
+      for (const slider of navSvg.querySelectorAll('[data-drag]')) {
+        const value = semantics[slider.dataset.drag];
+        slider.setAttribute('aria-valuemin', value.min);
+        slider.setAttribute('aria-valuemax', value.max);
+        slider.setAttribute('aria-valuenow', value.now);
+      }
+      const rangeText = fmtDate(startTime) + ' — ' + fmtDate(endTime);
+      const duration = spanText(endTime - startTime);
+      windowSlider.setAttribute('aria-valuetext', rangeText + '（' + duration + '）');
+      if (selectedRangeEl.textContent !== rangeText) selectedRangeEl.textContent = rangeText;
+      if (rangeCountEl.textContent !== duration) rangeCountEl.textContent = duration;
+    }
+
+    const redrawAll = () => {
+      draw(); drawNpu(); drawNavigator(); repositionCard();
+      if (navDrag) {
+        navDrag.rect = navSvg.getBoundingClientRect();
+        navDrag.origin = navTime(navDrag.clientX, navDrag.rect);
+        [navDrag.start, navDrag.end] = navDrag.preview;
+        previewNavigator(...navDrag.preview);
+      }
+    };
     /* TA-003: resize handlers defer to the next animation frame so clientWidth is
        read after the final layout, not during an in-flight CSS/layout transition. */
     const raf = typeof requestAnimationFrame === 'function' ? requestAnimationFrame : fn => setTimeout(fn, 0);
@@ -1189,37 +1245,54 @@
     /* TA-011: pointer→time reverse mapping reuses the same inset padding as
        drawNavigator, so a click at a screen position lands on the same instant
        the drawing placed at that position. */
-    const navTime = e => {
-      const rect = navSvg.getBoundingClientRect();
-      return core.navTimeAt(e.clientX, rect.left, rect.width, domainStart, domainEnd, { l: 4, r: 4 });
-    };
+    const navTime = (clientX, rect) => core.navTimeAt(clientX, rect.left, rect.width,
+      domainStart, domainEnd, navigatorPadding);
     navSvg.onpointerdown = e => {
+      if (navDrag || e.button !== 0) return;
       e.preventDefault();
+      let start = viewStart, end = viewEnd;
       const mode = (e.target.dataset && e.target.dataset.drag) || 'jump';
-      const at = navTime(e);
+      const rect = navSvg.getBoundingClientRect();
+      const at = navTime(e.clientX, rect);
       if (mode === 'jump') {
-        [viewStart, viewEnd] = core.moveWindow(domainStart, domainEnd, viewStart, viewEnd, at - (viewStart + viewEnd) / 2);
-        navDrag = { mode: 'window', origin: at, start: viewStart, end: viewEnd };
-      } else {
-        navDrag = { mode, origin: at, start: viewStart, end: viewEnd };
+        [start, end] = core.moveWindow(domainStart, domainEnd, start, end, at - (start + end) / 2);
       }
-      navDrag.pointerId = e.pointerId;
+      navDrag = { mode: mode === 'jump' ? 'window' : mode, origin: at, start, end,
+        pointerId: e.pointerId, clientX: e.clientX, rect, preview: [start, end] };
       navSvg.setPointerCapture(e.pointerId);
-      updateGlobal();
+      clearHover();
+      previewNavigator(start, end);
     };
     navSvg.onpointermove = e => {
-      if (!navDrag) return;
-      const at = navTime(e), delta = at - navDrag.origin;
-      if (navDrag.mode === 'window') [viewStart, viewEnd] = core.moveWindow(domainStart, domainEnd, navDrag.start, navDrag.end, delta);
-      else if (navDrag.mode === 'start') viewStart = core.clampBoundary(domainStart, domainEnd, viewStart, viewEnd, 'start', navDrag.start + delta);
-      else viewEnd = core.clampBoundary(domainStart, domainEnd, viewStart, viewEnd, 'end', navDrag.end + delta);
+      if (navDrag?.pointerId !== e.pointerId) return;
+      const { start, end, mode, origin } = navDrag;
+      navDrag.clientX = e.clientX;
+      const delta = navTime(navDrag.clientX, navDrag.rect) - origin;
+      if (mode === 'window') {
+        navDrag.preview = core.moveWindow(domainStart, domainEnd, start, end, delta);
+      } else if (mode === 'start') {
+        navDrag.preview = [core.clampBoundary(domainStart, domainEnd, start, end, 'start', start + delta), end];
+      } else {
+        navDrag.preview = [start, core.clampBoundary(domainStart, domainEnd, start, end, 'end', end + delta)];
+      }
+      previewNavigator(...navDrag.preview);
+    };
+    navSvg.onpointerup = e => {
+      if (navDrag?.pointerId !== e.pointerId) return;
+      [viewStart, viewEnd] = navDrag.preview;
+      navDrag = null;
       updateGlobal();
     };
-    navSvg.onpointerup = navSvg.onpointercancel = () => { navDrag = null; };
+    navSvg.onpointercancel = navSvg.onlostpointercapture = e => {
+      if (navDrag?.pointerId !== e.pointerId) return;
+      navDrag = null;
+      previewNavigator(viewStart, viewEnd);
+    };
     /* REQ-027 AC01/AC04: keyboard operation of the shared time range; arrow
        keys move the window or adjust the focused boundary, Home/End reach the
        allowed edges, under the same constraints as pointer dragging. */
     navSvg.onkeydown = e => {
+      if (navDrag) return;
       const mode = e.target && e.target.dataset ? e.target.dataset.drag : null;
       if (!['window', 'start', 'end'].includes(mode)) return;
       const directions = { ArrowLeft: 'left', ArrowDown: 'left', ArrowRight: 'right', ArrowUp: 'right', Home: 'home', End: 'end' };
@@ -1256,6 +1329,7 @@
 
     active = {
       destroy() {
+        caf(redrawRaf);
         if (cardObserver) cardObserver.disconnect();
         clearTimeout(tipTimer);
         clearHighlight();
@@ -1269,7 +1343,7 @@
           try { navSvg.releasePointerCapture(navDrag.pointerId); } catch (_) { /* capture may already have ended */ }
         }
         navDrag = null;
-        navSvg.onpointerdown = navSvg.onpointermove = navSvg.onpointerup = navSvg.onpointercancel = navSvg.onkeydown = null;
+        navSvg.onpointerdown = navSvg.onpointermove = navSvg.onpointerup = navSvg.onpointercancel = navSvg.onlostpointercapture = navSvg.onkeydown = null;
         clearInterval(freshTimer);
         clearTimeout(tipTimer);
         window.removeEventListener('resize', onResize);

@@ -35,7 +35,7 @@ test('[BASIC-005] state filter narrows the list L without changing the KPI denom
   const merged = Number(await page.locator('#prCount').innerText());
   expect(denom).toContain(String(total)); // ADR-017: S denominator keeps the full set
   expect(merged).toBeLessThan(total);     // ADR-017: L is narrowed by the state filter
-  await page.locator('#clearConditions').click();
+  await page.getByRole('button', { name: '清除筛选' }).click();
   await expect(bar).toBeHidden();
   expect(await page.locator('#state').inputValue()).toBe('');
 });

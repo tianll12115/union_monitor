@@ -21,14 +21,22 @@ function failedHTML(p){const b=Metrics.failedWait(p);return b?`<small class="fai
    UDR-019 去重关注口径保留；renderQuality 仅在旧 ubs-quality 视图被路由到时调用，
    该视图已不再可达，故不产生 qualityContent 空引用。 */
 function qualityRows(){const rows=[];for(const p of filtered){for(const reason of p.issues||[])rows.push([p.number,'PR',reason]);for(const b of p.batches){for(const reason of b.issues||[])rows.push([p.number,'#'+b.number,reason]);if(b.status==='running')rows.push([p.number,'#'+b.number,'仍在执行：排除主要耗时统计']);}}for(const e of snapshot.meta.errors||[])rows.push(['采集',e.source,e.reason]);return rows;}
+let filterUndo=null;
+function renderFilterAction(){
+  const current=readFilters(), button=$('reset');
+  const active=Boolean(current.query.trim()||current.state);
+  if(active)filterUndo=null;
+  button.hidden=!filterUndo&&!active;
+  button.textContent=filterUndo?'撤销清除':'清除筛选';
+}
 function readFilters(){return {query:$('query').value,state:$('state').value};}
 /* UDR-020: the records/quality list state (S/L conditions, sort, page size,
    page) round-trips through the #projects/ubs/{records|quality} query. Default
    values are omitted so the canonical URL stays short and stable. */
 function recordsState(){return {q:$('query').value,entity:entity,repository:'gitcode:openeuler/'+currentRepository,branch:snapshot?.meta?.branch||'',from:snapshot?.meta?.start_ms??repositoryIndex?.start_ms??'',to:snapshot?.meta?.end_ms??repositoryIndex?.end_ms??'',basis:'pr_created_at',sort:$('sort').value,tm:$('tableMetric').value,state:$('state').value,ps:pageSize,page:page,pr:detailPR?detailPR.number:'',batch:detailChoice?.batch?.url??''};}
-function recordsUrl(){if(view==='triton'&&tritonRecordsMode){const s={sort:tritonRecSort,ps:tritonRecPs,page:tritonRecPage},def={sort:'duration',ps:15,page:1},clean={};for(const k of Object.keys(s))if(String(s[k])!==String(def[k]))clean[k]=s[k];return '#projects/triton/records'+Router.serializeQuery(clean);}if(view!=='ubs-repo')return null;const task='records',s=recordsState(),def={q:'',entity:'prs',repository:'',branch:'',from:'',to:'',basis:'pr_created_at',sort:entity==='batches'?'duration':'e2e',tm:'total',state:'',tf:'',qf:'',ps:15,page:1,pr:'',batch:''},clean={};for(const k of Object.keys(s))if(String(s[k])!==String(def[k]))clean[k]=s[k];return '#projects/ubs/'+task+Router.serializeQuery(clean);}
+function recordsUrl(){if(view==='ubs'){const state=$('state').value;return '#projects/ubs/overview'+Router.serializeQuery(state?{state}:{});}if(view==='triton'&&tritonRecordsMode){const s={sort:tritonRecSort,ps:tritonRecPs,page:tritonRecPage},def={sort:'duration',ps:15,page:1},clean={};for(const k of Object.keys(s))if(String(s[k])!==String(def[k]))clean[k]=s[k];return '#projects/triton/records'+Router.serializeQuery(clean);}if(view!=='ubs-repo')return null;const task='records',s=recordsState(),def={q:'',entity:'prs',repository:'',branch:'',from:'',to:'',basis:'pr_created_at',sort:entity==='batches'?'duration':'e2e',tm:'total',state:'',tf:'',qf:'',ps:15,page:1,pr:'',batch:''},clean={};for(const k of Object.keys(s))if(String(s[k])!==String(def[k]))clean[k]=s[k];return '#projects/ubs/'+task+Router.serializeQuery(clean);}
 function syncRecordsUrl(mode){const url=recordsUrl();if(url==null||url===location.hash)return;(mode==='push'?history.pushState:history.replaceState).call(history,null,'',url);}
-function renderActiveConditions(analysisSet){const f=readFilters(),parts=[];if(f.state)parts.push('PR 状态＝'+$('state').selectedOptions[0].textContent);const active=parts.length>0;$('activeConditions').hidden=!active;if(active){$('activeConditions').innerHTML='<span>列表定位：'+parts.map(esc).join(' · ')+'</span><strong>有效分母 '+analysisSet.length+' 个 PR</strong><button id="clearConditions" class="text-button">清除筛选</button>';$('clearConditions').onclick=()=>{$('state').value='';page=1;render();syncRecordsUrl('push');};}}
+function renderActiveConditions(analysisSet){const f=readFilters(),parts=[];if(f.state)parts.push('PR 状态＝'+$('state').selectedOptions[0].textContent);const active=parts.length>0;$('activeConditions').hidden=!active;if(active){$('activeConditions').innerHTML='<span>列表定位：'+parts.map(esc).join(' · ')+'</span><strong>有效分母 '+analysisSet.length+' 个 PR</strong>';}}
 /* UDR-018: common records task. The analysis set S stays PR-level (KPI/chart);
    the list L switches entity: batches by default, or PRs where a PR E2E profile
    exists. The batch list derives from S with the stable sort/pagination model. */
@@ -41,7 +49,7 @@ const SORT_OPTIONS={batches:[['duration','E2E 从长到短'],['start','开始时
 function setEntitySort(ent,desired){const key=ent==='batches'?'batches':'prs',opts=SORT_OPTIONS[key],vals=opts.map(o=>o[0]);if(desired==='created')desired='submitted';$('sort').innerHTML=opts.map(o=>`<option value="${o[0]}">${o[1]}</option>`).join('');$('sort').value=vals.includes(desired)?desired:vals[0];}
 function renderEntityChrome(){const batch=entity==='batches',prev=$('sort').value;$('entity').value=entity;$('recordTitle').textContent=batch?'执行批次明细':'PR 效率明细';$('recordHint').textContent=batch?'专家执行批次视图：按 E2E 从长到短；点击批次进入其 PR 详情':'默认按代表 E2E 从长到短；点击 PR 展开提交、重跑与子任务';$('tableMetric').hidden=batch;$('export').hidden=batch;setEntitySort(entity,prev);$('recordHead').innerHTML=batch?'<tr><th>批次 / PR</th><th>状态</th><th>开始时间</th><th>E2E</th><th>排队</th><th></th></tr>':'<tr><th>PR / 提交时间</th><th>状态</th><th>触发方式 / 执行次数<small>平台事件数</small></th><th>批次结果<small>成功 / 失败 / 不完整</small></th><th>E2E <small>代表批次</small></th><th class="num">x86 <small>代表批次</small></th><th class="num">ARM <small>代表批次</small></th><th class="num">DT <small>代表批次</small></th><th></th></tr>';}
 function renderBatchTable(){const pages=Math.max(1,Math.ceil(batchList.length/pageSize));page=Math.min(page,pages);const rows=batchList.slice((page-1)*pageSize,page*pageSize);$('prCount').textContent=batchList.length;$('prRows').innerHTML=rows.map(b=>`<tr data-batch="${esc(b.batch_id)}" data-batch-pr="${b.pr}"><td><button class="pr-title" title="${esc(b.title)}"><b>#${b.pr}</b>${esc(b.title)}</button><small class="pr-meta">Trigger #${esc(b.number??'—')} · ${date(b.start_at)}</small></td><td>${pill(b.status)}</td><td>${date(b.start_at)}</td><td><div class="metric-value">${minute(b.duration_ms)}</div><small class="sample">E2E</small></td><td><div class="metric-value">${minute(b.queue_ms)}</div><small class="sample">排队</small></td><td><svg class="icon icon-sm" style="color:var(--text-3)" aria-hidden="true"><use href="#i-chevron-right"/></svg></td></tr>`).join('')||'<tr><td colspan="6"><div class="empty">当前无匹配批次，请调整筛选条件。</div></td></tr>';$('prRows').querySelectorAll('tr[data-batch]').forEach(r=>r.onclick=()=>openDetail(Number(r.dataset.batchPr),r.dataset.batch));$('pageInfo').textContent=`${page} / ${pages}`;$('prev').disabled=page<=1;$('next').disabled=page>=pages;const label={duration:'E2E 从长到短；未知最后，同值按批次身份',start:'开始时间从新到旧',queue:'排队从长到短'};$('rowInfo').textContent=`显示 ${batchList.length?(page-1)*pageSize+1:0}–${Math.min(page*pageSize,batchList.length)} / ${batchList.length} 条 · ${label[$('sort').value]||''}`;}
-function render(){if(view==='ubs'){renderRepositories();return}if(view!=='ubs-repo')return;if(!snapshot)return;const f=readFilters(),analysisSet=Metrics.filterPRs(snapshot.prs,{state:''}),listSet=Metrics.filterPRs(analysisSet,f);renderActiveConditions(analysisSet);const prSort=entity==='batches'?'e2e':$('sort').value;filtered=Metrics.sortPRs(Metrics.searchPRs(listSet,f.query),prSort,snapshot?.meta?.end_ms);batchList=entity==='batches'?buildBatchList(listSet,f.query):[];const metricCache=new Map(filtered.map(p=>[p.number,Metrics.metrics(p.batches)]));const bs=analysisSet.flatMap(p=>p.batches),s=Metrics.aggregate(analysisSet),c=counts(bs),done=c.success+c.failure,pc=Object.fromEntries(Object.keys(stateName).map(k=>[k,analysisSet.filter(p=>p.state===k).length]));
+function render(){renderFilterAction();if(view==='ubs'){renderRepositories();return}if(view!=='ubs-repo')return;if(!snapshot)return;const f=readFilters(),analysisSet=Metrics.filterPRs(snapshot.prs,{state:''}),listSet=Metrics.filterPRs(analysisSet,f);renderActiveConditions(analysisSet);const prSort=entity==='batches'?'e2e':$('sort').value;filtered=Metrics.sortPRs(Metrics.searchPRs(listSet,f.query),prSort,snapshot?.meta?.end_ms);batchList=entity==='batches'?buildBatchList(listSet,f.query):[];const metricCache=new Map(filtered.map(p=>[p.number,Metrics.metrics(p.batches)]));const bs=analysisSet.flatMap(p=>p.batches),s=Metrics.aggregate(analysisSet),c=counts(bs),done=c.success+c.failure,pc=Object.fromEntries(Object.keys(stateName).map(k=>[k,analysisSet.filter(p=>p.state===k).length]));
  const sample=z=>`${z.n} 个有效 PR 样本${z.n===1?' · 样本不足':''}`;
  $('kpis').innerHTML=kpiHTML(analysisSet);
  const pct=analysisSet.length?s.e2e.n/analysisSet.length*100:0;$('coverage').innerHTML=`<strong><svg class="icon icon-sm" aria-hidden="true"><use href="#i-target"/></svg> PR 有效覆盖 ${num(pct,1)}% (${s.e2e.n}/${analysisSet.length})</strong><span class="track"><i style="width:${pct}%"></i></span><span>辅助：全部批次结果 · 成功 ${c.success} · 失败 ${c.failure} · 执行中 ${c.running} · 不完整 ${c.incomplete}</span>`;
@@ -52,7 +60,7 @@ function drawTasks(s){const field=$('chartMetric').value;const max=Math.max(...[
 function renderTable(cache){const pages=Math.max(1,Math.ceil(filtered.length/pageSize));page=Math.min(page,pages);const rows=filtered.slice((page-1)*pageSize,page*pageSize),field=$('tableMetric').value;$('prCount').textContent=filtered.length;$('prRows').innerHTML=rows.map(p=>{const s=cache.get(p.number);return `<tr data-pr="${p.number}"><td><button class="pr-title" title="${esc(p.title)}"><b>#${p.number}</b>${esc(p.title)}</button><small class="pr-meta">${submissionText(p)}${p.author?' · '+esc(p.author):''}${p.merged_ms?' · 合入 '+date(p.merged_ms,true):''}</small></td><td>${pill(p.state,stateName)}</td><td>${triggerHTML(p)}</td><td>${resultHTML(p.batches)}${failedHTML(p)}</td><td><div class="metric-value" title="${s.representative_batch_number!=null?'Trigger #'+s.representative_batch_number+' · ':''}${exact(s.e2e_ms)}">${minute(s.e2e_ms)}</div><small class="sample">${s.representative_batch_number!=null?'Trigger #'+s.representative_batch_number:'无有效批次'}</small></td>${['x86','arm','dt'].map(k=>`<td class="num"><div class="metric-value" title="${exact(s[k][field+'_ms'])}">${minute(s[k][field+'_ms'])}</div></td>`).join('')}<td><svg class="icon icon-sm" style="color:var(--text-3)" aria-hidden="true"><use href="#i-chevron-right"/></svg></td></tr>`}).join('')||'<tr><td colspan="9"><div class="empty">当前无匹配 PR，请调整筛选条件。</div></td></tr>';$('prRows').querySelectorAll('tr[data-pr]').forEach(r=>r.onclick=()=>openDetail(Number(r.dataset.pr)));$('pageInfo').textContent=`${page} / ${pages}`;$('prev').disabled=page<=1;$('next').disabled=page>=pages;const label={e2e:'代表 E2E 从长到短；相同 E2E 按提交时间从新到旧',batches:'批次数从多到少；相同批次数按提交时间从新到旧',submitted:'提交时间从新到旧；未知最后，同值按 PR 编号从大到小'};$('rowInfo').textContent=`显示 ${filtered.length?(page-1)*pageSize+1:0}–${Math.min(page*pageSize,filtered.length)} / ${filtered.length} 条 · ${label[$('sort').value]}`;}
 function renderQuality(){const rows=qualityRows();$('qualityContent').innerHTML=`<p class="quality-intro">当前筛选共有 ${rows.length} 条质量提示。无请求时间的批次仍可查看 Jenkins 耗时，但不进入 E2E 平均/P90。</p><div class="quality-list">${rows.map(r=>`<div class="quality-row"><a href="#" data-open="${esc(r[0])}">${typeof r[0]==='number'?'PR #':''}${esc(r[0])}</a><span>${esc(r[1])}</span><span class="reason">${esc(r[2])}</span></div>`).join('')||'<div class="empty">当前筛选无数据质量问题</div>'}</div>`;$('qualityContent').querySelectorAll('[data-open]').forEach(a=>a.onclick=e=>{e.preventDefault();if(Number(a.dataset.open))openDetail(Number(a.dataset.open))});}
 function navigate(hash){const newRoute=Router.parseRoute(hash);if(newRoute){if(newRoute.view==='workbench'){history.replaceState(null,'','#projects/ubs/overview');applyProjectRoute({view:'projects',project:'ubs',task:'overview',query:{}});return;}const canonical=Router.formatRoute(newRoute);if(canonical!==location.hash)history.pushState(null,'',canonical);applyProjectRoute(newRoute);return;}const raw=String(hash||'').replace(/^#/,'');if(raw.startsWith('projects/')){const parts=raw.split('?')[0].split('/');if(location.hash!=='#'+raw)history.pushState(null,'','#'+raw);unavailableProjectTask({project:parts[1]||'未知项目',task:parts[2]||'未知任务'},'此项目任务未提供或地址无效。');return;}/* EC-009: 旧哈希先经 legacyIntent 规范化到三规范页，replaceState 更新地址并保留可用条件；非法/未知格式仍走 resolve 兜底。 */const intent=Router.legacyIntent(hash);if(intent&&intent.view==='projects'){const canonical=Router.formatRoute(intent);if(location.hash!==canonical)history.replaceState(null,'',canonical);applyProjectRoute(intent);return;}const canonical=Router.resolve(hash);if(canonical!==location.hash){/* REQ-036: 直接目标导航（选择器切仓、返回总览、列表下钻）推进历史，后退逐步回退；仅旧链接或非法格式的规范化替换当前记录，避免多余中间条目。 */if(hash===canonical)history.pushState(null,'',canonical);else history.replaceState(null,'',canonical);}applyRoute(Router.parseHash(canonical));}
-function renderTritonView(){const el=document.getElementById('triton-view');if(!window.TritonView){el.innerHTML=window.tritonPayload?'<div class="notice">Triton 视图脚本未加载</div>':'<div class="empty">Triton 视图脚本未加载</div>';return}if(window.tritonPayload){try{window.TritonView.render(window.tritonPayload,el)}catch(err){console.warn(err);el.innerHTML='<div class="empty">Triton 视图渲染失败</div>';return}let n=el.querySelector('[data-role="tritonError"]');if(tritonStatus==='failed'){if(!n){n=document.createElement('div');n.className='notice';n.setAttribute('role','status');n.setAttribute('data-role','tritonError');el.insertBefore(n,el.firstChild)}n.textContent='Triton 数据重新读取失败：'+(tritonError||'未知错误')+'；当前仍显示上一次成功读取的数据。'}else if(n)n.remove();const route=Router.parseRoute(location.hash);const bid=route&&route.query&&route.query.batch;if(bid!=null){const b=window.tritonPayload.batches.find(x=>String(x.id!=null?x.id:x.action_url)===String(bid));if(b)openTritonDetail(b);else{if(window.TritonView?.clearDetailBatch)window.TritonView.clearDetailBatch();closeDetailContext();}}else if(tritonDetailBatch||$('detail').open){closeDetailContext();}return}if(tritonStatus==='failed'){el.innerHTML='<div class="empty">Triton 数据读取失败：'+esc(tritonError||'未知错误')+'。UBS 数据不受影响；请运行 python -X utf8 -m triton.dashboard 更新数据后重新加载。</div>';return}if(tritonStatus==='loading'){el.innerHTML='<div class="empty">正在读取 Triton 数据…</div>';return}el.innerHTML='<div class="empty">暂无 Triton 数据</div>'}
+function renderTritonView(){const el=document.getElementById('triton-view');if(!window.TritonView){el.innerHTML=window.tritonPayload?'<div class="notice">Triton 视图脚本未加载</div>':'<div class="empty">Triton 视图脚本未加载</div>';return}if(window.tritonPayload){try{window.TritonView.render(window.tritonPayload,el)}catch(err){console.warn(err);el.innerHTML='<div class="empty">Triton 视图渲染失败</div>';return}let n=el.querySelector('[data-role="tritonError"]');if(tritonStatus==='failed'){if(!n){n=document.createElement('div');n.className='notice';n.setAttribute('role','status');n.setAttribute('data-role','tritonError');el.insertBefore(n,el.firstChild)}n.textContent='Triton 数据重新读取失败：'+(tritonError||'未知错误')+'；当前仍显示上一次成功读取的数据。'}else if(n)n.remove();const route=Router.parseRoute(location.hash);const bid=route&&route.query&&route.query.batch;if(bid!=null){const b=window.tritonPayload.batches.find(x=>String(x.id!=null?x.id:x.action_url)===String(bid));if(b)openTritonDetail(b);else{if(window.TritonView?.clearDetailBatch)window.TritonView.clearDetailBatch();closeDetailContext();}}else if(tritonDetailBatch||$('detail').open){closeDetailContext();}return}if(tritonStatus==='failed'){el.innerHTML='<div class="empty">Triton 数据读取失败：'+esc(tritonError||'未知错误')+'。请重新加载快照。</div>';return}if(tritonStatus==='loading'){el.innerHTML='<div class="empty">正在读取 Triton 数据…</div>';return}el.innerHTML='<div class="empty">暂无 Triton 数据</div>'}
 /* UDR-018: Triton 记录任务复用公共记录模型（Records.tritonBatchRecords）——
    同一批次记录任务同时驱动 UBS 与 Triton。批次稳定身份去重，未知 PR 身份保留
    独立来源记录（不伪造 PR 汇总），排序先于分页、未知值恒列末位。 */
@@ -78,7 +86,7 @@ function markNavActive(project){document.querySelectorAll('.side-nav [data-nav]'
 function markNavActiveFromHash(){const route=Router.parseRoute(location.hash);if(route&&route.view==='projects'){markNavActive(route.project);return;}const raw=String(location.hash||'').replace(/^#/,'');markNavActive(raw.startsWith('triton')?'triton':'ubs');}
 function renderSideNav(){const nav=$('sideTasks');if(!nav)return;const communities=(window.Shell&&Shell.COMMUNITIES)||[{id:'ubs',label:'UBSCore',entry:'#projects/ubs/overview',icon:'i-layout-grid'},{id:'triton',label:'Triton-Ascend',entry:'#projects/triton/engineering',icon:'i-target'}];nav.innerHTML=communities.map(c=>`<a href="${esc(c.entry)}" class="nav-item" data-nav="${esc(c.id)}" title="${esc(c.label)}"><svg class="icon"><use href="#${esc(c.icon||'i-chevron-right')}"/></svg>${esc(c.label)}</a>`).join('');markNavActiveFromHash();}
 function unavailableProjectTask(route,reason){
- leaveTriton(null);closeDetailContext();view='unsupported';document.querySelectorAll('main > .export-notice').forEach(n=>n.remove());for(const id of ['ubs-view','ubs-repo-view','triton-view'])$(id).hidden=true;$('project-task-view').hidden=false;
+ leaveTriton(null);closeDetailContext();view='unsupported';filterUndo=null;$('filters').hidden=true;document.querySelectorAll('main > .export-notice').forEach(n=>n.remove());for(const id of ['ubs-view','ubs-repo-view','triton-view'])$(id).hidden=true;$('project-task-view').hidden=false;
  $('project-task-view').innerHTML=`<h2>${esc(route.project)} · ${esc(route.task)}</h2><p role="status">${esc(reason)}</p><a class="button" href="#projects/ubs/overview">返回总览</a>`;
  markNavActive(route.project||null);
  $('crumb').textContent='监控中心 / '+route.project+' / '+route.task;document.title=route.project+' · '+route.task+' · 未提供';$('pageSubtitle').textContent=reason;
@@ -118,7 +126,8 @@ function applyProjectRoute(route){
      fresh tab and a warm tab. */
   if(['engineering','trends','records'].includes(route.task)){$('query').value='';$('state').value='';$('tableMetric').value='total';pageSize=15;$('pageSize').value='15';page=1;}
   entity=(q.entity==='batches')?'batches':'prs';
-  const listQuery=Array.isArray(q.q)?q.q[0]:q.q;
+  if(!repository){$('query').value='';$('state').value='';}
+  const listQuery=repository?(Array.isArray(q.q)?q.q[0]:q.q):null;
   if(typeof listQuery==='string')$('query').value=listQuery;
   if(q.sort==='created')sortUpgraded=true;
   setEntitySort(entity,typeof q.sort==='string'?q.sort:undefined);
@@ -158,6 +167,7 @@ function applyRoute(route){
  leaveTriton(domain);if(tritonRecordsMode&&window.TritonView?.deactivate)window.TritonView.deactivate();$('project-task-view').hidden=true;
  view=ubs?(repo?'ubs-repo':'ubs'):domain;
  if(repo)currentRepository=r.repo;
+  if(view!==prevView||(repo&&prevRepo!==currentRepository))filterUndo=null;
   snapshot=repositorySnapshots[currentRepository]||null;
   /* TA-007: 重入同一 Triton 路由（如 Triton 数据与 UBS 索引先后到达各触发一次 navigate）
      不得关闭刚由深链接打开的详情；真正离开 triton 或切换 repo 时才关闭。 */
@@ -165,7 +175,7 @@ function applyRoute(route){
  for(const id of ['ubs-view','ubs-repo-view','triton-view'])$(id).hidden=id!==(ubs?(repo?'ubs-repo-view':'ubs-view'):domain+'-view');
  document.querySelectorAll('.side-nav [data-nav]').forEach(a=>a.classList.toggle('active',false));markNavActive(domain==='triton'?'triton':'ubs');
  if(repo){$('repoMain').hidden=false;}
- $('repositoryControls').hidden=!repo;$('filters').hidden=!ubs;
+ $('repositoryControls').hidden=!repo;$('filters').hidden=!ubs||(cross?!repositoryIndex:!snapshot);
  $('query').closest('label').hidden=!repo;$('activeConditions').hidden=true;
  $('repositorySelect').value=currentRepository;
  $('crumb').innerHTML=(domain==='triton'?['监控中心','Triton-Ascend',tritonRecordsMode?'批次记录':'门禁效率趋势']:domain==='method'?['监控中心','参考','统计口径']:cross?['监控中心','openEuler UBS','九仓效率总览']:['监控中心','openEuler UBS',currentRepository]).map(esc).join(' <b>/</b> ');
@@ -208,7 +218,13 @@ function applyRoute(route){
   else{$('notice').hidden=!ubs||cross||(!entry?.error&&entry?.status==='success'&&snapshot?.meta.start_ms===repositoryIndex?.start_ms&&snapshot?.meta.end_ms===repositoryIndex?.end_ms);$('notice').textContent=ubs?(entry?[repositoryState(entry,snapshot),entry.error].filter(Boolean).join(' · '):'未找到仓库'):'';}
   if(migrationNotice){if(migrationNotice.domain===domain){$('notice').hidden=false;$('notice').textContent=migrationNotice.text;}else migrationNotice=null;}
   $('loading').hidden=!ubs||(cross?!!repositoryIndex:!!snapshot);
-  if(ubs&&!cross&&!snapshot&&repositoryIndex){$('loading').textContent=entry?.status==='failed'?'该仓库'+(entry.error||'数据不可用')+'。其他仓库与 Triton 数据不受影响。':'该仓库尚未获取数据，请查看采集状态后运行采集命令。';for(const id of ['repoMain'])$(id).hidden=true;$('footerMeta').textContent=currentRepository+(entry?.status==='failed'?' · 快照读取失败':' · 未获取数据');}
+  if(ubs&&ubsIndexError){
+    $('loading').hidden=false;
+    $('loading').textContent=repositoryIndex
+      ? '重新加载快照失败：'+ubsIndexError+'。当前仍显示 '+freshnessText()+' 采集的快照，数据未更新。'
+      : '无法读取看板：'+ubsIndexError+'。请重新加载快照。';
+  }
+  if(ubs&&!cross&&!snapshot&&repositoryIndex){$('loading').textContent=entry?.status==='failed'?'该仓库'+(entry.error||'数据不可用')+'。其他仓库与 Triton 数据不受影响。':'该仓库尚无可用快照。可查看其他仓库，或稍后重新加载。';for(const id of ['repoMain'])$(id).hidden=true;$('footerMeta').textContent=currentRepository+(entry?.status==='failed'?' · 快照读取失败':' · 未获取数据');}
  if(ubs)render();else if(domain==='triton')(tritonRecordsMode?renderTritonRecords():renderTritonView());
  updateFreshness();
 }
@@ -253,22 +269,56 @@ async function readJSON(url,label){
  const reading=(async()=>{const response=await fetch(url,{cache:'no-store',signal:controller.signal});if(!response.ok)throw Error(label+' HTTP '+response.status);return response.json();})();
  try{return await readWithTimeout(reading,label,()=>controller.abort());}finally{activeReads.delete(controller);}
 }
-async function load(){
- const gen=reloadGate.begin();$('detail').close();ubsStatus='loading';tritonStatus='loading';tritonError=null;
- closeDetailContext();if(window.TritonView?.deactivate)window.TritonView.deactivate();for(const controller of activeReads)controller.abort();activeReads.clear();
+let refreshPending=false,ubsIndexError=null;
+function renderRefreshedRoute(){
+  if($('detail').open)refreshPending=true;
+  else navigate(location.hash);
+}
+async function load(manual=false){
+ const gen=reloadGate.begin();
+ if(manual){
+  $('reload').disabled=true;
+  $('refreshStatus').textContent='正在刷新快照…';
+ }
+ ubsStatus='loading';tritonStatus='loading';tritonError=null;ubsIndexError=null;
+ for(const controller of activeReads)controller.abort();activeReads.clear();
  const tritonTask=(async()=>{try{const d=await readJSON('data/triton.json','Triton 数据');if(!d||typeof d!=='object'||!Array.isArray(d.batches))throw Error('Triton 数据格式无效');const ws=Date.parse(d.window_start),we=Date.parse(d.window_end);if(!Number.isFinite(ws)||!Number.isFinite(we)||we<ws)throw Error('Triton 数据时间窗无效（window_end 早于 window_start 或不可解析）');if(reloadGate.isCurrent(gen)){window.tritonPayload=window.normalizeE2ePayload(d);tritonStatus='ok'}}catch(err){if(reloadGate.isCurrent(gen)){tritonStatus='failed';tritonError=err.message}}})();
- tritonTask.then(()=>{if(!reloadGate.isCurrent(gen))return;updateFreshness();if(view==='triton')navigate(location.hash);});
+ tritonTask.then(()=>{if(!reloadGate.isCurrent(gen))return;updateFreshness();if(view==='triton')renderRefreshedRoute();});
  const shellTask=(async()=>{let cat=null,rel=null;try{cat=await readJSON('data/catalog.json','项目目录');}catch(err){}try{rel=await readJSON('data/release.json','发布状态');}catch(err){}if(!reloadGate.isCurrent(gen))return;catalog=cat;release=rel;})();
- shellTask.then(()=>{if(!reloadGate.isCurrent(gen))return;renderSideNav();});
  try{
- $('loading').hidden=true;const skel=n=>Array.from({length:n},()=>`<div class="skel skel-card"></div>`).join(''),skelRows=(n,c)=>Array.from({length:n},()=>`<tr><td colspan="${c}"><div class="skel skel-row"></div></td></tr>`).join('');if(!repositoryIndex){$('kpis').innerHTML=skel(5);$('repositoryKpis').innerHTML=skel(5);$('prRows').innerHTML=skelRows(5,9);$('repositoryRows').innerHTML=skelRows(5,8);}const index=await readJSON('data/repositories.json','仓库索引');if(!Array.isArray(index.repositories))throw Error('仓库索引格式无效');if(!reloadGate.isCurrent(gen))return;const snapshots={};await Promise.all(index.repositories.map(async entry=>{if(!entry.snapshot)return;try{const data=await readJSON('data/'+entry.snapshot,'仓库快照');if(!data.meta||!Array.isArray(data.prs)||data.meta.repository!==entry.repository)throw Error('仓库快照格式或归属不匹配');snapshots[entry.name]=data}catch(error){entry.status='failed';entry.error='快照读取失败：'+error.message;const prior=repositorySnapshots[entry.name];if(prior?.meta?.repository===entry.repository&&Array.isArray(prior.prs))snapshots[entry.name]=prior;}}));if(!reloadGate.isCurrent(gen))return;repositoryIndex=index;repositorySnapshots=snapshots;ubsStatus='ok';$('repositorySelect').innerHTML=index.repositories.map(r=>`<option value="${esc(r.name)}">${esc(r.name)}</option>`).join('');$('loading').hidden=true;updateFreshness();navigate(location.hash)
+ $('loading').hidden=true;const skel=n=>Array.from({length:n},()=>`<div class="skel skel-card"></div>`).join(''),skelRows=(n,c)=>Array.from({length:n},()=>`<tr><td colspan="${c}"><div class="skel skel-row"></div></td></tr>`).join('');if(!repositoryIndex){$('kpis').innerHTML=skel(5);$('repositoryKpis').innerHTML=skel(5);$('prRows').innerHTML=skelRows(5,9);$('repositoryRows').innerHTML=skelRows(5,8);}const index=await readJSON('data/repositories.json','仓库索引');if(!Array.isArray(index.repositories))throw Error('仓库索引格式无效');if(!reloadGate.isCurrent(gen))return;const snapshots={};await Promise.all(index.repositories.map(async entry=>{if(!entry.snapshot)return;try{const data=await readJSON('data/'+entry.snapshot,'仓库快照');if(!data.meta||!Array.isArray(data.prs)||data.meta.repository!==entry.repository)throw Error('仓库快照格式或归属不匹配');snapshots[entry.name]=data}catch(error){entry.status='failed';entry.error='快照读取失败：'+error.message;const prior=repositorySnapshots[entry.name];if(prior?.meta?.repository===entry.repository&&Array.isArray(prior.prs))snapshots[entry.name]=prior;}}));if(!reloadGate.isCurrent(gen))return;repositoryIndex=index;repositorySnapshots=snapshots;ubsStatus='ok';$('repositorySelect').innerHTML=index.repositories.map(r=>`<option value="${esc(r.name)}">${esc(r.name)}</option>`).join('');$('loading').hidden=true;updateFreshness();if(view!=='triton')renderRefreshedRoute();
  }catch(e){
-  if(!reloadGate.isCurrent(gen))return;ubsStatus='failed';
-   if(repositoryIndex){navigate(location.hash);$('loading').hidden=!['ubs','ubs-repo'].includes(view);$('loading').textContent='重新加载快照失败：'+e.message+'。当前仍显示 '+freshnessText()+' 采集的快照，数据未更新。';return;}
-  for(const id of ['kpis','repositoryKpis','prRows','repositoryRows'])$(id).innerHTML='';
-  navigate(location.hash);
-  $('loading').textContent='无法读取看板：'+e.message+'。请运行 python collect.py --all 并通过本地服务打开。';
-  if(view==='ubs')$('loading').hidden=false;
+  if(!reloadGate.isCurrent(gen))return;
+  ubsStatus='failed';
+  ubsIndexError=e.message;
+  if(!repositoryIndex)for(const id of ['kpis','repositoryKpis','prRows','repositoryRows'])$(id).innerHTML='';
+  if(view!=='triton')renderRefreshedRoute();
+ }finally{
+  if(manual)await Promise.all([tritonTask,shellTask]);
+  if(manual&&reloadGate.isCurrent(gen)){
+   $('reload').disabled=false;
+   const issues=repositoryIndex?.repositories.some(entry=>entry.error?.startsWith('快照读取失败'));
+   $('refreshStatus').textContent=ubsStatus==='ok'&&tritonStatus==='ok'&&!issues?'快照已刷新':'刷新遇到问题，请查看页面提示';
+  }
  }
 }
-for(const id of ['query','state'])$(id).addEventListener(id==='query'?'input':'change',()=>{page=1;render();syncRecordsUrl(id==='query'?'replace':'push')});$('query').addEventListener('change',()=>syncRecordsUrl('push'));for(const id of ['sort','tableMetric','chartMetric'])$(id).onchange=()=>{page=1;render();if(id!=='chartMetric')syncRecordsUrl('push')};$('entity').onchange=()=>{entity=$('entity').value;page=1;render();syncRecordsUrl('push')};$('reset').onclick=()=>{for(const id of ['query','state'])$(id).value='';page=1;render();syncRecordsUrl('push')};$('prev').onclick=()=>{page--;render();syncRecordsUrl('push')};$('next').onclick=()=>{page++;render();syncRecordsUrl('push')};$('pageSize').onchange=()=>{pageSize=Number($('pageSize').value);page=1;render();syncRecordsUrl('push')};$('export').onclick=exportPRs;$('exportBatches').onclick=exportBatches;$('exportBatchTasks').onclick=exportBatchTasks;$('closeDetail').onclick=()=>{closeDetailContext();syncRecordsUrl('replace');};$('detail').addEventListener('close',()=>{if(!$('detail').open){detailPR=null;detailSnapshot=null;detailRepo=null;detailChoice=null;tritonDetailBatch=null;if(window.TritonView?.clearDetailBatch)window.TritonView.clearDetailBatch();if(!closingForNavigation)syncRecordsUrl('replace');}});$('detail').addEventListener('click',e=>{if(e.target===$('detail')){const r=$('detail').getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom){closeDetailContext();syncRecordsUrl('replace');}}});$('reload').onclick=load;$('repositorySelect').onchange=()=>navigate('#ubs/repo/'+encodeURIComponent($('repositorySelect').value));$('backRepositories').onclick=()=>navigate('#ubs');$('repositorySort').onchange=renderRepositories;$('exportRepositories').onclick=exportRepositories;window.addEventListener('hashchange',()=>navigate(location.hash));renderSideNav();navigate(location.hash);load();
+function toggleFilters(){
+  const next=QueryState.toggleListFilters({...readFilters(),page},filterUndo);
+  filterUndo=next.undo;
+  $('query').value=next.filters.query;
+  $('state').value=next.filters.state;
+  page=next.filters.page;
+  render();
+  syncRecordsUrl('push');
+}
+for(const id of ['query','state'])$(id).addEventListener(id==='query'?'input':'change',()=>{filterUndo=null;page=1;render();syncRecordsUrl(id==='query'?'replace':'push')});$('query').addEventListener('change',()=>syncRecordsUrl('push'));for(const id of ['sort','tableMetric','chartMetric'])$(id).onchange=()=>{page=1;render();if(id!=='chartMetric')syncRecordsUrl('push')};$('entity').onchange=()=>{entity=$('entity').value;page=1;render();syncRecordsUrl('push')};$('prev').onclick=()=>{page--;render();syncRecordsUrl('push')};$('next').onclick=()=>{page++;render();syncRecordsUrl('push')};$('pageSize').onchange=()=>{pageSize=Number($('pageSize').value);page=1;render();syncRecordsUrl('push')};$('export').onclick=exportPRs;$('exportBatches').onclick=exportBatches;$('exportBatchTasks').onclick=exportBatchTasks;$('closeDetail').onclick=()=>{closeDetailContext();syncRecordsUrl('replace');};$('detail').addEventListener('close',()=>{if(!$('detail').open){detailPR=null;detailSnapshot=null;detailRepo=null;detailChoice=null;tritonDetailBatch=null;if(window.TritonView?.clearDetailBatch)window.TritonView.clearDetailBatch();if(!closingForNavigation)syncRecordsUrl('replace');
+if(refreshPending){
+  refreshPending=false;
+  const row=document.activeElement?.closest('#prRows tr[data-pr], #prRows tr[data-batch]');
+  navigate(location.hash);
+  if(row&&!$('detail').open){
+    const key=row.dataset.pr?'pr':'batch';
+    const match=Array.from($('prRows').rows).find(next=>next.dataset[key]===row.dataset[key]);
+    match?.querySelector('.pr-title')?.focus({preventScroll:true});
+  }
+}}});$('detail').addEventListener('click',e=>{if(e.target===$('detail')){const r=$('detail').getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom){closeDetailContext();syncRecordsUrl('replace');}}});$('reset').onclick=toggleFilters;$('reload').onclick=()=>load(true);$('repositorySelect').onchange=()=>navigate('#ubs/repo/'+encodeURIComponent($('repositorySelect').value));$('backRepositories').onclick=()=>navigate('#projects/ubs/overview');$('repositorySort').onchange=renderRepositories;$('exportRepositories').onclick=exportRepositories;window.addEventListener('hashchange',()=>navigate(location.hash));renderSideNav();navigate(location.hash);load();

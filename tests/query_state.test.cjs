@@ -79,3 +79,16 @@ test('dedupeConcerns skips rows without a stable identity', () => {
   const indexed = Q.dedupeConcerns([{ batch: '', reason: 'x' }], c => c.batch, c => [c.reason]);
   assert.equal(indexed.length, 0);
 });
+
+test('filter clearing restores the captured conditions once', () => {
+  const filters = { query: 'PR 42', state: 'merged', page: 3 };
+  const cleared = Q.toggleListFilters(filters, null);
+  assert.deepEqual(cleared, {
+    filters: { query: '', state: '', page: 1 },
+    undo: filters,
+  });
+  assert.deepEqual(Q.toggleListFilters(cleared.filters, cleared.undo), {
+    filters,
+    undo: null,
+  });
+});

@@ -148,9 +148,12 @@ test('UAR-008: clearing the state filter rewrites the URL', () => {
   a.element('state').selectedOptions = [{ textContent: '已合入' }];
   a.context.location.hash = '#projects/ubs/records?state=merged';
   a.run('render=()=>{};globalThis.syncCalls=0;syncRecordsUrl=()=>globalThis.syncCalls++;renderActiveConditions([])');
-  a.element('clearConditions').onclick();
+  a.run('toggleFilters()');
   assert.equal(a.element('state').value, '', 'state cleared');
   assert.equal(a.context.syncCalls, 1, 'the clear action syncs the share URL exactly once');
+  a.run('toggleFilters()');
+  assert.equal(a.element('state').value, 'merged', 'undo restores the state');
+  assert.equal(a.context.syncCalls, 2, 'undo also updates the share URL');
 });
 
 test('EC-007: legacy tf/qf conditions report the retired advanced panel instead of filtering', () => {

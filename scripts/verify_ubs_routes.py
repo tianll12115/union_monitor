@@ -343,7 +343,7 @@ APP_CONTRACTS = [
      "['监控中心','openEuler UBS',currentRepository]"),
     ('unknown_repo_notice', ":'未找到仓库'):''"),
     ('unknown_repo_loading',
-     "'该仓库尚未获取数据，请查看采集状态后运行采集命令。'"),
+     "'该仓库尚无可用快照。可查看其他仓库，或稍后重新加载。'"),
     ('unknown_repo_hide_main',
      "for(const id of ['repoMain'])$(id).hidden=true"),
     ('unknown_repo_footer',

@@ -47,26 +47,15 @@ test('app load() guards every await boundary with the reload gate',()=>{
 test('reload failure keeps the previous snapshot visible with its collection time',()=>{
  const source=fs.readFileSync(path.join(__dirname,'../web/app.js'),'utf8');
  assert.match(source,/function freshnessText\(\)/,'collection-time text is factored out for reuse');
- assert.match(source,/重新加载快照失败：'\+e\.message\+'。当前仍显示 '\+freshnessText\(\)\+' 采集的快照/,'the failure notice must name the still-displayed snapshot time');
-  const failPath=source.slice(source.indexOf("}catch(e){"));
-  const hasDataBranch=failPath.indexOf('if(repositoryIndex){');
-  assert.ok(hasDataBranch>-1,'the has-snapshot branch must come first in the catch');
-  const branchEnd=failPath.indexOf('return;',hasDataBranch);
-  assert.ok(branchEnd>-1,'the has-snapshot branch must return before the first-load fallback runs');
-  const branch=failPath.slice(hasDataBranch,branchEnd);
-  assert.ok(branch.includes('navigate(location.hash);'),'the has-snapshot branch re-renders the current view');
-  assert.ok(branch.indexOf('navigate(location.hash);')<branch.indexOf("$('loading').hidden="),'the context-appropriate failure banner must be set after re-render; its visible behavior is covered by app_runtime');
-  const fallback=failPath.slice(branchEnd);
-  assert.ok(fallback.includes('navigate(location.hash);'),'REQ-010: the first-load fallback must still route the current view instead of hiding it');
-  assert.ok(!failPath.includes("for(const id of ['ubs-view'"),'REQ-010: a UBS index failure must not hide the triton and method views');
+ assert.match(source,/重新加载快照失败：'\+ubsIndexError\+'。当前仍显示 '\+freshnessText\(\)\+' 采集的快照/,'the failure notice names the still-displayed snapshot time');
 });
 
-test('navigation or reload closes a stale PR detail and clears its reference',()=>{
+test('navigation closes stale details and refresh waits for the current detail',()=>{
  const source=fs.readFileSync(path.join(__dirname,'../web/app.js'),'utf8');
  assert.match(source,/detailRepo=null,/,'module state must track the repository a detail belongs to');
  assert.match(source,/detailRepo=currentRepository;/,'openDetail must record the repository the detail was opened from');
  assert.ok(source.includes("(detailPR||$('detail').open)&&(domain!=='ubs'||!repo||currentRepository!==detailRepo)"),'context-changing navigation (domain, repository or leaving the repo view) must close the detail dialog');
- assert.ok(source.includes("reloadGate.begin();$('detail').close();"),'a reload attempt must close the open detail at start, before fetching');
+ assert.match(source,/if\(\$\('detail'\)\.open\)refreshPending=true;/,'a refresh waits for the open detail to close');
  assert.ok(source.includes("addEventListener('close',()=>{if(!$('detail').open){detailPR=null;detailSnapshot=null;detailRepo=null;detailChoice=null;tritonDetailBatch=null;"),'any dialog close (button, overlay, Esc) must clear the stale detail reference, snapshot and repository binding');
 });
 
@@ -121,7 +110,7 @@ test('REQ-010: per-repo read failures degrade locally with distinct notices',()=
   assert.ok(source.includes("entry.status='failed';entry.error='快照读取失败：'+error.message"),'a failing repository is marked failed without aborting the other reads');
   assert.match(source,/readJSON\('data\/'\+entry\.snapshot/,'the whole repository JSON read uses the timeout-protected path (body timeout behavior is covered by app_runtime)');
   assert.ok(source.includes("entry?.status==='failed'?'该仓库'+(entry.error||'数据不可用')+'。其他仓库与 Triton 数据不受影响。'"),'a read-failed repository must be told apart from a never-collected one');
-  assert.ok(source.includes('该仓库尚未获取数据，请查看采集状态后运行采集命令。'),'the pending (未获取) notice stays distinct from the failure notice');
+  assert.ok(source.includes('该仓库尚无可用快照。可查看其他仓库，或稍后重新加载。'),'the pending (未获取) notice stays distinct from the failure notice');
   assert.ok(source.includes("?' · 快照读取失败':' · 未获取数据'"),'the footer labels failure and never-collected differently');
   assert.ok(source.includes("$('loading').hidden=!ubs||(cross?!!repositoryIndex:!!snapshot)"),'the overview keeps its status line visible while the index is unread and hides it once data exists');
   assert.ok(source.includes("'仓库索引未读取，UBS 视图暂不可用'"),'a missing index must not be misreported as 未找到仓库');

@@ -31,6 +31,11 @@
     return analysisSet.filter(function (record) { return matchesQuery(record, query, fields); });
   }
 
+  function toggleListFilters(filters, undo) {
+    if (undo) return { filters: undo, undo: null };
+    return { filters: { query: '', state: '', page: 1 }, undo: filters };
+  }
+
   function dedupeConcerns(concerns, batchIdOf, reasonsOf) {
     const index = new Map();
     for (const concern of (Array.isArray(concerns) ? concerns : [])) {
@@ -55,7 +60,7 @@
     return { unique: indexed.length, reasonCounts };
   }
 
-  const api = { matchesQuery, selectAnalysis, selectList, dedupeConcerns, concernSummary };
+  const api = { matchesQuery, selectAnalysis, selectList, toggleListFilters, dedupeConcerns, concernSummary };
   if (typeof module !== 'undefined') module.exports = api;
   else root.QueryState = api;
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -41,5 +41,5 @@ test('REQ-030 AC03: reload keeps a visible name, an accessible hint, and the sam
   assert.match(tag,/title="重新加载快照"/,'accessible hint');
   const full=html.match(/<button id="reload"[\s\S]*?<\/button>/)[0];
   assert.match(full,/重新加载快照/,'recognizable visible name, not icon-only');
-  assert.match(app,/\$\('reload'\)\.onclick=load/,'click/touch still routes to the same load()');
+  assert.match(app,/\$\('reload'\)\.onclick=\(\)=>load\(true\)/,'click/touch invokes the manual refresh path');
 });

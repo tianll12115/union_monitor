@@ -357,7 +357,7 @@ APP_CONTRACTS = [
     ('close_cleanup',
      "addEventListener('close',()=>{if(!$('detail').open){detailPR=null;"
      'detailSnapshot=null;detailRepo=null;detailChoice=null;tritonDetailBatch=null;'
-     'if(window.TritonView?.clearDetailBatch)window.TritonView.clearDetailBatch();if(!closingForNavigation)syncRecordsUrl(\'replace\');}});'),
+     'if(window.TritonView?.clearDetailBatch)window.TritonView.clearDetailBatch();if(!closingForNavigation)syncRecordsUrl(\'replace\');'),
     ('route_context_cleanup',
      "function closeDetailContext(){if($('detail').open){closingForNavigation=true;try{$('detail').close();}finally{closingForNavigation=false;}}"
      'detailPR=null;detailRepo=null;detailSnapshot=null;detailChoice=null;tritonDetailBatch=null;'

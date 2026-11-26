@@ -43,7 +43,7 @@ python serve.py --port 8765
 | 流程 | 北京时间 | 范围 |
 |---|---|---|
 | [每日采集与发布](.github/workflows/pages.yml) | 07:30 | UBS 九仓 30 天 + Triton 72 小时 |
-| [Triton 增量](.github/workflows/triton-refresh.yml) | 08:00/12:00/16:00/18:00/20:00 | 仅重采 Triton，复用已验证 UBS 快照 |
+| [Triton 增量](.github/workflows/triton-refresh.yml) | 00:00/04:00/08:00/12:00/16:00/20:00 | 每 4 小时重采 Triton，复用已验证 UBS 快照并发布到 GitHub Pages |
 
 以上是启动日程而非更新时间保证；两流程共用 `pages` 并发组且 `cancel-in-progress: false`，排队中的运行遵循平台默认替换规则。迁移状态与目标态见 [采集与运维](docs/operations.md)。
 

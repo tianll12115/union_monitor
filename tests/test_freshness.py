@@ -1,7 +1,7 @@
 """REQ-049 · 新鲜度与异常/空态表达保持 — 测试。
 
 锁定 scripts/verify_freshness.py 的独立镜像语义：
-- freshnessSlots：北京时间 08:00/12:00/16:00/18:00/20:00 计划槽位（含前夜
+- freshnessSlots：北京时间 00:00/04:00/08:00/12:00/16:00/20:00 计划槽位（含前夜
   20:00）、90 分钟宽限、严格小于判定；AC01 精确案例（旧 08:17 快照在
   12:00 槽位宽限结束的 13:30 显示延迟、13:29 不延迟）
 - 合成目录树：干净树退出码 0；篡改槽位小时表、提醒文案、导出恢复
@@ -38,9 +38,10 @@ class FreshnessMirrorTests(unittest.TestCase):
                                          utc(2026, 10, 9, 0, 17))
         self.assertTrue(result['stale'])
         self.assertEqual(result['latest'], utc(2026, 10, 9, 4, 0))  # 12:00
-        # 存活槽位：前夜 20:00、08:00、12:00（18/20 尚未到）
+        # 存活槽位：前夜 20:00、当日 00:00、04:00、08:00、12:00
         self.assertEqual(result['slots'],
-                         [utc(2026, 10, 8, 12, 0), utc(2026, 10, 9, 0, 0),
+                         [utc(2026, 10, 8, 12, 0), utc(2026, 10, 8, 16, 0),
+                          utc(2026, 10, 8, 20, 0), utc(2026, 10, 9, 0, 0),
                           utc(2026, 10, 9, 4, 0)])
 
     def test_before_grace_not_stale(self):
@@ -65,13 +66,13 @@ class FreshnessMirrorTests(unittest.TestCase):
         self.assertIsNotNone(result['latest'])
 
     def test_early_morning_prev_day_slot(self):
-        # 凌晨 03:00：最新槽位为前夜 20:00
+        # 凌晨 03:00：最新槽位为当日 00:00
         now = utc(2026, 10, 8, 19, 0)
-        fresh = vfr.own_freshness_slots(now, utc(2026, 10, 8, 12, 17))
-        self.assertEqual(fresh['latest'], utc(2026, 10, 8, 12, 0))
-        self.assertFalse(fresh['stale'])  # 20:17 采集 ≥ 前夜 20:00 槽位
+        fresh = vfr.own_freshness_slots(now, utc(2026, 10, 8, 16, 17))
+        self.assertEqual(fresh['latest'], utc(2026, 10, 8, 16, 0))
+        self.assertFalse(fresh['stale'])  # 00:17 采集晚于零点槽位
         stale = vfr.own_freshness_slots(now, utc(2026, 10, 8, 11, 0))
-        self.assertTrue(stale['stale'])   # 19:00 采集早于前夜 20:00 槽位
+        self.assertTrue(stale['stale'])   # 前一日采集早于零点槽位
 
     def test_midnight_rollover(self):
         # 北京时间零点翻转：最新槽位仍为前夜 20:00
@@ -93,14 +94,14 @@ class FreshnessMirrorTests(unittest.TestCase):
         # 09:29/09:30：08:00 槽位宽限边界
         self.assertEqual(vfr.own_freshness_slots(
             utc(2026, 10, 9, 1, 29), utc(2026, 10, 9, 0, 17))['latest'],
-            utc(2026, 10, 8, 12, 0))
+            utc(2026, 10, 8, 20, 0))
         self.assertEqual(vfr.own_freshness_slots(
             utc(2026, 10, 9, 1, 30), utc(2026, 10, 9, 0, 17))['latest'],
             utc(2026, 10, 9, 0, 0))
         # 21:29/21:30：20:00 槽位宽限边界
         self.assertEqual(vfr.own_freshness_slots(
             utc(2026, 10, 9, 13, 29), utc(2026, 10, 9, 10, 17))['latest'],
-            utc(2026, 10, 9, 10, 0))  # 18:00
+            utc(2026, 10, 9, 8, 0))  # 16:00
         self.assertEqual(vfr.own_freshness_slots(
             utc(2026, 10, 9, 13, 30), utc(2026, 10, 9, 10, 17))['latest'],
             utc(2026, 10, 9, 12, 0))  # 20:00
@@ -159,8 +160,8 @@ class SyntheticTreeTests(unittest.TestCase):
 
     def test_tampered_slots_hours_exit_one(self):
         root = self.build_tree()
-        self.tamper(root, 'triton-core.js', '[-4, 8, 12, 16, 18, 20]',
-                    '[-4, 8, 12, 16, 18, 21]')
+        self.tamper(root, 'triton-core.js', '[-4, 0, 4, 8, 12, 16, 20]',
+                    '[-4, 0, 4, 8, 12, 16, 21]')
         code, report = self.run_tool(root)
         self.assertEqual(code, 1)
         self.assertIn('triton-core.js:slots_hours',

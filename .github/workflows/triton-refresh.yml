@@ -2,8 +2,8 @@ name: Refresh Triton dashboard
 
 on:
   schedule:
-    # 08:00, 12:00, 16:00, 18:00 and 20:00 Asia/Shanghai (UTC+8)
-    - cron: "0 0,4,8,10,12 * * *"
+    # Every 4 hours: 00:00, 04:00, 08:00, 12:00, 16:00 and 20:00 Asia/Shanghai
+    - cron: "0 0,4,8,12,16,20 * * *"
   workflow_dispatch:
 
 permissions:

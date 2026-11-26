@@ -485,7 +485,7 @@ test('freshnessSlots finds the latest grace-elapsed Beijing slot', () => {
   // 2026-10-09 21:35 Beijing == 13:35 UTC: the 20:00 slot's 90-minute grace has elapsed.
   const now = Date.UTC(2026, 9, 9, 13, 35);
   const result = freshnessSlots(now, Date.UTC(2026, 9, 9, 11, 0));
-  assert.equal(result.slots.length, 6);
+  assert.equal(result.slots.length, 7);
   assert.equal(result.latest, Date.UTC(2026, 9, 9, 12, 0), 'latest slot is Beijing 20:00');
   assert.equal(result.stale, true, 'collection before the latest slot is stale');
   assert.equal(freshnessSlots(now, Date.UTC(2026, 9, 9, 12, 30)).stale, false, 'collection after the latest slot is fresh');
@@ -496,16 +496,16 @@ test('freshnessSlots respects the grace window and the early-morning fallback', 
   // 21:20 Beijing: the 20:00 slot is still inside its 90-minute grace period.
   const evening = Date.UTC(2026, 9, 9, 13, 20);
   const grace = freshnessSlots(evening, Date.UTC(2026, 9, 9, 10, 30));
-  assert.equal(grace.latest, Date.UTC(2026, 9, 9, 10, 0), 'grace not elapsed: latest is Beijing 18:00');
-  assert.equal(grace.stale, false, 'collected after the 18:00 slot is still fresh');
-  assert.equal(freshnessSlots(evening, Date.UTC(2026, 9, 9, 9, 59)).stale, true, 'missing the 18:00 slot is stale');
-  // 07:00 Beijing == 2026-10-08 23:00 UTC: only yesterday's 20:00 slot has fully passed.
+  assert.equal(grace.latest, Date.UTC(2026, 9, 9, 8, 0), 'grace not elapsed: latest is Beijing 16:00');
+  assert.equal(grace.stale, false, 'collected after the 16:00 slot is still fresh');
+  assert.equal(freshnessSlots(evening, Date.UTC(2026, 9, 9, 7, 59)).stale, true, 'missing the 16:00 slot is stale');
+  // 07:00 Beijing == 2026-10-08 23:00 UTC: the 04:00 slot's grace has elapsed.
   const morning = Date.UTC(2026, 9, 8, 23, 0);
   const early = freshnessSlots(morning, Date.UTC(2026, 9, 8, 11, 0));
   assert.equal(early.slots[0], Date.UTC(2026, 9, 8, 12, 0), 'first slot is yesterday 20:00 Beijing');
-  assert.equal(early.latest, Date.UTC(2026, 9, 8, 12, 0));
-  assert.equal(early.stale, true, 'missing yesterday evening run is stale in the morning');
-  assert.equal(freshnessSlots(morning, Date.UTC(2026, 9, 8, 12, 0)).stale, false, 'collecting exactly at the slot counts as fresh');
+  assert.equal(early.latest, Date.UTC(2026, 9, 8, 20, 0));
+  assert.equal(early.stale, true, 'missing the 04:00 run is stale in the morning');
+  assert.equal(freshnessSlots(morning, Date.UTC(2026, 9, 8, 20, 0)).stale, false, 'collecting exactly at the slot counts as fresh');
 });
 
 /* ---- REQ-001: page-level set G (branch × shared time window) ---- */

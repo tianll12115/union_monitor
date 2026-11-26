@@ -162,8 +162,8 @@ def business_impact():
     return {
         'schedule_facts': {
             'daily': 'pages.yml 每日北京时间 07:30（UTC 23:30）触发，build timeout 180 分钟',
-            'incremental': 'triton-refresh.yml 北京时间 08:00/13:00/18:00/20:00 触发，'
-                           'build timeout 60 分钟',
+            'incremental': 'triton-refresh.yml 北京时间 00:00/04:00/08:00/12:00/16:00/20:00 触发，'
+                           'build timeout 90 分钟',
         },
         'scenarios': [
             {'id': 'S-a', 'sequence': '每日全量运行中，增量触发',

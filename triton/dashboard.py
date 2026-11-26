@@ -420,7 +420,7 @@ def build_batches(runs, as_of, window_start=None):
         if key[2] == "rerun" and start is None: missing.append("无本次 attempt 起点证据，E2E 留空")
         if any(not r.get("jobs_complete") for r in rows): missing.append("部分 workflow 的 job 明细未采集")
         pr_candidates=sorted({c for r in rows for c in (r.get("pr_candidates") or [])})
-        if not first.get("pr"):
+        if not first.get("pr") and first.get("event") in (None,"pull_request","pull_request_target"):
             missing.append(
                 "PR 归属存在多个候选（"+ "、".join(f"#{n}" for n in pr_candidates) +"），不计入 PR 统计"
                 if pr_candidates else "未可靠关联 PR")
@@ -804,7 +804,10 @@ def collect(hours=72, as_of=None):
     for index,r in enumerate(runs,1):
         row=dict(r)
         try:
-            row.update(resolver.resolve(r))
+            if r["event"] in ("pull_request", "pull_request_target"):
+                row.update(resolver.resolve(r))
+            else:
+                row.update(pr=None, base_branch=r.get("head_branch"))
         except Exception as exc:
             association_errors.append({"run_id":r["id"],"url":r.get("html_url"),"error":str(exc),
                                        "kind":association_error_kind(exc)})
@@ -875,7 +878,7 @@ def collect(hours=72, as_of=None):
                             fetch_start=fetch_start, fetch_end=iso(fetch_end))
     payload["discovery"]={"mode":"bounded_rerun_lookback", "discovery_method":"partitioned_created_history", "rerun_lookback_days":RERUN_LOOKBACK.days,
                           "fetch_window_start":iso(start-RERUN_LOOKBACK),"fetch_window_end":iso(fetch_end),
-                          "boundary_note":"按 PR 事件枚举创建时间在 "+iso(start-RERUN_LOOKBACK)+" 至发现截止之间的 run，并逐个枚举历史 attempt；早于该回溯边界创建、但在窗口内重跑的 run 可能未枚举，本快照不宣称全量；已删除或超出源保留期的记录不可恢复；创建发现截至 "+iso(fetch_end)+"；统计窗口按 attempt 起点选择、窗末等于该发现截止，采集完成时间另列，采集期间完成的批次可能晚于窗末；状态为逐页观测，非原子时间快照"}
+                          "boundary_note":"按仓库全部事件枚举创建时间在 "+iso(start-RERUN_LOOKBACK)+" 至发现截止之间的 run，并逐个枚举历史 attempt；早于该回溯边界创建、但在窗口内重跑的 run 可能未枚举，本快照不宣称全量；已删除或超出源保留期的记录不可恢复；创建发现截至 "+iso(fetch_end)+"；统计窗口按 attempt 起点选择、窗末等于该发现截止，采集完成时间另列，采集期间完成的批次可能晚于窗末；状态为逐页观测，非原子时间快照"}
     payload["discovery"].update({key:api.discovery_evidence[key]
                                  for key in ("enumerated_runs","candidate_runs","excluded_runs")})
     metadata = json.loads((EVIDENCE/"runs.json").read_text(encoding="utf-8"))

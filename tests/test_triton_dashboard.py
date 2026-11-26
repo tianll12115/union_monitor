@@ -527,6 +527,11 @@ class CollectWindowTests(unittest.TestCase):
         outside = {**inside, "id": 2, "created_at": "2026-09-20T00:00:00Z",
                    "run_started_at": "2026-09-20T00:00:00Z", "updated_at": "2026-09-20T00:10:00Z",
                    "run_attempt": 1}
+        push = {**inside, "id": 3, "event": "push", "head_branch": "main-dev",
+                "created_at": "2026-09-27T10:00:00Z", "run_started_at": "2026-09-27T10:00:00Z",
+                "updated_at": "2026-09-27T10:05:00Z", "run_attempt": 1,
+                "html_url": "https://github.com/example/actions/runs/3"}
+        runs = [inside, outside, push]
         paths = []
 
         def fake_get(self, url):
@@ -534,10 +539,10 @@ class CollectWindowTests(unittest.TestCase):
             if re.search(r"/attempts/\d+$", url):
                 return {**inside, "run_attempt": 1, "run_started_at": inside["created_at"], "updated_at": inside["created_at"]}, {}
             if url.endswith("per_page=1"):
-                return {"total_count": 2, "workflow_runs": [inside, outside]}, {}
+                return {"total_count": len(runs), "workflow_runs": runs}, {}
             if "/jobs" in url:
                 return {"total_count": 0, "jobs": []}, {}
-            return {"workflow_runs": [inside, outside]}, {}
+            return {"workflow_runs": runs}, {}
 
         tmp = Path(tempfile.mkdtemp(prefix="triton-collect-"))
         self.addCleanup(shutil.rmtree, tmp, ignore_errors=True)
@@ -546,13 +551,14 @@ class CollectWindowTests(unittest.TestCase):
                      "pr_evidence": {"method": "run.pull_requests.head.sha", "run_id": 1,
                                      "pr": 42, "resolved_head_sha": "abc"}}
         with patch.object(GitHub, "get", fake_get), \
-                patch("triton.pr_identity.PRResolver.resolve", return_value=pr_fields), \
+                patch("triton.pr_identity.PRResolver.resolve", return_value=pr_fields) as resolve, \
                 patch("triton.dashboard.EVIDENCE", tmp):
             payload = collect(hours=72, as_of="2026-09-28T12:00:00Z")
         discovery_paths = [p for p in paths if p.startswith("/actions/runs?")]
         self.assertTrue(discovery_paths)
-        self.assertTrue(all("created=" in p and "event=" in p for p in discovery_paths))
-        # Production discovery is bounded by a 14-day rerun lookback (the
+        resolve.assert_called_once_with(inside)
+        self.assertTrue(all("created=" in p and "event=" not in p for p in discovery_paths))
+        # Production discovery is bounded by a 90-day rerun lookback (the
         # unbounded form exceeded the hourly token quota), and the boundary is
         # published instead of being claimed as complete.
         self.assertTrue(any("2026-06-27T12" in p for p in discovery_paths), discovery_paths[:2])
@@ -560,8 +566,14 @@ class CollectWindowTests(unittest.TestCase):
         self.assertEqual(payload["discovery"]["rerun_lookback_days"], 90)
         self.assertEqual(payload["discovery"]["fetch_window_start"], "2026-06-27T12:00:00Z")
         self.assertIn("回溯边界", payload["discovery"]["boundary_note"])
-        self.assertEqual([batch["kind"] for batch in payload["batches"]], ["rerun"])
+        self.assertEqual([batch["id"] for batch in payload["batches"]],
+                         ["run-1-attempt-2", "run-3-attempt-1"])
         self.assertEqual(payload["batches"][0]["start_at"], "2026-09-26T10:00:00Z")
+        published_push = payload["batches"][1]
+        self.assertEqual(published_push["workflows"][0]["event"], "push")
+        self.assertIsNone(published_push["pr"])
+        self.assertEqual(published_push["base_branch"], "main-dev")
+        self.assertNotIn("未可靠关联 PR", published_push["missing"])
 
 
 class RefreshInflightTests(unittest.TestCase):

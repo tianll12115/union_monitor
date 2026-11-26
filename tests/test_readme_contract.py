@@ -21,7 +21,7 @@ class ReadmeContractTests(unittest.TestCase):
         cron = re.search(r'cron:\s*"(\d+) ([\d,]+) \* \* \*"', workflow)
         self.assertIsNotNone(cron)
         minute, hours = cron.groups()
-        expected = "/".join(f"{(int(hour) + 8) % 24:02}:{int(minute):02}" for hour in hours.split(","))
+        expected = "/".join(sorted(f"{(int(hour) + 8) % 24:02}:{int(minute):02}" for hour in hours.split(",")))
         self.assertTrue(expected in self.readme, f"README must show the actual increment schedule: {expected}")
 
     def test_local_pr_checks_include_offline_data_and_real_chromium(self):

@@ -38,7 +38,7 @@ class DiscoveryIntegrityTests(unittest.TestCase):
     def test_source_schema_rejects_missing_events_and_noninteger_attempts(self):
         from triton.discovery import full_history_runs
         at = dashboard.dt("2026-11-11T00:00:00Z")
-        for changes in [{"event": None}, {"event": "push"}, {"run_attempt": None},
+        for changes in [{"event": None}, {"event": " "}, {"run_attempt": None},
                         {"run_attempt": 0}, {"run_attempt": 2.5}, {"run_attempt": True}]:
             with self.subTest(changes=changes), patch("triton.discovery.interval_runs", return_value=[{**run(), **changes}]):
                 with self.assertRaisesRegex(RuntimeError, "event|run_attempt"):
@@ -47,7 +47,7 @@ class DiscoveryIntegrityTests(unittest.TestCase):
     def test_conflicting_source_identity_cannot_overwrite_a_newer_attempt(self):
         from triton.discovery import full_history_runs
         at = dashboard.dt("2026-11-11T00:00:00Z")
-        with patch("triton.discovery.interval_runs", side_effect=[[run(attempt=3)], [run(attempt=2)]]):
+        with patch("triton.discovery.interval_runs", return_value=[run(attempt=3), run(attempt=2)]):
             with self.assertRaisesRegex(RuntimeError, "conflicting"):
                 full_history_runs(SimpleNamespace(), at - dashboard.timedelta(days=2), at)
 
@@ -178,6 +178,16 @@ class DiscoveryIntegrityTests(unittest.TestCase):
                 dashboard.collect(48, "2026-11-11T00:00:00Z")
             self.assertTrue((Path(temp) / "coverage-ledger.json").exists())
 
+    def test_full_history_keeps_every_event_type_in_the_window(self):
+        from triton.discovery import full_history_runs
+        events = ("pull_request", "pull_request_target", "push", "schedule",
+                  "issue_comment", "workflow_dispatch", "workflow_run")
+        rows = [dict(run(index), event=event) for index, event in enumerate(events, 1)]
+        api = SimpleNamespace(get=lambda path: ({"total_count": len(rows), "workflow_runs": rows}, {}))
+        start = dashboard.dt("2026-11-10T00:00:00Z")
+        self.assertEqual(full_history_runs(api, start, start + dashboard.timedelta(days=1)), rows)
+        self.assertEqual([entry["event"] for entry in api.discovery_evidence["entries"]], list(events))
+
     def test_full_history_discovers_old_rerun_and_records_exclusions(self):
         from triton.discovery import full_history_runs
         rows = [run(created="2020-01-01T00:00:00Z", attempt=2,
@@ -195,7 +205,7 @@ class DiscoveryIntegrityTests(unittest.TestCase):
         api = API()
         result = full_history_runs(api, dashboard.dt("2026-11-09T00:00:00Z"), dashboard.dt("2026-11-11T00:00:00Z"))
         self.assertIn("created=2008-01-01", api.path)
-        self.assertIn("event=pull_request", api.path)
+        self.assertNotIn("event=", api.path)
         # An old run whose latest attempt starts in the window is enumerated;
         # an old rerun whose latest attempt started years ago is not, and costs
         # no job request.

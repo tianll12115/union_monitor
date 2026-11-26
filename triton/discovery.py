@@ -29,14 +29,15 @@ def _interval_pages(api, path, declared):
         page += 1
 
 
-def interval_runs(api, start, end, event):
+def interval_runs(api, start, end, event=None):
     """Query inclusive whole-second partitions without gaps or infinite splits."""
     from .dashboard import iso
     start, end = start.replace(microsecond=0), end.replace(microsecond=0)
     if end < start:
         return []
     created = quote(f"{iso(start)}..{iso(end)}", safe="")
-    path = f"/actions/runs?event={event}&created={created}"
+    event_filter = f"event={quote(event, safe='')}&" if event else ""
+    path = f"/actions/runs?{event_filter}created={created}"
     first, _ = api.get(path + "&per_page=1")
     count = first.get("total_count") if isinstance(first, dict) else None
     if not isinstance(count, int) or isinstance(count, bool) or count < 0:
@@ -58,7 +59,7 @@ def interval_runs(api, start, end, event):
 
 
 def full_history_runs(api, start, end, rerun_lookback=None):
-    """Enumerate retained PR runs, optionally bounded by a rerun lookback.
+    """Enumerate retained repository runs, optionally bounded by a rerun lookback.
 
     A run created inside the window is always discovered because the creation
     query starts at or before the window start. Reruns of much older runs are
@@ -76,14 +77,12 @@ def full_history_runs(api, start, end, rerun_lookback=None):
     from .dashboard import dt, iso
     origin = (datetime(2008, 1, 1, tzinfo=timezone.utc) if rerun_lookback is None
               else start - rerun_lookback)
-    rows = []
-    for event in ("pull_request", "pull_request_target"):
-        rows.extend(interval_runs(api, origin, end, event))
+    rows = interval_runs(api, origin, end)
     unique = {}
     identity_fields = ("id", "run_attempt", "event", "created_at", "run_started_at", "updated_at", "head_sha", "workflow_id", "path")
     for row in rows:
-        if row.get("event") not in ("pull_request", "pull_request_target"):
-            raise RuntimeError(f"run {row.get('id')}: invalid PR discovery event")
+        if not isinstance(row.get("event"), str) or not row["event"].strip():
+            raise RuntimeError(f"run {row.get('id')}: missing discovery event")
         if type(row.get("run_attempt")) is not int or row["run_attempt"] < 1:
             raise RuntimeError(f"run {row.get('id')}: invalid run_attempt")
         previous = unique.get(row["id"])

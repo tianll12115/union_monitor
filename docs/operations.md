@@ -9,7 +9,7 @@
 | 流程 | 北京时间计划启动 | 范围 |
 |---|---|---|
 | [每日采集与发布](../.github/workflows/pages.yml) | 07:30 | UBS 九仓最近 30 天 + Triton 最近 72 小时 |
-| [Triton 增量](../.github/workflows/triton-refresh.yml) | 08:00/12:00/16:00/18:00/20:00 | 仅重采 Triton，复用经校验的 UBS 快照 |
+| [Triton 增量](../.github/workflows/triton-refresh.yml) | 00:00/04:00/08:00/12:00/16:00/20:00 | 仅重采 Triton，复用经校验的 UBS 快照 |
 
 这是启动日程，不是更新时间保证。两流程共用 `pages` 并发组且 `cancel-in-progress: false`，保护正在运行的构建；排队中的运行遵循平台默认替换规则（queue: single，同组仅保留最新排队运行）。构建门禁失败会阻止该构建进入部署；部署后的验证失败不会自动回滚。
 

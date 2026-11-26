@@ -361,7 +361,7 @@ const sampleEligible = (row, metric = 'e2e') => !!row
     const collected = collectedAt == null ? null : +new Date(collectedAt);
     const bj = new Date(t + 8 * 3600000);
     const day = Date.UTC(bj.getUTCFullYear(), bj.getUTCMonth(), bj.getUTCDate());
-    const slots = [-4, 8, 12, 16, 18, 20]
+    const slots = [-4, 0, 4, 8, 12, 16, 20]
       .map(hours => day + (hours - 8) * 3600000)
       .filter(slot => slot + 90 * 60000 <= t);
     const latest = slots.length ? Math.max(...slots) : null;

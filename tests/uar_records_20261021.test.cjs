@@ -196,3 +196,13 @@ test('ADR-014: expanding another batch rebinds the selected batch for task expor
   assert.equal(a.run('recordsState().batch'), 'https://ci/trigger/2', 'the URL now selects the expanded batch');
   assert.match(a.run("$('exportBatchTasks').title"), /Trigger #2/);
 });
+test('Triton chart link state does not raise the unsupported-parameter banner', () => {
+  const a = app();
+  captureRoute(a);
+  a.element('notice').hidden = true;
+  a.run("applyProjectRoute({project:'triton',task:'engineering',query:{npu:'failure'}})");
+  assert.equal(a.element('notice').hidden, true);
+  a.run("applyProjectRoute({project:'triton',task:'engineering',query:{unrecognized:'value'}})");
+  assert.equal(a.element('notice').hidden, false);
+  assert.match(a.element('notice').textContent, /unrecognized/);
+});

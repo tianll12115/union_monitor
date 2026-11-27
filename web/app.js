@@ -151,11 +151,11 @@ function applyProjectRoute(route){
  /* TS28-008 AC1: a repeated `branch` is a legitimate multi-branch selection
     (parsed into an array), not a duplicate-value defect; only other repeated
     keys keep the "first value wins" warning. */
- const repeatableKeys=['branch'],knownKeys=['repository','entity','branch','from','to','basis','q','sort','page','tm','state','tf','qf','ps','pr','batch'],unknownKey=Object.keys(q).find(k=>!knownKeys.includes(k)),dupKey=Object.keys(q).find(k=>Array.isArray(q[k])&&!repeatableKeys.includes(k));
+ const repeatableKeys=['branch'],knownKeys=['repository','entity','branch','from','to','basis','q','sort','page','tm','state','tf','qf','ps','pr','batch'],unknownKey=Object.keys(q).find(k=>!(route.project==='triton'?tritonKeys:knownKeys).includes(k)),dupKey=Object.keys(q).find(k=>Array.isArray(q[k])&&!repeatableKeys.includes(k));
  if(sortUpgraded){$('notice').hidden=false;$('notice').textContent='排序口径已升级：原「创建时间从新到旧」已改为按最近代码提交时间排序，地址已规范为 sort=submitted。';}
   else if(retiredFilters.length){$('notice').hidden=false;$('notice').textContent='已精简：'+retiredFilters.join('、')+'筛选已随高级分析面板移除，请在 PR 详情查看相关字段；本次未按这些条件筛选。';}
  else if(retiredRecordConditions.length){$('notice').hidden=false;$('notice').textContent='批次记录已并入工程效能页；地址中的「'+retiredRecordConditions.join('、')+'」条件由页面内控件控制，本次未随地址应用。';}
- else if(unknownKey||dupKey||(route.project==='triton'&&route.task!=='records'&&Object.keys(q).some(k=>!tritonKeys.includes(k)))){$('notice').hidden=false;$('notice').textContent=unknownKey?'URL 包含不支持的参数「'+unknownKey+'」，已忽略。':(dupKey?'URL 参数「'+dupKey+'」重复出现，仅保留首个值。':'当前兼容视图不支持部分 URL 条件，请使用页面控件确认范围。');}
+ else if(unknownKey||dupKey){$('notice').hidden=false;$('notice').textContent=unknownKey?'URL 包含不支持的参数「'+unknownKey+'」，已忽略。':('URL 参数「'+dupKey+'」重复出现，仅保留首个值。');}
 }
 function applyRoute(route){
   const prevRepo=currentRepository;const prevView=view;
